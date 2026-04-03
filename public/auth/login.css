@@ -1,0 +1,789 @@
+ /* ===== GOOGLE FONT ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --mosque-primary: #405189;
+      --mosque-primary-dark: #2d3a63;
+      --mosque-primary-light: #f0f2f9;
+      --mosque-accent: #0ab39c;
+      --mosque-accent-soft: rgba(10, 179, 156, 0.1);
+      --mosque-gold: #d4a843;
+      --mosque-gold-soft: rgba(212, 168, 67, 0.15);
+      --mosque-text: #495057;
+      --mosque-muted: #878a99;
+      --mosque-border: #e9ebec;
+      --mosque-white: #ffffff;
+      --mosque-bg: #f3f6f9;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--mosque-bg);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ===== LAYOUT ===== */
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+    }
+
+    /* ===== LEFT PANEL ===== */
+    .auth-left {
+      width: 42%;
+      background: linear-gradient(145deg, #2d3a63 0%, #405189 40%, #3577f1 100%);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 48px;
+      overflow: hidden;
+    }
+
+    /* Arabesque géométrique en background */
+    .auth-left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.06) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(10,179,156,0.12) 0%, transparent 50%);
+    }
+
+    /* Motif géométrique islamique SVG */
+    .geometric-pattern {
+      position: absolute;
+      inset: 0;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M40 0L50 20L70 20L55 32L62 52L40 40L18 52L25 32L10 20L30 20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      background-size: 80px 80px;
+    }
+
+    /* Arc décoratif en bas */
+    .auth-left::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 120px;
+      height: 120px;
+      background: var(--mosque-bg);
+      border-radius: 100% 0 0 0;
+    }
+
+    .mosque-logo {
+      position: relative;
+      z-index: 2;
+      margin-bottom: 48px;
+      text-align: center;
+    }
+
+    .mosque-logo .logo-icon {
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      border: 2px solid rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    .mosque-logo .logo-icon i {
+      font-size: 36px;
+      color: var(--mosque-gold);
+    }
+
+    .mosque-logo h1 {
+      font-family: 'Amiri', serif;
+      font-size: 28px;
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .mosque-logo .subtitle {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 400;
+    }
+
+    /* Stat cards sur le panneau gauche */
+    .stat-cards {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transform: translateX(0);
+      transition: transform 0.3s ease;
+      animation: slideInLeft 0.6s ease both;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.2s; }
+    .stat-card:nth-child(2) { animation-delay: 0.35s; }
+    .stat-card:nth-child(3) { animation-delay: 0.5s; }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .stat-card:hover { transform: translateX(6px); }
+
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .stat-icon.green { background: rgba(10, 179, 156, 0.2); }
+    .stat-icon.gold { background: rgba(212, 168, 67, 0.2); }
+    .stat-icon.blue { background: rgba(53, 119, 241, 0.2); }
+
+    .stat-icon i { font-size: 20px; }
+    .stat-icon.green i { color: #0ab39c; }
+    .stat-icon.gold i { color: var(--mosque-gold); }
+    .stat-icon.blue i { color: #7ea8f5; }
+
+    .stat-info { flex: 1; }
+    .stat-info .stat-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+    .stat-info .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      font-family: 'Amiri', serif;
+    }
+
+    .stat-badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+      background: rgba(10, 179, 156, 0.25);
+      color: #0ab39c;
+    }
+
+    /* Citation islamique */
+    .islamic-quote {
+      position: relative;
+      z-index: 2;
+      margin-top: 32px;
+      text-align: center;
+      padding: 0 16px;
+    }
+
+    .islamic-quote .arabic-text {
+      font-family: 'Amiri', serif;
+      font-size: 18px;
+      color: rgba(255,255,255,0.7);
+      font-style: italic;
+      line-height: 1.8;
+    }
+
+    .islamic-quote .divider {
+      width: 40px;
+      height: 1px;
+      background: rgba(255,255,255,0.3);
+      margin: 12px auto;
+    }
+
+    .islamic-quote .quote-translation {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== RIGHT PANEL ===== */
+    .auth-right {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 32px;
+      position: relative;
+      background: #fff;
+    }
+
+    .auth-form-wrapper {
+      width: 100%;
+      max-width: 420px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Header du formulaire */
+    .form-header {
+      margin-bottom: 36px;
+    }
+
+    .form-header .welcome-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--mosque-accent-soft);
+      color: var(--mosque-accent);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      letter-spacing: 0.5px;
+    }
+
+    .form-header h2 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #212529;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .form-header p {
+      color: var(--mosque-muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ===== STEP INDICATOR ===== */
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 32px;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      flex: 1;
+    }
+
+    .step-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-dot.active {
+      background: var(--mosque-primary);
+      color: #fff;
+      box-shadow: 0 0 0 4px rgba(64, 81, 137, 0.15);
+    }
+
+    .step-dot.completed {
+      background: var(--mosque-accent);
+      color: #fff;
+    }
+
+    .step-dot.pending {
+      background: #f0f2f9;
+      color: var(--mosque-muted);
+      border: 2px solid var(--mosque-border);
+    }
+
+    .step-label {
+      font-size: 11px;
+      font-weight: 500;
+      margin-top: 6px;
+      transition: color 0.3s;
+    }
+
+    .step-label.active { color: var(--mosque-primary); }
+    .step-label.completed { color: var(--mosque-accent); }
+    .step-label.pending { color: var(--mosque-muted); }
+
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: var(--mosque-border);
+      margin: 0 -1px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .step-line.active {
+      background: linear-gradient(to right, var(--mosque-accent), var(--mosque-border));
+    }
+
+    .step-line.completed {
+      background: var(--mosque-accent);
+    }
+
+    .step-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ===== FORM STEPS ===== */
+    .form-step { display: none; }
+    .form-step.active { display: block; }
+
+    /* ===== INPUTS ===== */
+    .form-floating-custom {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .form-floating-custom label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 8px;
+    }
+
+    .input-group-custom {
+      position: relative;
+    }
+
+    .input-group-custom .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--mosque-muted);
+      font-size: 18px;
+      z-index: 2;
+      transition: color 0.2s;
+    }
+
+    .input-group-custom .form-control {
+      padding: 13px 16px 13px 44px;
+      border: 1.5px solid var(--mosque-border);
+      border-radius: 12px;
+      font-size: 14px;
+      color: #212529;
+      background: #fafafa;
+      transition: all 0.25s ease;
+      height: auto;
+      box-shadow: none;
+    }
+
+    .input-group-custom .form-control:focus {
+      border-color: var(--mosque-primary);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(64, 81, 137, 0.08);
+      outline: none;
+    }
+
+    .input-group-custom .form-control:focus ~ .input-icon {
+      color: var(--mosque-primary);
+    }
+
+    .input-group-custom .form-control.is-invalid {
+      border-color: #f06548;
+    }
+
+    .input-group-custom .toggle-password {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--mosque-muted);
+      cursor: pointer;
+      padding: 0;
+      font-size: 18px;
+      transition: color 0.2s;
+      z-index: 2;
+    }
+
+    .input-group-custom .toggle-password:hover { color: var(--mosque-primary); }
+
+    /* ===== OTP INPUT ===== */
+    .otp-container {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    .otp-input {
+      width: 52px;
+      height: 58px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      border: 1.5px solid var(--mosque-border);
+      border-radius: 12px;
+      background: #fafafa;
+      color: var(--mosque-primary);
+      transition: all 0.25s ease;
+      outline: none;
+    }
+
+    .otp-input:focus {
+      border-color: var(--mosque-primary);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(64, 81, 137, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .otp-input.filled {
+      border-color: var(--mosque-accent);
+      background: rgba(10, 179, 156, 0.04);
+    }
+
+    .otp-input.shake {
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    /* OTP timer */
+    .otp-timer {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .otp-timer .timer-text {
+      font-size: 13px;
+      color: var(--mosque-muted);
+    }
+
+    .otp-timer .timer-count {
+      font-weight: 700;
+      color: var(--mosque-primary);
+    }
+
+    .otp-timer .resend-btn {
+      background: none;
+      border: none;
+      color: var(--mosque-primary);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      display: none;
+    }
+
+    .otp-timer .resend-btn.visible { display: inline; }
+
+    /* ===== BOUTON PRINCIPAL ===== */
+    .btn-mosque-primary {
+      width: 100%;
+      padding: 14px 24px;
+      background: linear-gradient(135deg, var(--mosque-primary) 0%, #3577f1 100%);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: 0.3px;
+      margin-top: 8px;
+    }
+
+    .btn-mosque-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .btn-mosque-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(64, 81, 137, 0.4);
+    }
+
+    .btn-mosque-primary:hover::before { opacity: 1; }
+
+    .btn-mosque-primary:active { transform: translateY(0); }
+
+    .btn-mosque-primary.loading {
+      pointer-events: none;
+      opacity: 0.8;
+    }
+
+    .btn-mosque-primary .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    .btn-mosque-primary.loading .spinner { display: block; }
+    .btn-mosque-primary.loading .btn-text { opacity: 0.7; }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ===== BACK BUTTON ===== */
+    .btn-back {
+      background: none;
+      border: 1.5px solid var(--mosque-border);
+      border-radius: 12px;
+      padding: 13px 24px;
+      color: var(--mosque-text);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .btn-back:hover {
+      background: var(--mosque-primary-light);
+      border-color: var(--mosque-primary);
+      color: var(--mosque-primary);
+    }
+
+    /* ===== REMEMBER ME ===== */
+    .form-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .form-check-mosque {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .form-check-mosque input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--mosque-primary);
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .form-check-mosque label {
+      font-size: 13px;
+      color: var(--mosque-muted);
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .forgot-link {
+      font-size: 13px;
+      color: var(--mosque-primary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .forgot-link:hover { color: var(--mosque-primary-dark); text-decoration: underline; }
+
+    /* ===== ERROR / SUCCESS MESSAGES ===== */
+    .alert-custom {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .alert-custom.error {
+      background: rgba(240, 101, 72, 0.08);
+      border: 1px solid rgba(240, 101, 72, 0.2);
+      color: #c0392b;
+    }
+
+    .alert-custom.success {
+      background: rgba(10, 179, 156, 0.08);
+      border: 1px solid rgba(10, 179, 156, 0.2);
+      color: #0ab39c;
+    }
+
+    .alert-custom i { font-size: 18px; flex-shrink: 0; }
+
+    /* ===== FOOTER DU FORM ===== */
+    .form-footer {
+      margin-top: 28px;
+      text-align: center;
+    }
+
+    .form-footer p {
+      font-size: 12px;
+      color: var(--mosque-muted);
+      line-height: 1.7;
+    }
+
+    /* ===== OTP SUCCESS ANIMATION ===== */
+    .otp-success {
+      text-align: center;
+      padding: 20px 0;
+      display: none;
+    }
+
+    .otp-success.show { display: block; }
+
+    .success-circle {
+      width: 70px;
+      height: 70px;
+      background: rgba(10, 179, 156, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .success-circle i {
+      font-size: 32px;
+      color: var(--mosque-accent);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 991px) {
+      .auth-left { display: none; }
+      .auth-right { background: var(--mosque-bg); }
+      .auth-form-wrapper {
+        background: #fff;
+        padding: 32px;
+        border-radius: 20px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      }
+    }
+
+    @media (max-width: 576px) {
+      .auth-right { padding: 20px 16px; }
+      .auth-form-wrapper { padding: 24px 20px; }
+      .otp-input { width: 44px; height: 52px; font-size: 18px; }
+      .form-header h2 { font-size: 22px; }
+    }
+
+    /* ===== PROGRESS BAR ANIMÉ ===== */
+    .progress-bar-wrapper {
+      height: 3px;
+      background: var(--mosque-border);
+      border-radius: 2px;
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--mosque-primary), var(--mosque-accent));
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    /* ===== CONFETTI (OTP validated) ===== */
+    .confetti-wrapper {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 100px;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 9999;
+    }
+
+    .confetti-dot {
+      position: absolute;
+      top: -10px;
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      animation: confettiFall linear both;
+    }
+
+    @keyframes confettiFall {
+      0% { top: -10px; opacity: 1; transform: rotate(0deg); }
+      100% { top: 110px; opacity: 0; transform: rotate(360deg); }
+    }
+
+    /* Info email masqué */
+    .email-hint {
+      font-size: 13px;
+      color: var(--mosque-muted);
+      text-align: center;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .email-hint strong {
+      color: var(--mosque-primary);
+    }
