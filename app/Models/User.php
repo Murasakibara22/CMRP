@@ -24,6 +24,7 @@ class User extends Authenticatable
         'otp',
         'otp_verified_at',
         'otp_expired_at',
+        'photo_url',
     ];
 
     protected $hidden = [

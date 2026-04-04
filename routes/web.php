@@ -27,6 +27,8 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin')->as('admin.')->group(function () {
 
         Route::livewire('dashboard', 'admin::dashboard.index')->name('home');
+        Route::livewire('fideles', 'admin::fidele.index')->name('membres.index');
+        Route::livewire('type-cotisations', 'admin::typecotisation.index')->name('type-cotisations.index');
 
     });
 });

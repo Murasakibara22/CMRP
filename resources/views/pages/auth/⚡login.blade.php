@@ -2,10 +2,8 @@
 
 use Livewire\Component;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -15,19 +13,15 @@ new #[Layout('auth.layouts.app')] class extends Component
     public int $step = 1;
 
     // ─── Step 1 ───────────────────────────────────────────────
-    #[Validate('required|email')]
-    public string $email = '';
-
-    #[Validate('required|min:6')]
+    public string $email    = '';
     public string $password = '';
-
-    public bool $remember = false;
+    public bool   $remember = false;
 
     // ─── Step 2 ───────────────────────────────────────────────
-    public string $otp = '';
+    public string $otp         = '';
     public string $maskedEmail = '';
 
-    // ─── Computed helpers ─────────────────────────────────────
+    // ─── Progress bar ─────────────────────────────────────────
     public function progressWidth(): int
     {
         return match ($this->step) {
@@ -45,7 +39,6 @@ new #[Layout('auth.layouts.app')] class extends Component
             'password' => 'required|min:6',
         ]);
 
-        // Rate limiting : max 5 tentatives / minute par IP
         $key = 'login.' . request()->ip();
         if (RateLimiter::tooManyAttempts($key, 5)) {
             $seconds = RateLimiter::availableIn($key);
@@ -53,7 +46,6 @@ new #[Layout('auth.layouts.app')] class extends Component
             return;
         }
 
-        // Vérification des credentials sans connecter l'utilisateur
         if (! Auth::validate(['email' => $this->email, 'password' => $this->password])) {
             RateLimiter::hit($key, 60);
             $this->addError('email', 'Email ou mot de passe incorrect.');
@@ -63,7 +55,6 @@ new #[Layout('auth.layouts.app')] class extends Component
 
         $user = User::where('email', $this->email)->first();
 
-        // Vérifier que le compte est actif
         if ($user->status !== 'actif') {
             $this->addError('email', 'Votre compte est désactivé. Contactez un administrateur.');
             return;
@@ -71,23 +62,22 @@ new #[Layout('auth.layouts.app')] class extends Component
 
         RateLimiter::clear($key);
 
-        // Générer et stocker l'OTP
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $user->update([
-            'otp'            => $otp,
-            'otp_expired_at' => Carbon::now()->addMinutes(5),
-            'otp_verified_at'=> null,
+            'otp'             => $otp,
+            'otp_expired_at'  => Carbon::now()->addMinutes(5),
+            'otp_verified_at' => null,
         ]);
 
-        // TODO: Envoyer l'OTP par email → Mail::to($user->email)->send(new OtpMail($otp));
-        // En développement : on le logue
         logger("🔐 OTP pour {$user->email} : {$otp}");
 
-        // Masquer l'email pour l'affichage
-        [$local, $domain]    = explode('@', $this->email);
-        $this->maskedEmail   = substr($local, 0, 1) . str_repeat('*', max(strlen($local) - 1, 3)) . '@' . $domain;
+        [$local, $domain]  = explode('@', $this->email);
+        $this->maskedEmail = substr($local, 0, 1) . str_repeat('*', max(strlen($local) - 1, 3)) . '@' . $domain;
 
         $this->step = 2;
+
+        // Signaler au JS que le DOM OTP va être rendu
+        $this->dispatch('otp-step-ready');
     }
 
     // ─── Step 2 : Vérification OTP ───────────────────────────
@@ -105,31 +95,26 @@ new #[Layout('auth.layouts.app')] class extends Component
             return;
         }
 
-        // Vérifier expiration
         if (! $user->otp_expired_at || Carbon::now()->gt($user->otp_expired_at)) {
             $this->addError('otp', 'Le code OTP a expiré. Renvoyez-en un nouveau.');
             return;
         }
 
-        // Vérifier le code
         if ($user->otp !== $this->otp) {
             $this->addError('otp', 'Code incorrect. Vérifiez votre email.');
             $this->otp = '';
+            $this->dispatch('otp-clear');
             return;
         }
 
-        // Marquer OTP comme vérifié
         $user->update([
             'otp'             => null,
             'otp_verified_at' => Carbon::now(),
         ]);
 
-        // Connecter l'utilisateur
         Auth::login($user, $this->remember);
 
         $this->step = 3;
-
-        // Déclencher l'event JS pour le countdown de redirection
         $this->dispatch('login-success');
     }
 
@@ -153,10 +138,10 @@ new #[Layout('auth.layouts.app')] class extends Component
         logger("🔐 OTP renvoyé pour {$user->email} : {$otp}");
 
         $this->otp = '';
-        $this->dispatch('otp-resent'); // redémarre le timer JS
+        $this->dispatch('otp-resent');
     }
 
-    // ─── Retour à l'étape précédente ─────────────────────────
+    // ─── Retour step 1 ───────────────────────────────────────
     public function goBack(): void
     {
         $this->resetErrorBag();
@@ -168,20 +153,16 @@ new #[Layout('auth.layouts.app')] class extends Component
 ?>
 
 <div>
-    <div class="auth-page">
+<div class="auth-page">
 
     {{-- ===== LEFT PANEL ===== --}}
     <div class="auth-left">
         <div class="geometric-pattern"></div>
-
         <div class="mosque-logo">
-            <div class="logo-icon">
-                <i class="ri-building-3-line"></i>
-            </div>
+            <div class="logo-icon"><i class="ri-building-3-line"></i></div>
             <h1>المسجد</h1>
             <span class="subtitle">Gestion de la Mosquée</span>
         </div>
-
         <div class="stat-cards">
             <div class="stat-card">
                 <div class="stat-icon green"><i class="ri-group-line"></i></div>
@@ -208,7 +189,6 @@ new #[Layout('auth.layouts.app')] class extends Component
                 <span class="stat-badge">Excellent</span>
             </div>
         </div>
-
         <div class="islamic-quote">
             <div class="divider"></div>
             <p class="arabic-text">وَأَقِيمُوا الصَّلَاةَ وَآتُوا الزَّكَاةَ</p>
@@ -221,7 +201,7 @@ new #[Layout('auth.layouts.app')] class extends Component
     <div class="auth-right">
         <div class="auth-form-wrapper">
 
-            {{-- Header dynamique selon l'étape --}}
+            {{-- Header dynamique --}}
             <div class="form-header">
                 <span class="welcome-badge">
                     <i class="ri-shield-check-line"></i>
@@ -250,14 +230,14 @@ new #[Layout('auth.layouts.app')] class extends Component
             <div class="step-indicator">
                 <div class="step-wrapper">
                     <div class="step-dot {{ $step >= 1 ? 'active' : 'pending' }}">
-                        @if($step > 1) <i class="ri-check-line" style="font-size:14px;"></i> @else 1 @endif
+                        @if($step > 1)<i class="ri-check-line" style="font-size:14px;"></i>@else 1 @endif
                     </div>
                     <div class="step-label {{ $step >= 1 ? 'active' : 'pending' }}">Identité</div>
                 </div>
                 <div class="step-line {{ $step >= 2 ? 'active' : '' }}"></div>
                 <div class="step-wrapper">
                     <div class="step-dot {{ $step >= 2 ? 'active' : 'pending' }}">
-                        @if($step > 2) <i class="ri-check-line" style="font-size:14px;"></i> @else 2 @endif
+                        @if($step > 2)<i class="ri-check-line" style="font-size:14px;"></i>@else 2 @endif
                     </div>
                     <div class="step-label {{ $step >= 2 ? 'active' : 'pending' }}">Code OTP</div>
                 </div>
@@ -270,15 +250,15 @@ new #[Layout('auth.layouts.app')] class extends Component
                 </div>
             </div>
 
-            {{-- ===== STEP 1 : Email + Password ===== --}}
+            {{-- ===== STEP 1 ===== --}}
             @if($step === 1)
             <div class="form-step active">
 
-                @if($errors->any())
+                @if($errors->has('email') || $errors->has('password'))
                 <div class="alert-error">
                     <i class="ri-error-warning-line alert-icon"></i>
                     <div>
-                        <p class="alert-title">Identifiants incorrects</p>
+                        <p class="alert-title">Erreur de connexion</p>
                         <p class="alert-message">{{ $errors->first('email') ?: $errors->first('password') }}</p>
                     </div>
                 </div>
@@ -312,24 +292,16 @@ new #[Layout('auth.layouts.app')] class extends Component
                             placeholder="••••••••"
                             autocomplete="current-password"
                             wire:keydown.enter="submitStep1"
-                            x-ref="passwordInput"
                         >
-                        <button class="toggle-password" type="button"
-                            onclick="
-                                const i = this.querySelector('i');
-                                const p = this.closest('.input-group-custom').querySelector('input');
-                                p.type = p.type === 'password' ? 'text' : 'password';
-                                i.classList.toggle('ri-eye-line');
-                                i.classList.toggle('ri-eye-off-line');
-                            ">
-                            <i class="ri-eye-line"></i>
+                        <button class="toggle-password" type="button" id="togglePwd">
+                            <i class="ri-eye-line" id="eyeIcon"></i>
                         </button>
                     </div>
                 </div>
 
                 <div class="form-options">
                     <label class="form-check-mosque">
-                        <input type="checkbox" wire:model="remember" id="rememberMe">
+                        <input type="checkbox" id="rememberMe" wire:model="remember">
                         <label for="rememberMe">Se souvenir de moi</label>
                     </label>
                     <a href="#" class="forgot-link">Mot de passe oublié ?</a>
@@ -337,10 +309,10 @@ new #[Layout('auth.layouts.app')] class extends Component
 
                 <button class="btn-mosque-primary" wire:click="submitStep1" wire:loading.attr="disabled">
                     <span class="spinner" wire:loading wire:target="submitStep1"></span>
-                    <span wire:loading.remove wire:target="submitStep1">
-                        Continuer <i class="ri-arrow-right-line"></i>
+                    <span class="btn-text">
+                        <span wire:loading.remove wire:target="submitStep1">Continuer <i class="ri-arrow-right-line"></i></span>
+                        <span wire:loading wire:target="submitStep1">Vérification…</span>
                     </span>
-                    <span wire:loading wire:target="submitStep1">Vérification…</span>
                 </button>
 
             </div>
@@ -348,7 +320,7 @@ new #[Layout('auth.layouts.app')] class extends Component
 
             {{-- ===== STEP 2 : OTP ===== --}}
             @if($step === 2)
-            <div class="form-step active" x-data="otpManager()" x-init="startTimer()">
+            <div class="form-step active" id="otpStep">
 
                 <p class="email-hint">
                     Un code à 6 chiffres a été envoyé à<br>
@@ -357,62 +329,57 @@ new #[Layout('auth.layouts.app')] class extends Component
 
                 @if($errors->has('otp'))
                 <div class="alert-error">
-                    <i class="ri-error-warning-line"></i>
-                    {{ $errors->first('otp') }}
+                    <i class="ri-error-warning-line alert-icon"></i>
+                    <div>
+                        <p class="alert-title">Code invalide</p>
+                        <p class="alert-message">{{ $errors->first('otp') }}</p>
+                    </div>
                 </div>
                 @endif
 
-                {{-- 6 inputs OTP avec gestion auto-focus en JS (inévitable) --}}
-                <div class="otp-container" x-ref="otpContainer">
-                    @for($i = 1; $i <= 6; $i++)
-                    <input
-                        type="text"
-                        class="otp-input"
-                        maxlength="1"
-                        inputmode="numeric"
-                        pattern="[0-9]*"
-                        x-on:input="handleInput($event, {{ $i }})"
-                        x-on:keydown="handleKeydown($event, {{ $i }})"
-                        x-on:paste.prevent="handlePaste($event)"
-                        id="otp{{ $i }}"
-                    >
-                    @endfor
+                {{--
+                    6 inputs visuels — gérés intégralement par JS vanilla.
+                    Un input caché (wire:model.live) reçoit l'OTP assemblé.
+                    wire:model.live = Livewire est notifié à chaque frappe.
+                --}}
+                <div class="otp-container" id="otpContainer">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp_1" autocomplete="one-time-code">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp_2" autocomplete="off">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp_3" autocomplete="off">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp_4" autocomplete="off">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp_5" autocomplete="off">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" id="otp_6" autocomplete="off">
                 </div>
 
-                {{-- Input hidden Livewire qui reçoit l'OTP complet --}}
-                <input type="hidden" wire:model="otp" x-ref="otpHidden">
+                {{-- Input caché portant wire:model vers Livewire --}}
+                <input
+                    type="text"
+                    id="otpHiddenInput"
+                    wire:model.live="otp"
+                    tabindex="-1"
+                    aria-hidden="true"
+                    readonly
+                    style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;"
+                >
 
                 {{-- Timer --}}
                 <div class="otp-timer">
                     <span class="timer-text">
-                        Code valide pendant
-                        <span class="timer-count" x-text="timerDisplay"></span>
+                        Code valide pendant <span class="timer-count" id="timerDisplay">05:00</span>
                     </span>
                     <br>
-                    <button
-                        class="resend-btn"
-                        x-bind:disabled="!canResend"
-                        x-bind:class="{ 'opacity-50': !canResend }"
-                        wire:click="resendOtp"
-                        x-on:otp-resent.window="resetTimer()"
-                        wire:loading.attr="disabled"
-                    >
+                    <button class="resend-btn" id="resendBtn" wire:click="resendOtp" wire:loading.attr="disabled" disabled>
                         <span wire:loading wire:target="resendOtp">Envoi…</span>
                         <span wire:loading.remove wire:target="resendOtp">Renvoyer le code</span>
                     </button>
                 </div>
 
-                <button
-                    class="btn-mosque-primary"
-                    wire:click="submitStep2"
-                    wire:loading.attr="disabled"
-                    x-bind:disabled="otp.length < 6"
-                >
+                <button class="btn-mosque-primary" wire:click="submitStep2" wire:loading.attr="disabled">
                     <span class="spinner" wire:loading wire:target="submitStep2"></span>
-                    <span wire:loading.remove wire:target="submitStep2">
-                        Vérifier le code <i class="ri-shield-check-line"></i>
+                    <span class="btn-text">
+                        <span wire:loading.remove wire:target="submitStep2">Vérifier le code <i class="ri-shield-check-line"></i></span>
+                        <span wire:loading wire:target="submitStep2">Vérification…</span>
                     </span>
-                    <span wire:loading wire:target="submitStep2">Vérification…</span>
                 </button>
 
                 <button class="btn-back" wire:click="goBack" wire:loading.attr="disabled">
@@ -424,31 +391,17 @@ new #[Layout('auth.layouts.app')] class extends Component
 
             {{-- ===== STEP 3 : Succès ===== --}}
             @if($step === 3)
-            <div class="form-step active"
-                x-data="{ count: 3, width: 0 }"
-                x-init="
-                    let interval = setInterval(() => {
-                        width += (100/30);
-                        if(count > 0 && width % (100/3) < (100/30)) count--;
-                        if(width >= 100) {
-                            clearInterval(interval);
-                            window.location.href = '{{ route('admin.home') }}';
-                        }
-                    }, 100);
-                "
-                x-on:login-success.window="$el.dispatchEvent(new Event('x-init'))"
-            >
+            <div class="form-step active" id="successStep">
                 <div class="otp-success show">
                     <div class="success-circle">
                         <i class="ri-check-double-line"></i>
                     </div>
-                    <h5 style="color:#212529; font-weight:700; margin-bottom:8px;">Connexion réussie !</h5>
-                    <p style="color:var(--mosque-muted); font-size:14px; line-height:1.6;">
-                        Bienvenue. Redirection vers votre tableau de bord dans
-                        <strong x-text="count"></strong>s…
+                    <h5 style="color:#212529;font-weight:700;margin-bottom:8px;">Connexion réussie !</h5>
+                    <p style="color:var(--mosque-muted);font-size:14px;line-height:1.6;">
+                        Bienvenue. Redirection dans <strong id="redirectCount">3</strong>s…
                     </p>
-                    <div class="progress-bar-wrapper" style="margin-top: 20px;">
-                        <div class="progress-bar-fill" x-bind:style="`width: ${width}%; transition: width 0.1s linear;`"></div>
+                    <div class="progress-bar-wrapper" style="margin-top:20px;">
+                        <div class="progress-bar-fill" id="redirectBar" style="width:0%;transition:width 0.1s linear;"></div>
                     </div>
                 </div>
             </div>
@@ -464,106 +417,223 @@ new #[Layout('auth.layouts.app')] class extends Component
 
         </div>
     </div>
-    </div>
+</div>
 
-    {{-- ===== JS minimal (UX only) ===== --}}
-    @script
-    <script>
-    /**
-     * Alpine component pour la gestion OTP
-     * Responsabilités : auto-focus, paste, timer, alimentation du wire:model
-     */
-    function otpManager() {
-        return {
-            otp: '',
-            timeLeft: 300, // 5 minutes en secondes
-            canResend: false,
-            timerDisplay: '05:00',
-            timerInterval: null,
+@script
+<script>
+// ─────────────────────────────────────────────────────────────
+// JS VANILLA — UX uniquement, zéro Alpine, zéro logique métier
+// ─────────────────────────────────────────────────────────────
 
-            startTimer() {
-                this.canResend = false;
-                this.timeLeft  = 300;
-                this.timerInterval = setInterval(() => {
-                    this.timeLeft--;
-                    const m = String(Math.floor(this.timeLeft / 60)).padStart(2, '0');
-                    const s = String(this.timeLeft % 60).padStart(2, '0');
-                    this.timerDisplay = `${m}:${s}`;
-                    if (this.timeLeft <= 0) {
-                        clearInterval(this.timerInterval);
-                        this.canResend    = true;
-                        this.timerDisplay = 'Expiré';
-                    }
-                }, 1000);
-            },
+let otpTimerInterval = null;
 
-            resetTimer() {
-                clearInterval(this.timerInterval);
-                // Vider les inputs
-                for (let i = 1; i <= 6; i++) {
-                    document.getElementById(`otp${i}`).value = '';
-                }
-                this.otp = '';
-                this.$refs.otpHidden.value = '';
-                this.$refs.otpHidden.dispatchEvent(new Event('input'));
-                this.startTimer();
-                document.getElementById('otp1').focus();
-            },
+// ── Toggle password ───────────────────────────────────────
+document.addEventListener('livewire:initialized', () => {
+    bindTogglePassword();
+});
 
-            getOtpValue() {
-                let val = '';
-                for (let i = 1; i <= 6; i++) {
-                    val += document.getElementById(`otp${i}`).value;
-                }
-                return val;
-            },
+Livewire.hook('morph.updated', () => {
+    bindTogglePassword();
+});
 
-            syncToWire() {
-                this.otp = this.getOtpValue();
-                // Mettre à jour le wire:model via l'input hidden
-                const hidden = this.$refs.otpHidden;
-                hidden.value = this.otp;
-                hidden.dispatchEvent(new Event('input'));
-            },
+function bindTogglePassword() {
+    const btn = document.getElementById('togglePwd');
+    if (!btn || btn._bound) return;
+    btn._bound = true;
+    btn.addEventListener('click', () => {
+        const input = document.getElementById('passwordInput');
+        const icon  = document.getElementById('eyeIcon');
+        if (!input) return;
+        const hidden = input.type === 'password';
+        input.type = hidden ? 'text' : 'password';
+        icon.classList.toggle('ri-eye-line', !hidden);
+        icon.classList.toggle('ri-eye-off-line', hidden);
+    });
+}
 
-            handleInput(event, index) {
-                const val = event.target.value.replace(/[^0-9]/g, '');
-                event.target.value = val;
-                this.syncToWire();
-                if (val && index < 6) {
-                    document.getElementById(`otp${index + 1}`).focus();
-                }
-                // Auto-submit si les 6 chiffres sont saisis
-                if (this.getOtpValue().length === 6) {
-                    setTimeout(() => @this.submitStep2(), 200);
-                }
-            },
+// ── Initialisation OTP après rendu du step 2 ─────────────
+$wire.on('otp-step-ready', () => {
+    // Attendre que Livewire ait fini de patcher le DOM
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            initOtpInputs();
+        });
+    });
+});
 
-            handleKeydown(event, index) {
-                if (event.key === 'Backspace' && !event.target.value && index > 1) {
-                    document.getElementById(`otp${index - 1}`).focus();
-                }
-            },
+function initOtpInputs() {
+    const inputs = [1,2,3,4,5,6].map(i => document.getElementById(`otp_${i}`));
+    const hidden = document.getElementById('otpHiddenInput');
 
-            handlePaste(event) {
-                const pasted = (event.clipboardData || window.clipboardData)
-                    .getData('text')
-                    .replace(/[^0-9]/g, '')
-                    .slice(0, 6);
-                for (let i = 0; i < pasted.length; i++) {
-                    const input = document.getElementById(`otp${i + 1}`);
-                    if (input) input.value = pasted[i];
-                }
-                this.syncToWire();
-                const last = Math.min(pasted.length, 6);
-                if (last > 0) document.getElementById(`otp${last}`).focus();
-                if (pasted.length === 6) {
-                    setTimeout(() => @this.submitStep2(), 200);
-                }
-            },
-        }
+    if (!inputs[0] || !hidden) return;
+
+    // Focus automatique sur le premier champ
+    inputs[0].focus();
+
+    function getFullOtp() {
+        return inputs.map(el => el.value).join('');
     }
-    </script>
-    @endscript
+
+    // Synchroniser vers wire:model via l'input caché
+    // On utilise le setter natif pour bypasser le DOM virtuel de Livewire
+    function syncWire() {
+        const val    = getFullOtp();
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+        setter.call(hidden, val);
+        hidden.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    inputs.forEach((input, idx) => {
+
+        // Supprimer les anciens listeners pour éviter les doublons
+        const clone = input.cloneNode(true);
+        input.parentNode.replaceChild(clone, input);
+        inputs[idx] = clone;
+    });
+
+    // Re-fetch après cloneNode
+    const freshInputs = [1,2,3,4,5,6].map(i => document.getElementById(`otp_${i}`));
+
+    freshInputs.forEach((input, idx) => {
+
+        input.addEventListener('input', function () {
+            // Forcer chiffre uniquement
+            const digit = this.value.replace(/[^0-9]/g, '');
+            this.value  = digit ? digit.slice(-1) : '';
+
+            syncWire();
+
+            // Passer à la case suivante
+            if (this.value && idx < 5) {
+                freshInputs[idx + 1].focus();
+            }
+
+            // Auto-submit si 6 chiffres
+            const full = getFullOtp.call({ inputs: freshInputs, map: Array.prototype.map });
+            const otp  = freshInputs.map(el => el.value).join('');
+            if (otp.length === 6) {
+                setTimeout(() => $wire.submitStep2(), 300);
+            }
+        });
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Backspace') {
+                if (this.value) {
+                    this.value = '';
+                    syncWire();
+                } else if (idx > 0) {
+                    freshInputs[idx - 1].focus();
+                    freshInputs[idx - 1].value = '';
+                    syncWire();
+                }
+                e.preventDefault();
+            }
+            if (e.key === 'ArrowLeft'  && idx > 0) freshInputs[idx - 1].focus();
+            if (e.key === 'ArrowRight' && idx < 5) freshInputs[idx + 1].focus();
+        });
+
+        input.addEventListener('paste', function (e) {
+            e.preventDefault();
+            const pasted = (e.clipboardData || window.clipboardData)
+                .getData('text')
+                .replace(/[^0-9]/g, '')
+                .slice(0, 6);
+
+            freshInputs.forEach((el, i) => {
+                el.value = pasted[i] || '';
+            });
+
+            syncWire();
+
+            const lastIdx = Math.min(pasted.length - 1, 5);
+            if (lastIdx >= 0) freshInputs[lastIdx].focus();
+
+            if (pasted.length === 6) {
+                setTimeout(() => $wire.submitStep2(), 300);
+            }
+        });
+
+        input.addEventListener('focus', function () {
+            this.select();
+        });
+    });
+
+    // ── Timer ─────────────────────────────────────────────
+    startOtpTimer();
+
+    // Réinitialiser sur renvoi OTP
+    $wire.on('otp-resent', () => {
+        freshInputs.forEach(el => { el.value = ''; });
+        syncWire();
+        freshInputs[0].focus();
+        startOtpTimer();
+    });
+
+    // Vider les cases sur erreur OTP
+    $wire.on('otp-clear', () => {
+        freshInputs.forEach(el => { el.value = ''; });
+        syncWire();
+        freshInputs[0].focus();
+    });
+
+    function syncWire() {
+        const val    = freshInputs.map(el => el.value).join('');
+        const hidden = document.getElementById('otpHiddenInput');
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+        setter.call(hidden, val);
+        hidden.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+}
+
+// ── Timer OTP ─────────────────────────────────────────────
+function startOtpTimer() {
+    clearInterval(otpTimerInterval);
+
+    const display   = document.getElementById('timerDisplay');
+    const resendBtn = document.getElementById('resendBtn');
+
+    if (!display) return;
+
+    let timeLeft = 300;
+    if (resendBtn) resendBtn.disabled = true;
+
+    otpTimerInterval = setInterval(() => {
+        timeLeft--;
+        const m = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+        const s = String(timeLeft % 60).padStart(2, '0');
+        display.textContent = `${m}:${s}`;
+
+        if (timeLeft <= 0) {
+            clearInterval(otpTimerInterval);
+            display.textContent = 'Expiré';
+            if (resendBtn) resendBtn.disabled = false;
+        }
+    }, 1000);
+}
+
+// ── Redirection step 3 ────────────────────────────────────
+$wire.on('login-success', () => {
+    const countEl = document.getElementById('redirectCount');
+    const barEl   = document.getElementById('redirectBar');
+    if (!countEl || !barEl) return;
+
+    let width = 0;
+    const tick = 100 / 30;
+
+    const interval = setInterval(() => {
+        width += tick;
+        barEl.style.width = Math.min(width, 100) + '%';
+
+        const remaining = Math.ceil(3 * (1 - width / 100));
+        countEl.textContent = Math.max(remaining, 0);
+
+        if (width >= 100) {
+            clearInterval(interval);
+            window.location.href = '{{ route('admin.home') }}';
+        }
+    }, 100);
+});
+</script>
+@endscript
 
 </div>
