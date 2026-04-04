@@ -11,7 +11,7 @@ class Customer extends Model
         'nom',
         'prenom',
         'dial_code',
-        'telephone',
+        'phone',
         'adresse',
         'montant_engagement',
         'date_adhesion',

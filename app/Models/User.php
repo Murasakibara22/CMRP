@@ -18,7 +18,7 @@ class User extends Authenticatable
         'prenom',
         'email',
         'dial_code',
-        'telephone',
+        'phone',
         'password',
         'status',
         'otp',

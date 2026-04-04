@@ -26,7 +26,7 @@
       </div>
       <div>
         <div class="ckpi-label">Total fidèles</div>
-        <div class="ckpi-value">{{ $this->kpis['total'] }}</div>
+        <div class="ckpi-value">{{ $kpis['total'] }}</div>
         <div class="ckpi-sub">Inscrits dans la base</div>
       </div>
     </div>
@@ -36,7 +36,7 @@
       </div>
       <div>
         <div class="ckpi-label">À jour</div>
-        <div class="ckpi-value">{{ $this->kpis['ajour'] }}</div>
+        <div class="ckpi-value">{{ $kpis['ajour'] }}</div>
         <div class="ckpi-sub">Cotisation mensuelle OK</div>
       </div>
     </div>
@@ -46,7 +46,7 @@
       </div>
       <div>
         <div class="ckpi-label">En retard</div>
-        <div class="ckpi-value">{{ $this->kpis['enRetard'] }}</div>
+        <div class="ckpi-value">{{ $kpis['enRetard'] }}</div>
         <div class="ckpi-sub">ou paiement partiel</div>
       </div>
     </div>
@@ -56,7 +56,7 @@
       </div>
       <div>
         <div class="ckpi-label">Sans engagement</div>
-        <div class="ckpi-value">{{ $this->kpis['sansEngagement'] }}</div>
+        <div class="ckpi-value">{{ $kpis['sansEngagement'] }}</div>
         <div class="ckpi-sub">Pas de mensuel souscrit</div>
       </div>
     </div>
@@ -133,60 +133,57 @@
               $statut         = $cotisationMois?->statut ?? ($customer->montant_engagement ? 'en_retard' : null);
               $montantDu      = $cotisationMois?->montant_restant ?? 0;
               $initiales      = strtoupper(substr($customer->prenom, 0, 1) . substr($customer->nom, 0, 1));
+              $avatarColors   = ['#405189','#0ab39c','#f06548','#f7b84b','#299cdb','#d4a843','#3577f1','#6559cc','#ea4c4c','#2dce89'];
+              $avatarColor    = $avatarColors[($customer->id - 1) % count($avatarColors)];
             @endphp
-            <tr>
+            <tr wire:click="openDetail({{ $customer->id }})" title="Voir le profil">
               <td>
-                <div class="cust-cell-name">
-                  <div class="cust-avatar">{{ $initiales }}</div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="cust-avatar" style="background:{{ $avatarColor }}">{{ $initiales }}</div>
                   <div>
-                    <div class="cn-name">{{ $customer->prenom }} {{ $customer->nom }}</div>
-                    <div class="cn-sub">{{ $customer->adresse ?? '—' }}</div>
+                    <div class="cust-name">{{ $customer->prenom }} {{ $customer->nom }}</div>
+                    <div class="cust-phone"><i class="ri-phone-line me-1"></i>{{ $customer->dial_code }} {{ $customer->telephone }}</div>
                   </div>
                 </div>
               </td>
-              <td>{{ $customer->dial_code }} {{ $customer->telephone }}</td>
+              <td><span style="font-size:12px;color:var(--msq-muted);">{{ $customer->adresse ?? '—' }}</span></td>
               <td>
                 @if($customer->montant_engagement)
-                  <span class="eng-badge">
-                    {{ number_format($customer->montant_engagement, 0, ',', ' ') }} FCFA/mois
-                  </span>
+                  <span class="cust-engagement">{{ number_format($customer->montant_engagement, 0, ',', ' ') }} FCFA/mois</span>
                 @else
-                  <span class="text-muted">—</span>
+                  <span style="color:var(--msq-muted);font-style:italic;">Aucun</span>
                 @endif
               </td>
-              <td>{{ $customer->date_adhesion->format('d/m/Y') }}</td>
+              <td><span class="cust-date"><i class="ri-calendar-line me-1"></i>{{ $customer->date_adhesion->format('d M Y') }}</span></td>
               <td>
                 @if(! $customer->montant_engagement)
-                  <span class="statut-badge libre">Libre</span>
+                  <span class="statut-pill sp-libre"><i class="ri-user-line"></i> Sans engagement</span>
                 @elseif($statut === 'a_jour')
-                  <span class="statut-badge ajour"><i class="ri-checkbox-circle-line me-1"></i>À jour</span>
+                  <span class="statut-pill sp-ajour"><i class="ri-checkbox-circle-line"></i> À jour</span>
                 @elseif($statut === 'partiel')
-                  <span class="statut-badge partiel"><i class="ri-time-line me-1"></i>Partiel</span>
+                  <span class="statut-pill sp-partiel"><i class="ri-error-warning-line"></i> Partiel</span>
                 @else
-                  <span class="statut-badge retard"><i class="ri-error-warning-line me-1"></i>En retard</span>
+                  <span class="statut-pill sp-retard"><i class="ri-time-line"></i> En retard</span>
                 @endif
               </td>
               <td>
                 @if($montantDu > 0)
-                  <span style="color:#f06548;font-weight:700;">
+                  <span style="font-size:12px;font-weight:700;color:var(--msq-danger);">
                     {{ number_format($montantDu, 0, ',', ' ') }} FCFA
                   </span>
                 @else
-                  <span class="text-muted">—</span>
+                  <span style="color:var(--msq-muted);font-size:12px;">—</span>
                 @endif
               </td>
-              <td>
-                <div class="action-btns">
-                  <button class="ab-btn ab-detail" wire:click="openDetail({{ $customer->id }})"
-                          title="Voir le détail">
+              <td wire:click.stop="">
+                <div class="tbl-actions">
+                  <button class="btn btn-soft-primary waves-effect" wire:click="openDetail({{ $customer->id }})" title="Voir détails">
                     <i class="ri-eye-line"></i>
                   </button>
-                  <button class="ab-btn ab-edit" wire:click="openEdit({{ $customer->id }})"
-                          title="Modifier">
+                  <button class="btn btn-soft-warning waves-effect" wire:click="openEdit({{ $customer->id }})" title="Modifier">
                     <i class="ri-edit-line"></i>
                   </button>
-                  <button class="ab-btn ab-delete" wire:click="confirmDelete({{ $customer->id }})"
-                          title="Supprimer">
+                  <button class="btn btn-soft-danger waves-effect" wire:click="confirmDelete({{ $customer->id }})" title="Supprimer">
                     <i class="ri-delete-bin-line"></i>
                   </button>
                 </div>
@@ -194,9 +191,11 @@
             </tr>
             @empty
             <tr>
-              <td colspan="7" class="text-center py-4 text-muted">
-                <i class="ri-group-line me-2" style="font-size:20px;"></i>
-                Aucun fidèle trouvé
+              <td colspan="7">
+                <div class="empty-state">
+                  <i class="ri-user-search-line"></i>
+                  <p>Aucun fidèle trouvé</p>
+                </div>
               </td>
             </tr>
             @endforelse
@@ -227,45 +226,61 @@
         $cotisationMois = $customer->cotisations->first();
         $statut         = $cotisationMois?->statut ?? ($customer->montant_engagement ? 'en_retard' : null);
         $initiales      = strtoupper(substr($customer->prenom, 0, 1) . substr($customer->nom, 0, 1));
+        $avatarColors   = ['#405189','#0ab39c','#f06548','#f7b84b','#299cdb','#d4a843','#3577f1','#6559cc','#ea4c4c','#2dce89'];
+        $avatarColor    = $avatarColors[($customer->id - 1) % count($avatarColors)];
+        $statusColors   = ['a_jour' => '#0ab39c', 'en_retard' => '#f06548', 'partiel' => '#f7b84b', 'libre' => '#878a99'];
+        $borderColor    = $customer->montant_engagement
+            ? ($statusColors[$statut] ?? '#878a99')
+            : '#878a99';
       @endphp
-      <div class="cust-card">
-        <div class="cc-header">
-          <div class="cust-avatar lg">{{ $initiales }}</div>
-          <div class="cc-actions">
-            <button class="ab-btn ab-edit" wire:click="openEdit({{ $customer->id }})">
-              <i class="ri-edit-line"></i>
-            </button>
-            <button class="ab-btn ab-delete" wire:click="confirmDelete({{ $customer->id }})">
-              <i class="ri-delete-bin-line"></i>
-            </button>
-          </div>
+      <div class="cust-card" style="border-top-color:{{ $borderColor }}" wire:click="openDetail({{ $customer->id }})">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div class="card-avatar" style="background:{{ $avatarColor }}">{{ $initiales }}</div>
+          {{-- statut pill --}}
+          @if(! $customer->montant_engagement)
+            <span class="statut-pill sp-libre"><i class="ri-user-line"></i> Sans engagement</span>
+          @elseif($statut === 'a_jour')
+            <span class="statut-pill sp-ajour"><i class="ri-checkbox-circle-line"></i> À jour</span>
+          @elseif($statut === 'partiel')
+            <span class="statut-pill sp-partiel"><i class="ri-error-warning-line"></i> Partiel</span>
+          @else
+            <span class="statut-pill sp-retard"><i class="ri-time-line"></i> En retard</span>
+          @endif
         </div>
-        <div class="cc-name">{{ $customer->prenom }} {{ $customer->nom }}</div>
-        <div class="cc-tel">{{ $customer->dial_code }} {{ $customer->telephone }}</div>
 
-        @if(! $customer->montant_engagement)
-          <span class="statut-badge libre">Libre</span>
-        @elseif($statut === 'a_jour')
-          <span class="statut-badge ajour"><i class="ri-checkbox-circle-line me-1"></i>À jour</span>
-        @elseif($statut === 'partiel')
-          <span class="statut-badge partiel"><i class="ri-time-line me-1"></i>Partiel</span>
-        @else
-          <span class="statut-badge retard"><i class="ri-error-warning-line me-1"></i>En retard</span>
-        @endif
+        <div class="card-name">{{ $customer->prenom }} {{ $customer->nom }}</div>
+        <div class="card-phone"><i class="ri-phone-line me-1"></i>{{ $customer->dial_code }} {{ $customer->telephone }}</div>
 
-        @if($customer->montant_engagement)
-        <div class="cc-eng">
-          {{ number_format($customer->montant_engagement, 0, ',', ' ') }} FCFA/mois
+        <div class="card-info-row">
+          <span class="ci-label"><i class="ri-map-pin-line me-1"></i>Adresse</span>
+          <span class="ci-value">{{ Str::limit($customer->adresse ?? '—', 18) }}</span>
         </div>
-        @endif
+        <div class="card-info-row">
+          <span class="ci-label"><i class="ri-money-cny-circle-line me-1"></i>Engagement</span>
+          <span class="ci-value" style="color:var(--msq-primary)">
+            {{ $customer->montant_engagement ? number_format($customer->montant_engagement, 0, ',', ' ') . ' FCFA' : 'Aucun' }}
+          </span>
+        </div>
+        <div class="card-info-row">
+          <span class="ci-label"><i class="ri-calendar-line me-1"></i>Adhésion</span>
+          <span class="ci-value">{{ $customer->date_adhesion->format('d M Y') }}</span>
+        </div>
 
-        <button class="cc-detail-btn" wire:click="openDetail({{ $customer->id }})">
-          <i class="ri-eye-line me-1"></i> Voir le profil
-        </button>
+        <div class="card-actions" wire:click.stop="">
+          <button class="btn btn-soft-primary waves-effect" wire:click="openDetail({{ $customer->id }})">
+            <i class="ri-eye-line me-1"></i>Détails
+          </button>
+          <button class="btn btn-soft-warning waves-effect" wire:click="openEdit({{ $customer->id }})">
+            <i class="ri-edit-line me-1"></i>Modifier
+          </button>
+        </div>
+
       </div>
       @empty
-      <div class="col-12 text-center text-muted py-4">
-        Aucun fidèle trouvé
+      <div class="empty-state" style="grid-column:1/-1">
+        <i class="ri-user-search-line"></i>
+        <p>Aucun fidèle trouvé</p>
       </div>
       @endforelse
     </div>
@@ -291,17 +306,16 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content" style="border:none;border-radius:16px;overflow:hidden;">
 
-      @if($this->detailCustomer)
+      @if($detailCustomer)
       @php
-        $dc        = $this->detailCustomer;
-        $initiales = strtoupper(substr($dc->prenom, 0, 1) . substr($dc->nom, 0, 1));
-        $statut    = $dc->statutGlobal();
-        $totalPaye = $dc->paiements->where('statut', 'success')->sum('montant');
-
-        // Calcul retard mensuel
+        $dc             = $detailCustomer;
+        $initiales      = strtoupper(substr($dc->prenom, 0, 1) . substr($dc->nom, 0, 1));
+        $statut         = $dc->statutGlobal();
+        $totalPaye      = $dc->paiements->where('statut', 'success')->sum('montant');
+        $avatarColors   = ['#405189','#0ab39c','#f06548','#f7b84b','#299cdb','#d4a843','#3577f1','#6559cc','#ea4c4c','#2dce89'];
+        $avatarColorDetail = $avatarColors[($dc->id - 1) % count($avatarColors)];
         $cotisationsEnRetard = $dc->cotisations
-            ->whereIn('statut', ['en_retard', 'partiel'])
-            ->where('typeCotisation.type', 'mensuel');
+            ->whereIn('statut', ['en_retard', 'partiel']);
         $totalDu = $cotisationsEnRetard->sum('montant_restant');
       @endphp
 
@@ -310,24 +324,24 @@
 
         <div class="mfh-badges">
           @if($statut === 'a_jour')
-            <span class="mfh-badge ajour"><i class="ri-checkbox-circle-line me-1"></i>À jour</span>
+            <span class="mfh-badge" style="background:rgba(10,179,156,.2);color:#0ab39c;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">✓ À jour</span>
           @elseif($statut === 'partiel')
-            <span class="mfh-badge partiel"><i class="ri-time-line me-1"></i>Partiel</span>
+            <span class="mfh-badge" style="background:rgba(247,184,75,.2);color:#f7b84b;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">◑ Partiel</span>
           @elseif($statut === 'en_retard')
-            <span class="mfh-badge retard"><i class="ri-error-warning-line me-1"></i>En retard</span>
+            <span class="mfh-badge" style="background:rgba(240,101,72,.2);color:#f06548;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">⚠ En retard</span>
           @else
-            <span class="mfh-badge libre">Sans engagement</span>
+            <span class="mfh-badge" style="background:rgba(135,138,153,.2);color:#878a99;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">○ Sans engagement</span>
           @endif
         </div>
 
         <div class="mfh-inner">
-          <div class="mfh-avatar">{{ $initiales }}</div>
+          <div class="mfh-avatar" style="background:{{ $avatarColorDetail }}">{{ $initiales }}</div>
           <div class="mfh-info">
             <div class="mfh-name">{{ $dc->prenom }} {{ $dc->nom }}</div>
             <div class="mfh-meta">
               <span><i class="ri-phone-line"></i> {{ $dc->dial_code }} {{ $dc->telephone }}</span>
               <span><i class="ri-map-pin-line"></i> {{ $dc->adresse ?? 'Non renseignée' }}</span>
-              <span><i class="ri-calendar-line"></i> {{ $dc->date_adhesion->format('d/m/Y') }}</span>
+              <span><i class="ri-calendar-line"></i> Adhérent depuis {{ $dc->date_adhesion->format('d M Y') }}</span>
             </div>
           </div>
         </div>
@@ -397,10 +411,10 @@
             <div class="detail-item">
               <div class="di-label"><i class="ri-checkbox-circle-line me-1"></i>Statut actuel</div>
               <div class="di-value">
-                @if($statut === 'a_jour') <span class="statut-badge ajour">À jour</span>
-                @elseif($statut === 'partiel') <span class="statut-badge partiel">Partiel</span>
-                @elseif($statut === 'en_retard') <span class="statut-badge retard">En retard</span>
-                @else <span class="statut-badge libre">Sans engagement</span>
+                @if($statut === 'a_jour') <span class="statut-pill sp-ajour"><i class="ri-checkbox-circle-line"></i> À jour</span>
+                @elseif($statut === 'partiel') <span class="statut-pill sp-partiel"><i class="ri-error-warning-line"></i> Partiel</span>
+                @elseif($statut === 'en_retard') <span class="statut-pill sp-retard"><i class="ri-time-line"></i> En retard</span>
+                @else <span class="statut-pill sp-libre"><i class="ri-user-line"></i> Sans engagement</span>
                 @endif
               </div>
             </div>
@@ -452,11 +466,11 @@
                   <td>{{ number_format($cot->montant_paye, 0, ',', ' ') }} FCFA</td>
                   <td>
                     @if($cot->statut === 'a_jour')
-                      <span class="statut-badge ajour">À jour</span>
+                      <span class="statut-pill sp-ajour"><i class="ri-checkbox-circle-line"></i> À jour</span>
                     @elseif($cot->statut === 'partiel')
-                      <span class="statut-badge partiel">Partiel</span>
+                      <span class="statut-pill sp-partiel"><i class="ri-error-warning-line"></i> Partiel</span>
                     @else
-                      <span class="statut-badge retard">En retard</span>
+                      <span class="statut-pill sp-retard"><i class="ri-time-line"></i> En retard</span>
                     @endif
                   </td>
                   <td>{{ $cot->mode_paiement ?? '—' }}</td>
@@ -473,21 +487,27 @@
 
         {{-- Panel Documents --}}
         <div class="fidele-tab-panel" id="tab-documents">
-          @forelse($dc->documents as $doc)
-          <div class="doc-item">
-            <i class="ri-file-line me-2"></i>
-            <div>
-              <div class="doc-name">{{ $doc->libelle }}</div>
-              <div class="doc-type text-muted" style="font-size:12px;">{{ $doc->type_document }}</div>
+          <div class="doc-list">
+            @forelse($dc->documents as $doc)
+            <div class="doc-item">
+              <div class="doc-icon" style="background:rgba(64,81,137,.10);color:#405189">
+                <i class="ri-file-text-line"></i>
+              </div>
+              <div>
+                <div class="doc-name">{{ $doc->libelle }}</div>
+                <div class="doc-type">{{ $doc->type_document }}</div>
+              </div>
+              <a href="{{ $doc->url }}" target="_blank" class="btn btn-sm btn-soft-primary waves-effect ms-auto">
+                <i class="ri-download-line"></i>
+              </a>
             </div>
-            <a href="{{ $doc->url }}" target="_blank" class="btn btn-soft-primary btn-sm ms-auto">
-              <i class="ri-eye-line"></i>
-            </a>
+            @empty
+            <div style="text-align:center;padding:20px;color:var(--msq-muted);font-size:13px;">
+              <i class="ri-folder-open-line" style="font-size:32px;display:block;margin-bottom:8px;opacity:.4"></i>
+              Aucun document enregistré
+            </div>
+            @endforelse
           </div>
-          @empty
-          <div class="text-center text-muted py-3">Aucun document</div>
-          @endforelse
-
           <div class="mt-3">
             <button class="btn btn-soft-primary btn-sm waves-effect">
               <i class="ri-upload-cloud-line me-1"></i> Ajouter un document
@@ -763,9 +783,6 @@ Livewire.on('swal:modalGetInfo_message_not_timer', (payload) => {
 @endpush
 
 </div>
-
-
-
 
 @push('styles')
 <style>
