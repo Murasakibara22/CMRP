@@ -44,7 +44,7 @@
                         </a>
                     </li>
                  <li class="nav-item">
-                        <a class="nav-link menu-link " href="#">
+                        <a class="nav-link menu-link   {{ request()->routeIs('admin.cotisations.index') ? 'active' : ''}}" href="{{ route('admin.cotisations.index') }}">
                             <i class="ri-timer-fill"></i> <span data-key="t-widgets">Cotisations</span>
                         </a>
                     </li>
