@@ -8,6 +8,10 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::get('/test', function () {
+    return view('test');
+});
+
 Route::prefix('auth')->group(function () {
 
 
@@ -30,6 +34,7 @@ Route::middleware('auth')->group(function () {
         Route::livewire('fideles', 'admin::fidele.index')->name('membres.index');
         Route::livewire('type-cotisations', 'admin::typecotisation.index')->name('type-cotisations.index');
         Route::livewire('cotisations', 'admin::cotisation.index')->name('cotisations.index');
+        Route::livewire('paiements', 'admin::paiement.index')->name('paiements.index');
 
     });
 });

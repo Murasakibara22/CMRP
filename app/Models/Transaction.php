@@ -10,10 +10,13 @@ class Transaction extends Model
 
     protected $table = 'transaction';
 
+    //status transaction : en_attente, success, failed, cancelled, expired
+
     protected $fillable = [
         'type',
         'source',
         'source_id',
+        'status',
         'montant',
         'libelle',
         'date_transaction',

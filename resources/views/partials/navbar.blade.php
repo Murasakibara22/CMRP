@@ -39,8 +39,8 @@
                     </a>
                 </li> <!-- end Dashboard Menu -->
                  <li class="nav-item">
-                        <a class="nav-link menu-link {{ request()->routeIs('admin.type-cotisations.index') ? 'active' : ''}}" href="{{ route('admin.type-cotisations.index') }}">
-                            <i class="ri-timer-fill"></i> <span data-key="t-widgets">Types de Cotisations</span>
+                        <a class="nav-link menu-link {{ request()->routeIs('admin.membres.index') ? 'active' : ''}}" href="{{ route('admin.membres.index') }}">
+                            <i class="ri-team-fill"></i> <span data-key="t-widgets">Fidèles</span>
                         </a>
                     </li>
                  <li class="nav-item">
@@ -62,7 +62,7 @@
 
                     <li class="nav-item">
                         <a class="nav-link menu-link " href="#">
-                            <i class="ri-table-fill"></i> <span data-key="t-widgets">Prêts</span>
+                            <i class="ri-table-fill"></i> <span data-key="t-widgets">Dépenses</span>
                         </a>
                     </li>
 
@@ -77,7 +77,7 @@
 
 
                 <li class="nav-item">
-                    <a class="nav-link menu-link " href="#">
+                    <a class="nav-link menu-link {{ request()->routeIs('admin.paiements.index') ? 'active' : ''}}" href="{{ route('admin.paiements.index') }}">
                         <i class=" ri-user-settings-fill"></i> <span data-key="t-widgets">Paiements</span>
                     </a>
                 </li>
@@ -86,19 +86,33 @@
 
 
                     <li class="nav-item">
-                        <a class="nav-link menu-link  " href="#">
-                            <i class="r ri-menu-add-fill"></i> <span data-key="t-widgets"> Gestionnaires</span>
+                        <a class="nav-link menu-link " href="#">
+                            <i class="r ri-menu-add-fill"></i> <span data-key="t-widgets"> Type de dépenses</span>
                         </a>
                     </li>
+
 
 
 
                     <li class="nav-item">
-                        <a class="nav-link menu-link {{ request()->routeIs('admin.membres.index') ? 'active' : ''}}" href="{{ route('admin.membres.index') }}">
-                            <i class="ri-team-fill"></i> <span data-key="t-widgets">Fidèles</span>
+                        <a class="nav-link menu-link {{ request()->routeIs('admin.type-cotisations.index') ? 'active' : ''}}" href="{{ route('admin.type-cotisations.index') }}">
+                            <i class="ri-timer-fill"></i> <span data-key="t-widgets">Types de Cotisations</span>
                         </a>
                     </li>
 
+
+                    <li class="nav-item">
+                        <a class="nav-link menu-link " href="#">
+                            <i class="ri-timer-fill"></i> <span data-key="t-widgets">Coût d'engagement</span>
+                        </a>
+                    </li>
+
+
+                    <li class="nav-item">
+                        <a class="nav-link menu-link " href="#">
+                            <i class="ri-timer-fill"></i> <span data-key="t-widgets">Bilan</span>
+                        </a>
+                    </li>
 
 
 
@@ -161,7 +175,7 @@
 
                 <li class="nav-item">
                     <a class="nav-link menu-link " href="#">
-                        <i class=" ri-shield-user-fill"></i> <span data-key="t-widgets">Settings</span>
+                        <i class=" ri-shield-user-fill"></i> <span data-key="t-widgets">Administrateurs & roles</span>
                     </a>
                 </li>
 

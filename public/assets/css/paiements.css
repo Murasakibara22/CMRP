@@ -1,0 +1,264 @@
+/* ============================================================
+   MOSQUÉE – Paiements CSS
+   Pattern identique à customers.css / cotisation.css
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --pay-primary:      #405189;
+  --pay-primary-rgb:  64,81,137;
+  --pay-primary-soft: rgba(64,81,137,.08);
+  --pay-primary-dark: #2d3a63;
+  --pay-accent:       #0ab39c;
+  --pay-accent-soft:  rgba(10,179,156,.10);
+  --pay-gold:         #d4a843;
+  --pay-danger:       #f06548;
+  --pay-warning:      #f7b84b;
+  --pay-info:         #299cdb;
+  --pay-surface:      #ffffff;
+  --pay-bg:           #f3f6f9;
+  --pay-border:       #e9ebec;
+  --pay-text:         #495057;
+  --pay-muted:        #878a99;
+  --pay-shadow-sm:    0 2px 8px rgba(64,81,137,.07);
+  --pay-shadow-md:    0 4px 20px rgba(64,81,137,.13);
+  --pay-shadow-lg:    0 8px 32px rgba(64,81,137,.18);
+  --pay-radius:       14px;
+  --pay-radius-sm:    10px;
+  --pay-mono:         'JetBrains Mono', monospace;
+}
+
+body { font-family: 'Nunito', sans-serif; }
+.page-content { background: var(--pay-bg); }
+
+/* ── Animations ─────────────────────────────────────────── */
+.fu { animation: fuA .42s ease both; }
+.fu-1{animation-delay:.05s} .fu-2{animation-delay:.10s}
+.fu-3{animation-delay:.15s} .fu-4{animation-delay:.20s}
+.fu-5{animation-delay:.25s}
+@keyframes fuA { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── Page Header ─────────────────────────────────────────── */
+.pay-page-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:24px; flex-wrap:wrap; gap:12px;
+}
+.pay-page-header h4 { font-size:20px; font-weight:800; color:#212529; margin:0; }
+
+/* ── KPI Strip ──────────────────────────────────────────── */
+.pay-kpi-strip {
+  display:grid; grid-template-columns:repeat(5,1fr);
+  gap:12px; margin-bottom:22px;
+}
+@media(max-width:1199px){ .pay-kpi-strip{ grid-template-columns:repeat(3,1fr); } }
+@media(max-width:767px) { .pay-kpi-strip{ grid-template-columns:repeat(2,1fr); } }
+
+.pay-kpi {
+  background:var(--pay-surface); border:1px solid var(--pay-border);
+  border-radius:var(--pay-radius); padding:16px 18px;
+  display:flex; align-items:center; gap:12px;
+  box-shadow:var(--pay-shadow-sm);
+  transition:transform .2s, box-shadow .2s;
+  position:relative; overflow:hidden;
+}
+.pay-kpi:hover { transform:translateY(-3px); box-shadow:var(--pay-shadow-md); }
+.pay-kpi::after {
+  content:''; position:absolute; bottom:0; left:0; right:0;
+  height:3px; border-radius:0 0 var(--pay-radius) var(--pay-radius);
+  opacity:0; transition:opacity .2s;
+}
+.pay-kpi:hover::after { opacity:1; }
+.pay-kpi.pk-total::after   { background:var(--pay-primary); }
+.pay-kpi.pk-success::after { background:var(--pay-accent); }
+.pay-kpi.pk-pending::after { background:var(--pay-warning); }
+.pay-kpi.pk-failed::after  { background:var(--pay-danger); }
+.pay-kpi.pk-montant::after { background:var(--pay-gold); }
+
+.pay-kpi .pki-icon { width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.pay-kpi .pki-label { font-size:10px; font-weight:700; color:var(--pay-muted); text-transform:uppercase; letter-spacing:.7px; }
+.pay-kpi .pki-val   { font-size:22px; font-weight:900; color:#212529; line-height:1.15; }
+.pay-kpi .pki-sub   { font-size:10px; color:var(--pay-muted); margin-top:2px; }
+
+/* ── Status Tabs ─────────────────────────────────────────── */
+.pay-tabs {
+  display:flex; gap:6px; flex-wrap:wrap;
+  background:var(--pay-surface); border:1px solid var(--pay-border);
+  border-radius:var(--pay-radius); padding:10px 14px;
+  box-shadow:var(--pay-shadow-sm); margin-bottom:16px; align-items:center;
+}
+.pay-tabs .tab-label { font-size:11px; font-weight:700; color:var(--pay-muted); text-transform:uppercase; letter-spacing:.7px; margin-right:6px; flex-shrink:0; }
+.pay-tab {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 14px; border-radius:20px; font-size:12px; font-weight:700;
+  border:1.5px solid var(--pay-border); background:transparent; color:var(--pay-muted);
+  cursor:pointer; transition:all .18s; white-space:nowrap;
+}
+.pay-tab:hover { border-color:var(--pay-primary); color:var(--pay-primary); background:var(--pay-primary-soft); }
+.pay-tab.active.tab-tous    { background:var(--pay-primary); border-color:var(--pay-primary); color:#fff; }
+.pay-tab.active.tab-success { background:var(--pay-accent);  border-color:var(--pay-accent);  color:#fff; }
+.pay-tab.active.tab-pending { background:var(--pay-warning); border-color:var(--pay-warning); color:#212529; }
+.pay-tab.active.tab-failed  { background:var(--pay-danger);  border-color:var(--pay-danger);  color:#fff; }
+.pay-tab .tab-count { background:rgba(255,255,255,.25); border-radius:20px; padding:1px 6px; font-size:10px; }
+.pay-tab:not(.active) .tab-count { background:rgba(135,138,153,.12); color:var(--pay-muted); }
+
+/* ── Toolbar ─────────────────────────────────────────────── */
+.pay-toolbar {
+  background:var(--pay-surface); border:1px solid var(--pay-border);
+  border-radius:var(--pay-radius); padding:12px 16px;
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  box-shadow:var(--pay-shadow-sm); margin-bottom:16px;
+}
+.pay-toolbar .sw { position:relative; flex:1; min-width:200px; }
+.pay-toolbar .sw i { position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:16px; color:var(--pay-muted); }
+.pay-toolbar .sw input {
+  padding-left:36px; border-radius:9px; border:1.5px solid var(--pay-border);
+  height:38px; font-size:13px; background:var(--pay-bg); width:100%;
+  font-family:'Nunito',sans-serif; transition:all .2s;
+}
+.pay-toolbar .sw input:focus { border-color:var(--pay-primary); background:#fff; box-shadow:0 0 0 3px rgba(64,81,137,.08); outline:none; }
+.pay-sel {
+  border:1.5px solid var(--pay-border); border-radius:9px; height:38px;
+  padding:0 10px; font-size:12px; font-weight:600; color:var(--pay-text);
+  background:var(--pay-bg); font-family:'Nunito',sans-serif; cursor:pointer; min-width:130px;
+}
+.pay-sel:focus { outline:none; border-color:var(--pay-primary); }
+
+/* ── Table ───────────────────────────────────────────────── */
+.pay-table-card {
+  background:var(--pay-surface); border:1px solid var(--pay-border);
+  border-radius:var(--pay-radius); box-shadow:var(--pay-shadow-sm);
+  overflow:hidden; margin-bottom:24px;
+}
+.pay-table { width:100%; border-collapse:separate; border-spacing:0; }
+.pay-table thead th {
+  background:rgba(64,81,137,.04); font-size:10px; font-weight:800;
+  color:var(--pay-muted); text-transform:uppercase; letter-spacing:.8px;
+  padding:12px 14px; border-bottom:2px solid var(--pay-border); white-space:nowrap;
+}
+.pay-table tbody tr { transition:background .12s; cursor:pointer; }
+.pay-table tbody tr:hover { background:rgba(64,81,137,.025); }
+.pay-table tbody tr.row-success:hover { background:rgba(10,179,156,.04); }
+.pay-table tbody tr.row-pending:hover { background:rgba(247,184,75,.04); }
+.pay-table tbody tr.row-failed:hover  { background:rgba(240,101,72,.04); }
+.pay-table tbody td { padding:11px 14px; border-bottom:1px solid var(--pay-border); vertical-align:middle; font-size:12px; }
+.pay-table tbody tr:last-child td { border-bottom:none; }
+.pay-table tbody tr.row-success td:first-child { border-left:3px solid var(--pay-accent); }
+.pay-table tbody tr.row-pending td:first-child  { border-left:3px solid var(--pay-warning); }
+.pay-table tbody tr.row-failed td:first-child   { border-left:3px solid var(--pay-danger); }
+.pay-table tbody tr.row-refund td:first-child   { border-left:3px solid var(--pay-info); }
+
+.pay-avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; flex-shrink:0; }
+.pay-fidele-name  { font-weight:700; color:#212529; font-size:12px; }
+.pay-fidele-phone { font-size:10px; color:var(--pay-muted); }
+
+.pay-ref { font-family:var(--pay-mono); font-size:11px; color:var(--pay-primary); font-weight:600; background:var(--pay-primary-soft); padding:2px 7px; border-radius:5px; display:inline-block; }
+.pay-montant { font-family:var(--pay-mono); font-size:13px; font-weight:800; color:#212529; }
+
+.pay-pill { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+.pp-success { background:rgba(10,179,156,.12);  color:#0ab39c; }
+.pp-pending  { background:rgba(247,184,75,.12);  color:#d4870a; }
+.pp-failed   { background:rgba(240,101,72,.10);  color:#f06548; }
+.pp-refund   { background:rgba(41,156,219,.10);  color:#299cdb; }
+
+.pay-mode { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:600; padding:2px 8px; border-radius:6px; white-space:nowrap; }
+.pm-mm  { color:#0ab39c; background:rgba(10,179,156,.08); }
+.pm-esp { color:#f7b84b; background:rgba(247,184,75,.10); }
+.pm-vir { color:#405189; background:rgba(64,81,137,.08); }
+
+.pay-actions { display:flex; gap:4px; }
+.pay-actions .btn { width:28px; height:28px; padding:0; display:flex; align-items:center; justify-content:center; font-size:14px; border-radius:7px; }
+
+/* ── Pagination ──────────────────────────────────────────── */
+.pay-pagination { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-top:1px solid var(--pay-border); flex-wrap:wrap; gap:10px; }
+.pay-pag-info { font-size:12px; color:var(--pay-muted); }
+.pay-pag-btns { display:flex; gap:4px; }
+.pay-pag-btn { width:30px; height:30px; display:flex; align-items:center; justify-content:center; border:1.5px solid var(--pay-border); border-radius:7px; background:#fff; font-size:12px; font-weight:700; color:var(--pay-text); cursor:pointer; transition:all .15s; }
+.pay-pag-btn.active, .pay-pag-btn:hover { background:var(--pay-primary); border-color:var(--pay-primary); color:#fff; }
+.pay-pag-btn:disabled { opacity:.4; pointer-events:none; }
+
+/* ── Graphs ──────────────────────────────────────────────── */
+.pay-graphs-grid { display:grid; grid-template-columns:1.4fr 1fr; gap:16px; margin-bottom:24px; }
+@media(max-width:991px){ .pay-graphs-grid{ grid-template-columns:1fr; } }
+.pay-graph-card { background:var(--pay-surface); border:1px solid var(--pay-border); border-radius:var(--pay-radius); box-shadow:var(--pay-shadow-sm); padding:20px; }
+.pgc-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; }
+.pgc-title { font-size:14px; font-weight:800; color:#212529; margin:0; }
+.pgc-sub   { font-size:11px; color:var(--pay-muted); margin:3px 0 0; }
+.pgc-badge { font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; background:rgba(10,179,156,.10); color:#0ab39c; white-space:nowrap; }
+
+/* ══════════════════════════════════════════════════════════
+   MODAL DÉTAIL PAIEMENT — même pattern que modalDetailTC
+══════════════════════════════════════════════════════════ */
+#modalDetailPaiement .modal-dialog { max-width:620px; }
+
+.pay-modal-header {
+  padding:24px 24px 48px; position:relative; overflow:hidden;
+}
+.pay-modal-header::before {
+  content:''; position:absolute; inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M24 0L30 12L44 12L33 19L37 31L24 24L11 31L15 19L4 12L18 12z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size:48px 48px;
+}
+.pay-modal-header .pmh-close {
+  position:absolute; top:14px; right:14px; z-index:3;
+  width:30px; height:30px; border-radius:50%;
+  background:rgba(255,255,255,.15); border:none; color:#fff; font-size:17px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:background .2s;
+}
+.pay-modal-header .pmh-close:hover { background:rgba(255,255,255,.25); }
+.pay-modal-header .pmh-inner { position:relative; z-index:2; display:flex; align-items:flex-end; gap:14px; }
+.pay-modal-header .pmh-icon {
+  width:56px; height:56px; border-radius:14px; background:rgba(255,255,255,.15);
+  display:flex; align-items:center; justify-content:center; font-size:26px;
+  border:2px solid rgba(255,255,255,.2); box-shadow:0 6px 20px rgba(0,0,0,.18); flex-shrink:0;
+}
+.pay-modal-header .pmh-name { font-size:20px; font-weight:800; color:#fff; margin-bottom:4px; }
+.pay-modal-header .pmh-meta { display:flex; gap:12px; flex-wrap:wrap; }
+.pay-modal-header .pmh-meta span { font-size:11px; color:rgba(255,255,255,.65); display:flex; align-items:center; gap:4px; }
+
+.pay-modal-stats {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:10px; padding:0 22px;
+  margin-top:-24px; position:relative; z-index:10; margin-bottom:20px;
+}
+.pay-ms-box { background:var(--pay-surface); border:1px solid var(--pay-border); border-radius:11px; padding:12px 14px; box-shadow:var(--pay-shadow-md); text-align:center; }
+.pay-ms-box .pmsb-v { font-size:14px; font-weight:800; color:#212529; }
+.pay-ms-box .pmsb-l { font-size:10px; color:var(--pay-muted); margin-top:2px; }
+
+.pay-modal-body { padding:0 22px 22px; }
+.pay-section-title {
+  font-size:10px; font-weight:800; color:var(--pay-muted); text-transform:uppercase;
+  letter-spacing:1px; margin-bottom:12px; padding-bottom:7px;
+  border-bottom:1px dashed var(--pay-border); display:flex; align-items:center; gap:8px;
+}
+.pay-section-title::before { content:''; width:3px; height:12px; background:var(--pay-primary); border-radius:2px; display:inline-block; flex-shrink:0; }
+.pay-section-title.accent::before { background:var(--pay-accent); }
+
+.pay-detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+@media(max-width:576px){ .pay-detail-grid{ grid-template-columns:1fr; } }
+.pay-detail-item { background:var(--pay-bg); border-radius:9px; padding:11px 14px; }
+.pay-detail-item.full { grid-column:1/-1; }
+.pay-detail-item .pdi-l { font-size:10px; font-weight:700; color:var(--pay-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+.pay-detail-item .pdi-v { font-size:13px; font-weight:700; color:#212529; }
+
+.pay-hist-list { display:flex; flex-direction:column; gap:6px; }
+.pay-hist-item { display:flex; align-items:center; gap:10px; background:var(--pay-bg); border-radius:9px; padding:10px 12px; border-left:3px solid var(--pay-border); }
+.pay-hist-item.hi-success { border-left-color:var(--pay-accent); }
+.pay-hist-item.hi-failed   { border-left-color:var(--pay-danger); }
+.pay-hist-item .phi-icon { width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.pay-hist-item .phi-body { flex:1; }
+.pay-hist-item .phi-op   { font-size:12px; font-weight:700; color:#212529; }
+.pay-hist-item .phi-meta { font-size:10px; color:var(--pay-muted); margin-top:2px; }
+.pay-hist-item .phi-amt  { font-family:var(--pay-mono); font-size:13px; font-weight:800; }
+
+.pay-modal-footer { border-top:1px solid var(--pay-border); padding:14px 22px; display:flex; align-items:center; justify-content:space-between; gap:10px; background:rgba(64,81,137,.02); }
+.btn-pay-primary { background:linear-gradient(135deg,var(--pay-primary),#3577f1); border:none; border-radius:9px; color:#fff; font-size:13px; font-weight:700; padding:9px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:all .22s; font-family:'Nunito',sans-serif; }
+.btn-pay-primary:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(64,81,137,.35); }
+.btn-pay-secondary { border:1.5px solid var(--pay-border); border-radius:9px; background:#fff; color:var(--pay-text); font-size:13px; font-weight:700; padding:9px 18px; cursor:pointer; transition:all .2s; font-family:'Nunito',sans-serif; }
+.btn-pay-secondary:hover { border-color:var(--pay-primary); color:var(--pay-primary); background:var(--pay-primary-soft); }
+
+.pay-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; color:var(--pay-muted); }
+.pay-empty i { font-size:44px; margin-bottom:10px; opacity:.35; display:block; }
+.pay-empty p { font-size:14px; font-weight:600; margin:0; }
+
+@media(max-width:576px){ .pay-kpi-strip{ grid-template-columns:1fr 1fr; } }
