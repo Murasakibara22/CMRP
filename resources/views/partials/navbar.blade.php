@@ -61,7 +61,7 @@
 
 
                     <li class="nav-item">
-                        <a class="nav-link menu-link " href="#">
+                        <a class="nav-link menu-link {{ request()->routeIs('admin.depenses.index') ? 'active' : '' }}" href="{{ route('admin.depenses.index') }}">
                             <i class="ri-table-fill"></i> <span data-key="t-widgets">Dépenses</span>
                         </a>
                     </li>
@@ -86,7 +86,7 @@
 
 
                     <li class="nav-item">
-                        <a class="nav-link menu-link " href="#">
+                        <a class="nav-link menu-link {{ request()->routeIs('admin.type-depenses.index') ? 'active' : '' }}" href="{{ route('admin.type-depenses.index') }}">
                             <i class="r ri-menu-add-fill"></i> <span data-key="t-widgets"> Type de dépenses</span>
                         </a>
                     </li>
@@ -109,7 +109,7 @@
 
 
                     <li class="nav-item">
-                        <a class="nav-link menu-link " href="#">
+                        <a class="nav-link menu-link {{ request()->routeIs('admin.bilan.index') ? 'active' : '' }}" href="{{ route('admin.bilan.index') }}">
                             <i class="ri-timer-fill"></i> <span data-key="t-widgets">Bilan</span>
                         </a>
                     </li>

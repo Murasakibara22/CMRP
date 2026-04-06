@@ -35,6 +35,9 @@ Route::middleware('auth')->group(function () {
         Route::livewire('type-cotisations', 'admin::typecotisation.index')->name('type-cotisations.index');
         Route::livewire('cotisations', 'admin::cotisation.index')->name('cotisations.index');
         Route::livewire('paiements', 'admin::paiement.index')->name('paiements.index');
+        Route::livewire('bilan', 'admin::bilan.index')->name('bilan.index');
+        Route::livewire('type-depenses', 'admin::typedepense.index')->name('type-depenses.index');
+        Route::livewire('depenses', 'admin::depense.index')->name('depenses.index');
 
     });
 });
