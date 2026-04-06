@@ -87,9 +87,7 @@
                 <span style="font-size:13px;font-weight:700;color:#212529">{{ $td->libelle }}</span>
               </div>
             </td>
-            <td>
-              <span style="font-size:12px;color:var(--td-muted)">{{ $td->description ?? '—' }}</span>
-            </td>
+            <td><span style="font-size:12px;color:var(--td-muted)">{{ $td->description ?? '—' }}</span></td>
             <td>
               <span style="font-size:13px;font-weight:700;color:#405189">{{ $td->depenses_count }}</span>
               <span style="font-size:10px;color:var(--td-muted);margin-left:4px">opération(s)</span>
@@ -145,14 +143,20 @@
 </div>
 
 
-{{-- ══ MODAL AJOUT / MODIFICATION ════════════════════════════ --}}
+{{-- ══════════════════════════════════════════════════════════
+     MODAL AJOUT / MODIFICATION TYPE DÉPENSE
+     Pattern scroll : div(overflow-y:auto) + footer HORS du div
+══════════════════════════════════════════════════════════ --}}
 <div class="modal fade" id="modalTypeDepense" tabindex="-1" aria-hidden="true" wire:ignore.self>
   <div class="modal-dialog" style="max-width:520px">
-    <div class="modal-content" style="border:none;border-radius:16px;overflow:hidden;">
+    <div class="modal-content" style="border:none;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;max-height:90vh">
 
-      <div class="td-modal-header">
+      {{-- Header fixe --}}
+      <div class="td-modal-header" style="flex-shrink:0">
         <div class="tdmh-left">
-          <div class="tdmh-icon"><i class="{{ $editId ? 'ri-edit-line' : 'ri-add-circle-line' }}"></i></div>
+          <div class="tdmh-icon">
+            <i class="{{ $editId ? 'ri-edit-line' : 'ri-add-circle-line' }}"></i>
+          </div>
           <div>
             <p class="tdmh-title">{{ $editId ? 'Modifier le type' : 'Nouveau type de dépense' }}</p>
             <p class="tdmh-sub">Catégoriser vos dépenses de la mosquée</p>
@@ -161,59 +165,65 @@
         <button class="td-modal-close" data-bs-dismiss="modal"><i class="ri-close-line"></i></button>
       </div>
 
-      <div style="overflow-y:auto;max-height:calc(90vh - 140px);">
-        <div style="padding:24px 24px 0">
+      {{-- Zone scrollable SEULEMENT --}}
+      <div style="overflow-y:auto;flex:1;padding:24px 24px 0">
 
-          @if($errors->any())
-          <div style="background:rgba(240,101,72,.06);border:1px solid rgba(240,101,72,.25);border-left:3px solid #f06548;border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:16px;">
-            @foreach($errors->all() as $err)
-              <div style="font-size:12px;color:#c44a2e;">• {{ $err }}</div>
-            @endforeach
-          </div>
-          @endif
-
-          <div class="mb-3">
-            <label class="form-label-td">Libellé <span class="req">*</span></label>
-            <div class="input-td-wrap">
-              <i class="ri-text itw-icon"></i>
-              <input type="text" class="input-td {{ $errors->has('libelle') ? 'is-err' : '' }}"
-                     wire:model="libelle" placeholder="ex : Électricité, Entretien, Salaires…">
-            </div>
-            @error('libelle') <div class="err-td show">{{ $message }}</div> @enderror
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label-td">Description</label>
-            <textarea class="input-td" wire:model="description" rows="3"
-                      placeholder="Description optionnelle de ce type de dépense…"
-                      style="height:auto;padding:10px 14px;resize:vertical;min-height:80px"></textarea>
-          </div>
-
-          <div class="mb-4">
-            <label class="form-label-td">Statut</label>
-            <div style="display:flex;gap:10px">
-              <button type="button"
-                      class="td-status-btn {{ $status === 'actif' ? 'selected-actif' : '' }}"
-                      wire:click="$set('status','actif')">
-                <i class="ri-checkbox-circle-line" style="color:#0ab39c"></i> Actif
-              </button>
-              <button type="button"
-                      class="td-status-btn {{ $status === 'inactif' ? 'selected-inactif' : '' }}"
-                      wire:click="$set('status','inactif')">
-                <i class="ri-forbid-line" style="color:#878a99"></i> Inactif
-              </button>
-            </div>
-          </div>
-
+        @if($errors->any())
+        <div style="background:rgba(240,101,72,.06);border:1px solid rgba(240,101,72,.25);border-left:3px solid #f06548;border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:16px;">
+          @foreach($errors->all() as $err)
+            <div style="font-size:12px;color:#c44a2e;">• {{ $err }}</div>
+          @endforeach
         </div>
+        @endif
+
+        <div class="mb-3">
+          <label class="form-label-td">Libellé <span class="req">*</span></label>
+          <div class="input-td-wrap">
+            <i class="ri-text itw-icon"></i>
+            <input type="text"
+                   class="input-td {{ $errors->has('libelle') ? 'is-err' : '' }}"
+                   wire:model="libelle"
+                   placeholder="ex : Électricité, Entretien, Salaires…">
+          </div>
+          @error('libelle') <div class="err-td show">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label-td">Description</label>
+          <textarea class="input-td"
+                    wire:model="description"
+                    rows="3"
+                    placeholder="Description optionnelle de ce type de dépense…"
+                    style="height:auto;padding:10px 14px;resize:vertical;min-height:80px"></textarea>
+        </div>
+
+        <div class="mb-3" style="padding-bottom:8px">
+          <label class="form-label-td">Statut</label>
+          <div style="display:flex;gap:10px">
+            <button type="button"
+                    class="td-status-btn {{ $status === 'actif' ? 'selected-actif' : '' }}"
+                    wire:click="$set('status','actif')">
+              <i class="ri-checkbox-circle-line" style="color:#0ab39c"></i> Actif
+            </button>
+            <button type="button"
+                    class="td-status-btn {{ $status === 'inactif' ? 'selected-inactif' : '' }}"
+                    wire:click="$set('status','inactif')">
+              <i class="ri-forbid-line" style="color:#878a99"></i> Inactif
+            </button>
+          </div>
+        </div>
+
       </div>
 
-      <div class="td-modal-footer">
-        <button class="btn-td-secondary" data-bs-dismiss="modal"><i class="ri-close-line me-1"></i> Annuler</button>
+      {{-- Footer HORS du scrollable — toujours visible --}}
+      <div class="td-modal-footer" style="flex-shrink:0">
+        <button class="btn-td-secondary" data-bs-dismiss="modal">
+          <i class="ri-close-line me-1"></i> Annuler
+        </button>
         <button class="btn-td-primary" wire:click="save" wire:loading.attr="disabled">
           <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
           <i class="ri-save-line" wire:loading.remove wire:target="save"></i>
-          <span wire:loading.remove wire:target="save"> {{ $editId ? 'Enregistrer' : 'Créer' }}</span>
+          <span wire:loading.remove wire:target="save">{{ $editId ? 'Enregistrer' : 'Créer' }}</span>
           <span wire:loading wire:target="save">Enregistrement…</span>
         </button>
       </div>
@@ -268,4 +278,3 @@ Livewire.on('swal:modalGetInfo_message_not_timer', (payload) => {
 </style>
 <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
 @endpush
-

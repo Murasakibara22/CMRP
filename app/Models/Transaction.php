@@ -39,6 +39,7 @@ class Transaction extends Model
         };
     }
 
+
     // ─── Scopes ──────────────────────────────────────────────
 
     public function scopeEntrees($query)
