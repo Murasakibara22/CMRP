@@ -38,6 +38,7 @@ Route::middleware('auth')->group(function () {
         Route::livewire('bilan', 'admin::bilan.index')->name('bilan.index');
         Route::livewire('type-depenses', 'admin::typedepense.index')->name('type-depenses.index');
         Route::livewire('depenses', 'admin::depense.index')->name('depenses.index');
+        Route::livewire('users', 'admin::user.index')->name('users.index');
 
     });
 });

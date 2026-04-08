@@ -97,7 +97,7 @@
             </div>
 
             <div style="text-align: center;">
-                <a href="{{ url('/login') }}" class="cta-button">
+                <a href="{{ url('/auth/connexion') }}" class="cta-button">
                     🚀 Accéder à l'espace administrateur
                 </a>
             </div>

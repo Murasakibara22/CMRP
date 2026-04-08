@@ -174,7 +174,7 @@
 
 
                 <li class="nav-item">
-                    <a class="nav-link menu-link " href="#">
+                    <a class="nav-link menu-link {{ request()->routeIs('admin.users.index') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
                         <i class=" ri-shield-user-fill"></i> <span data-key="t-widgets">Administrateurs & roles</span>
                     </a>
                 </li>
