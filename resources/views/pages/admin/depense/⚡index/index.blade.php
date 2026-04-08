@@ -306,12 +306,13 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label-dep">Libellé <span style="font-size:10px;color:var(--dep-muted);font-weight:500;text-transform:none">(optionnel)</span></label>
+            <label class="form-label-dep">Libellé <span class="req">*</span></label>
             <div class="dep-input-wrap">
               <i class="ri-file-text-line dep-iw-icon"></i>
               <input type="text" class="dep-input" wire:model="libelle"
                      placeholder="ex : Facture CIE mars 2025, Achat matériel…">
             </div>
+            @error('libelle') <div class="dep-err show">{{ $message }}</div> @enderror
           </div>
 
           <div class="mb-3">

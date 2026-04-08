@@ -66,7 +66,8 @@ new  class extends Component
     public function save(): void
     {
         $this->validate([
-            'typeDepenseId' => 'required|integer|exists:type_depenses,id',
+            'libelle'        => 'nullable|string|max:120',
+            'typeDepenseId' => 'required|integer|exists:type_depense,id',
             'montant'       => 'required|integer|min:1',
             'dateDepense'   => 'required|date',
         ]);

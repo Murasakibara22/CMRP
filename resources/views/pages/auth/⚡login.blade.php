@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 new #[Layout('auth.layouts.app')] class extends Component
 {
@@ -69,7 +70,9 @@ new #[Layout('auth.layouts.app')] class extends Component
             'otp_verified_at' => null,
         ]);
 
-        logger("🔐 OTP pour {$user->email} : {$otp}");
+        logger("OTP pour {$user->email} : {$otp}");
+
+        Mail::to($user->email)->send(new \App\Mail\OtpMail($otp, $user->nom));
 
         [$local, $domain]  = explode('@', $this->email);
         $this->maskedEmail = substr($local, 0, 1) . str_repeat('*', max(strlen($local) - 1, 3)) . '@' . $domain;
@@ -135,7 +138,9 @@ new #[Layout('auth.layouts.app')] class extends Component
             'otp_verified_at' => null,
         ]);
 
-        logger("🔐 OTP renvoyé pour {$user->email} : {$otp}");
+        Mail::to($user->email)->send(new \App\Mail\OtpMail($otp, $user->nom));
+
+        logger("OTP renvoyé pour {$user->email} : {$otp}");
 
         $this->otp = '';
         $this->dispatch('otp-resent');
