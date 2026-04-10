@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Reclammation;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -59,6 +60,11 @@ class User extends Authenticatable
     public function depensesValidees(): HasMany
     {
         return $this->hasMany(Depense::class, 'validated_by');
+    }
+
+    public function reclammationsChargees(): HasMany
+    {
+        return $this->hasMany(Reclammation::class, 'user_charged_id');
     }
 
     // ─── Helpers permissions ──────────────────────────────────

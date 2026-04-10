@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class CheckIfCustomerExist
+class checkIfCustomerLogin
 {
     /**
      * Handle an incoming request.
@@ -15,8 +15,8 @@ class CheckIfCustomerExist
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!auth('customer')->check()){
-            return redirect()->route('login-user');
+        if(auth('customer')->check()){
+            return redirect()->route('customer.home');
         }
         return $next($request);
     }

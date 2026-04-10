@@ -29,6 +29,6 @@
 
         @stack('scripts')
 <script src="{{ asset('frontend/auth/login.js') }}"></script>
-<script src="{{ asset('frontend/auth/otp.js') }}"></script>
+
 </body>
 </html>

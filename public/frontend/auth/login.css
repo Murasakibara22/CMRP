@@ -131,7 +131,7 @@
   border: 1.5px solid var(--border); border-radius: var(--r-sm);
   background: var(--bg); color: var(--text);
   font-size: 22px; font-weight: 900; font-family: 'Nunito', sans-serif;
-  text-align: center; transition: all .2s; -webkit-text-security: disc;
+  text-align: center; transition: all .2s; 
   caret-color: transparent;
 }
 .otp-box:focus {

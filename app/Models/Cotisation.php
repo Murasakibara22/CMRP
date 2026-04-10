@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Reclammation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -58,6 +59,11 @@ class Cotisation extends Model
     public function paiements(): HasMany
     {
         return $this->hasMany(Paiement::class);
+    }
+
+    public function reclammations(): HasMany
+    {
+        return $this->hasMany(Reclammation::class);
     }
 
     // ─── Scopes ──────────────────────────────────────────────

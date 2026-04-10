@@ -2,11 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Reclammation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Customer extends Model
+class Customer extends  Authenticatable implements JWTSubject
 {
+    use Notifiable;
+
     protected $fillable = [
         'nom',
         'prenom',
@@ -38,6 +44,11 @@ class Customer extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(DocumentCustomer::class);
+    }
+
+    public function reclammation(): HasMany
+    {
+        return $this->hasMany(Reclammation::class);
     }
 
     // ─── Scopes ──────────────────────────────────────────────
@@ -99,5 +110,26 @@ class Customer extends Model
         $derniere = $this->derniereCotisationMensuelle();
 
         return $derniere?->statut ?? 'en_retard';
+    }
+
+
+      /**
+     * Get the identifier that will be stored in the subject claim of the JWT.
+     *
+     * @return mixed
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     *
+     * @return array
+     */
+    public function getJWTCustomClaims()
+    {
+        return [];
     }
 }

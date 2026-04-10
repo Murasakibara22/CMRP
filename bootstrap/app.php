@@ -11,7 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            // 'jwt.verify' => JWTVerify::class,
+            // 'admin.verify' => \App\Http\Middleware\VerifyAdmin::class,
+            'customer.verify' => \App\Http\Middleware\CheckIfCustomerExist::class,
+            'check.customer.login' => \App\Http\Middleware\checkIfCustomerLogin::class
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
