@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return redirect()->route('login-user');
 });
 
 Route::get('/test', function () {
@@ -24,6 +24,33 @@ Route::prefix('auth')->group(function () {
 
 });
 
+Route::prefix('sign')->group(function () {
+
+
+    // si deja connecté rediriger sur la page de admin
+    if (auth('customer')->check()) {
+        return redirect()->route('customer.home');
+    }
+
+    Route::livewire('connexion/fidele', 'auth::login-frontend')->name('login-user');
+    Route::livewire('otp/validation', 'auth::otp-frontend')->name('otp-user');
+    Route::livewire('inscription/fidele', 'auth::inscription-frontend')->name('register-user');
+
+});
+
+
+// Route::middleware('auth:customer')->group(function () {
+
+//     Route::prefix('customer')->as('customer.')->group(function () {
+        Route::livewire('dashboard', 'frontend::home.index')->name('home');
+        Route::livewire('cotisations', 'frontend::cotisation.index')->name('cotisations');
+        Route::livewire('ajout-cotisations', 'frontend::add-cotisation.index')->name('ajout-cotisations');
+        Route::livewire('paiements', 'frontend::paiement.index')->name('paiements');
+        Route::livewire('profile', 'frontend::profile.index')->name('profile');
+        Route::livewire('reclamations', 'frontend::reclammation.index')->name('reclamations');
+
+//     });
+// });
 
 
 Route::middleware('auth')->group(function () {

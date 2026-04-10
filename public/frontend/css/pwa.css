@@ -1,0 +1,110 @@
+/* ============================================================
+   ESPACE FIDÈLE PWA — CSS PARTAGÉ
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --p:        #405189;
+  --p-d:      #2d3a63;
+  --p-l:      rgba(64,81,137,.10);
+  --p-ll:     rgba(64,81,137,.05);
+  --accent:   #0ab39c;
+  --danger:   #f06548;
+  --warn:     #f7b84b;
+  --info:     #299cdb;
+  --bg:       #f0f2f7;
+  --surf:     #ffffff;
+  --text:     #1a1d2e;
+  --muted:    #8a92a6;
+  --border:   #e2e5ef;
+  --sh:       0 2px 12px rgba(64,81,137,.08);
+  --sh-m:     0 4px 24px rgba(64,81,137,.14);
+  --r:        16px;
+  --r-sm:     10px;
+  --r-lg:     22px;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── Bouton principal ── */
+.btn-main {
+  width: 100%; height: 52px;
+  background: var(--p); border: none; border-radius: var(--r-sm);
+  color: #fff; font-size: 15px; font-weight: 800;
+  font-family: 'Nunito', sans-serif; cursor: pointer; transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-main:hover  { background: var(--p-d); box-shadow: 0 4px 16px rgba(64,81,137,.3); }
+.btn-main:active { transform: scale(.98); }
+
+.btn-outline {
+  width: 100%; height: 52px;
+  background: transparent; border: 1.5px solid var(--p); border-radius: var(--r-sm);
+  color: var(--p); font-size: 15px; font-weight: 700;
+  font-family: 'Nunito', sans-serif; cursor: pointer; transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-outline:hover { background: var(--p-l); }
+
+/* ── Input ── */
+.f-input {
+  width: 100%; height: 50px;
+  border: 1.5px solid var(--border); border-radius: var(--r-sm);
+  background: var(--bg); color: var(--text);
+  font-size: 15px; font-family: 'Nunito', sans-serif; font-weight: 500;
+  padding: 0 16px; transition: all .2s;
+}
+.f-input:focus { outline: none; border-color: var(--p); background: #fff; box-shadow: 0 0 0 3px var(--p-l); }
+.f-input::placeholder { color: var(--muted); }
+.f-input.err { border-color: var(--danger); background: rgba(240,101,72,.03); }
+textarea.f-input { height: 150px; padding: 14px 16px; resize: none; line-height: 1.6; }
+select.f-input   { cursor: pointer; appearance: auto; }
+.f-label { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px; display: block; }
+
+/* ── Card ── */
+.card {
+  background: var(--surf); border-radius: var(--r);
+  border: 1px solid var(--border); box-shadow: var(--sh);
+}
+
+/* ── Pill ── */
+.pill { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+.pill-ok     { background: rgba(10,179,156,.12);  color: #0ab39c; }
+.pill-warn   { background: rgba(247,184,75,.12);  color: #d4870a; }
+.pill-danger { background: rgba(240,101,72,.10);  color: #f06548; }
+.pill-info   { background: rgba(41,156,219,.12);  color: #299cdb; }
+.pill-muted  { background: rgba(138,146,166,.10); color: #8a92a6; }
+
+/* ── Spinner ── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 20px; height: 20px;
+  border: 2.5px solid rgba(255,255,255,.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0;
+}
+
+/* ── Animation entrée ── */
+.fu { animation: fuA .35s ease both; }
+.fu-1 { animation-delay: .05s; }
+.fu-2 { animation-delay: .10s; }
+.fu-3 { animation-delay: .15s; }
+.fu-4 { animation-delay: .20s; }
+@keyframes fuA { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── View transition ── */
+.view { display: none; }
+.view.active { display: block; animation: fuA .3s ease; }
+
+/* ─── Scrollbar fine ─── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
