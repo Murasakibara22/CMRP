@@ -47,6 +47,7 @@ Route::group(['middleware' => 'customer.verify'], function () {
         Route::livewire('paiements', 'frontend::paiement.index')->name('paiements');
         Route::livewire('profile', 'frontend::profile.index')->name('profile');
         Route::livewire('reclamations', 'frontend::reclammation.index')->name('reclamations');
+        Route::livewire('reclamations', 'frontend::reclammation.index')->name('documents');
 
     });
 });

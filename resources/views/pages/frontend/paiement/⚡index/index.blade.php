@@ -1,323 +1,366 @@
+<div>
 <main class="page-content">
- 
-      <div class="page-title">Mes Paiements</div>
-      <div class="page-sub">Historique de tous vos paiements enregistrés.</div>
- 
-      <!-- KPIs rapides -->
-      <div class="pay-kpi-strip">
-        <div class="pay-kpi">
-          <div class="pay-kpi-icon" style="background:rgba(10,179,156,.10);color:#0ab39c"><i class="ri-checkbox-circle-line"></i></div>
-          <div class="pay-kpi-val">9</div>
-          <div class="pay-kpi-label">Succès</div>
-        </div>
-        <div class="pay-kpi">
-          <div class="pay-kpi-icon" style="background:rgba(247,184,75,.12);color:#f7b84b"><i class="ri-time-line"></i></div>
-          <div class="pay-kpi-val">2</div>
-          <div class="pay-kpi-label">En attente</div>
-        </div>
-        <div class="pay-kpi">
-          <div class="pay-kpi-icon" style="background:rgba(240,101,72,.10);color:#f06548"><i class="ri-close-circle-line"></i></div>
-          <div class="pay-kpi-val">1</div>
-          <div class="pay-kpi-label">Échoué</div>
-        </div>
-        <div class="pay-kpi">
-          <div class="pay-kpi-icon" style="background:rgba(64,81,137,.10);color:#405189"><i class="ri-money-cny-circle-line"></i></div>
-          <div class="pay-kpi-val" style="font-size:14px">142 000</div>
-          <div class="pay-kpi-label">FCFA total</div>
-        </div>
-      </div>
- 
-      <!-- Filtres statut -->
-      <div class="pay-filters">
-        <button class="pay-filter active" data-filter="tous" onclick="filterPay(this)">
-          <i class="ri-list-check"></i> Tous
-        </button>
-        <button class="pay-filter" data-filter="success" onclick="filterPay(this)">
-          <i class="ri-checkbox-circle-line"></i> Succès
-        </button>
-        <button class="pay-filter" data-filter="attente" onclick="filterPay(this)">
-          <i class="ri-time-line"></i> En attente
-        </button>
-        <button class="pay-filter" data-filter="echec" onclick="filterPay(this)">
-          <i class="ri-close-circle-line"></i> Échoué
-        </button>
-      </div>
- 
-      <!-- ── LISTE PAIEMENTS ── -->
-      <div class="pay-list card">
- 
-        <!-- Paiement 1 -->
-        <div class="pay-item" data-statut="success"
-          onclick="openDetail({
-            ref:'OM202504001', type:'Cotisation mensuelle', periode:'Avril 2025',
-            montant:'10 000 FCFA', mode:'Mobile Money', operateur:'Orange Money',
-            date:'02/04/2025 08:32', statut:'success',
-            validated_by:'Admin Koné', validated_at:'02/04/2025 09:15',
-            note:''
-          })">
-          <div class="pay-icon" style="background:rgba(10,179,156,.10);color:#0ab39c">
-            <i class="ri-smartphone-line"></i>
-          </div>
-          <div class="pay-body">
-            <div class="pay-title">Cotisation mensuelle — Avril 2025</div>
-            <div class="pay-meta">02/04/2025 · Orange Money · <span class="pay-ref">OM202504001</span></div>
-          </div>
-          <div class="pay-right">
-            <div class="pay-amount" style="color:#0ab39c">+10 000</div>
-            <span class="pill pill-ok pay-pill">Succès</span>
-          </div>
-        </div>
- 
-        <!-- Paiement 2 -->
-        <div class="pay-item" data-statut="attente"
-          onclick="openDetail({
-            ref:'ESP202504002', type:'Cotisation mensuelle', periode:'Mars 2025',
-            montant:'10 000 FCFA', mode:'Espèces', operateur:'—',
-            date:'05/04/2025 14:20', statut:'attente',
-            validated_by:'—', validated_at:'—',
-            note:'En attente de validation par un administrateur.'
-          })">
-          <div class="pay-icon" style="background:rgba(247,184,75,.12);color:#f7b84b">
-            <i class="ri-money-dollar-circle-line"></i>
-          </div>
-          <div class="pay-body">
-            <div class="pay-title">Cotisation mensuelle — Mars 2025</div>
-            <div class="pay-meta">05/04/2025 · Espèces · <span class="pay-ref">ESP202504002</span></div>
-          </div>
-          <div class="pay-right">
-            <div class="pay-amount" style="color:#f7b84b">10 000</div>
-            <span class="pill pill-warn pay-pill">En attente</span>
-          </div>
-        </div>
- 
-        <!-- Paiement 3 -->
-        <div class="pay-item" data-statut="success"
-          onclick="openDetail({
-            ref:'OM202503003', type:'Quête du vendredi', periode:'Mars 2025',
-            montant:'2 000 FCFA', mode:'Mobile Money', operateur:'MTN Mobile Money',
-            date:'21/03/2025 13:45', statut:'success',
-            validated_by:'Système automatique', validated_at:'21/03/2025 13:46',
-            note:''
-          })">
-          <div class="pay-icon" style="background:rgba(212,168,67,.12);color:#d4a843">
-            <i class="ri-smartphone-line"></i>
-          </div>
-          <div class="pay-body">
-            <div class="pay-title">Quête du vendredi — Mars 2025</div>
-            <div class="pay-meta">21/03/2025 · MTN Mobile Money · <span class="pay-ref">OM202503003</span></div>
-          </div>
-          <div class="pay-right">
-            <div class="pay-amount" style="color:#0ab39c">+2 000</div>
-            <span class="pill pill-ok pay-pill">Succès</span>
-          </div>
-        </div>
- 
-        <!-- Paiement 4 -->
-        <div class="pay-item" data-statut="echec"
-          onclick="openDetail({
-            ref:'FAIL202503004', type:'Cotisation mensuelle', periode:'Mars 2025',
-            montant:'10 000 FCFA', mode:'Mobile Money', operateur:'Orange Money',
-            date:'28/03/2025 17:45', statut:'echec',
-            validated_by:'—', validated_at:'—',
-            note:'Transaction rejetée — solde insuffisant.'
-          })">
-          <div class="pay-icon" style="background:rgba(240,101,72,.10);color:#f06548">
-            <i class="ri-close-circle-line"></i>
-          </div>
-          <div class="pay-body">
-            <div class="pay-title">Cotisation mensuelle — Mars 2025</div>
-            <div class="pay-meta">28/03/2025 · Orange Money · <span class="pay-ref">FAIL202503004</span></div>
-          </div>
-          <div class="pay-right">
-            <div class="pay-amount" style="color:#f06548">10 000</div>
-            <span class="pill pill-danger pay-pill">Échoué</span>
-          </div>
-        </div>
- 
-        <!-- Paiement 5 -->
-        <div class="pay-item" data-statut="success"
-          onclick="openDetail({
-            ref:'OM202502005', type:'Ramadan 1446', periode:'Février 2025',
-            montant:'5 000 FCFA', mode:'Mobile Money', operateur:'Orange Money',
-            date:'15/02/2025 20:00', statut:'success',
-            validated_by:'Système automatique', validated_at:'15/02/2025 20:01',
-            note:''
-          })">
-          <div class="pay-icon" style="background:rgba(41,156,219,.12);color:#299cdb">
-            <i class="ri-smartphone-line"></i>
-          </div>
-          <div class="pay-body">
-            <div class="pay-title">Ramadan 1446 — Février 2025</div>
-            <div class="pay-meta">15/02/2025 · Orange Money · <span class="pay-ref">OM202502005</span></div>
-          </div>
-          <div class="pay-right">
-            <div class="pay-amount" style="color:#0ab39c">+5 000</div>
-            <span class="pill pill-ok pay-pill">Succès</span>
-          </div>
-        </div>
- 
-        <!-- Paiement 6 -->
-        <div class="pay-item" data-statut="success"
-          onclick="openDetail({
-            ref:'ESP202502006', type:'Cotisation mensuelle', periode:'Février 2025',
-            montant:'10 000 FCFA', mode:'Espèces', operateur:'—',
-            date:'01/02/2025 09:00', statut:'success',
-            validated_by:'Admin Koné', validated_at:'01/02/2025 10:30',
-            note:''
-          })">
-          <div class="pay-icon" style="background:rgba(10,179,156,.10);color:#0ab39c">
-            <i class="ri-money-dollar-circle-line"></i>
-          </div>
-          <div class="pay-body">
-            <div class="pay-title">Cotisation mensuelle — Février 2025</div>
-            <div class="pay-meta">01/02/2025 · Espèces · <span class="pay-ref">ESP202502006</span></div>
-          </div>
-          <div class="pay-right">
-            <div class="pay-amount" style="color:#0ab39c">+10 000</div>
-            <span class="pill pill-ok pay-pill">Succès</span>
-          </div>
-        </div>
- 
-        <!-- Paiement 7 -->
-        <div class="pay-item" data-statut="attente"
-          onclick="openDetail({
-            ref:'VIR202501007', type:'Cotisation mensuelle', periode:'Janvier 2025',
-            montant:'10 000 FCFA', mode:'Virement', operateur:'SIB Côte d\'Ivoire',
-            date:'03/01/2025 11:00', statut:'attente',
-            validated_by:'—', validated_at:'—',
-            note:'Virement reçu, en attente de rapprochement bancaire.'
-          })">
-          <div class="pay-icon" style="background:rgba(64,81,137,.10);color:#405189">
-            <i class="ri-bank-line"></i>
-          </div>
-          <div class="pay-body">
-            <div class="pay-title">Cotisation mensuelle — Janvier 2025</div>
-            <div class="pay-meta">03/01/2025 · Virement · <span class="pay-ref">VIR202501007</span></div>
-          </div>
-          <div class="pay-right">
-            <div class="pay-amount" style="color:#f7b84b">10 000</div>
-            <span class="pill pill-warn pay-pill">En attente</span>
-          </div>
-        </div>
- 
-      </div><!-- /pay-list -->
- 
-      <div style="height:24px"></div>
-    </main>
 
+  <div class="page-title">Mes Paiements</div>
+  <div class="page-sub">Historique de tous vos paiements enregistrés.</div>
 
-
-@push('modal')
-
-
-<div class="pay-modal-overlay" id="pay-modal-overlay" onclick="closeDetail()">
-  <div class="pay-modal" onclick="event.stopPropagation()">
- 
-    <!-- Header dynamique -->
-    <div class="pay-modal-header" id="pay-modal-header">
-      <div class="pmh-inner">
-        <div class="pmh-icon" id="pmh-icon"><i class="ri-bank-card-line"></i></div>
-        <div>
-          <div class="pmh-title" id="pmh-title">Détail du paiement</div>
-          <div class="pmh-ref"   id="pmh-ref">—</div>
-        </div>
-      </div>
-      <button class="pmh-close" onclick="closeDetail()"><i class="ri-close-line"></i></button>
+  {{-- ══ KPIs ═══════════════════════════════════════════════ --}}
+  <div class="pay-kpi-strip">
+    <div class="pay-kpi">
+      <div class="pay-kpi-icon" style="background:rgba(10,179,156,.10);color:#0ab39c"><i class="ri-checkbox-circle-line"></i></div>
+      <div class="pay-kpi-val">{{ $kpis['success'] }}</div>
+      <div class="pay-kpi-label">Succès</div>
     </div>
- 
-    <!-- Corps -->
-    <div class="pay-modal-body">
- 
-      <!-- Montant central -->
-      <div class="pmd-amount-wrap">
-        <div class="pmd-amount" id="pmd-amount">—</div>
-        <div class="pmd-statut" id="pmd-statut"></div>
+    <div class="pay-kpi">
+      <div class="pay-kpi-icon" style="background:rgba(247,184,75,.12);color:#f7b84b"><i class="ri-time-line"></i></div>
+      <div class="pay-kpi-val">{{ $kpis['attente'] }}</div>
+      <div class="pay-kpi-label">En attente</div>
+    </div>
+    <div class="pay-kpi">
+      <div class="pay-kpi-icon" style="background:rgba(240,101,72,.10);color:#f06548"><i class="ri-close-circle-line"></i></div>
+      <div class="pay-kpi-val">{{ $kpis['echec'] }}</div>
+      <div class="pay-kpi-label">Échoué</div>
+    </div>
+    <div class="pay-kpi">
+      <div class="pay-kpi-icon" style="background:rgba(64,81,137,.10);color:#405189"><i class="ri-money-cny-circle-line"></i></div>
+      <div class="pay-kpi-val" style="font-size:14px">{{ number_format($kpis['total'], 0, ',', ' ') }}</div>
+      <div class="pay-kpi-label">FCFA total</div>
+    </div>
+  </div>
+
+  {{-- ══ FILTRES ═════════════════════════════════════════════ --}}
+  <div class="pay-filters">
+    <button class="pay-filter active" data-filter="tous" onclick="filterPay(this)">
+      <i class="ri-list-check"></i> Tous
+    </button>
+    <button class="pay-filter" data-filter="success" onclick="filterPay(this)">
+      <i class="ri-checkbox-circle-line"></i> Succès
+    </button>
+    <button class="pay-filter" data-filter="attente" onclick="filterPay(this)">
+      <i class="ri-time-line"></i> En attente
+    </button>
+    <button class="pay-filter" data-filter="echec" onclick="filterPay(this)">
+      <i class="ri-close-circle-line"></i> Échoué
+    </button>
+  </div>
+
+  {{-- ══ LISTE ═══════════════════════════════════════════════ --}}
+  <div class="pay-list card">
+
+    @forelse($paiements as $p)
+    @php
+      $statutJs = match($p->statut) {
+          'success'    => 'success',
+          'en_attente' => 'attente',
+          'echec'      => 'echec',
+          'refund'     => 'echec',
+          default      => 'attente',
+      };
+      [$iconClass, $iconBg, $iconColor, $amountColor] = match($p->statut) {
+          'success'    => ['ri-checkbox-circle-line', 'rgba(10,179,156,.10)', '#0ab39c', '#0ab39c'],
+          'en_attente' => ['ri-time-line',            'rgba(247,184,75,.12)', '#f7b84b', '#f7b84b'],
+          'echec'      => ['ri-close-circle-line',    'rgba(240,101,72,.10)', '#f06548', '#f06548'],
+          'refund'     => ['ri-refund-2-line',        'rgba(41,156,219,.12)', '#299cdb', '#299cdb'],
+          default      => ['ri-time-line',            'rgba(247,184,75,.12)', '#f7b84b', '#f7b84b'],
+      };
+      $modeLabel = match($p->mode_paiement) {
+          'mobile_money' => 'Mobile Money',
+          'espece'       => 'Espèces',
+          'virement'     => 'Virement',
+          default        => '—',
+      };
+      $typeLabel   = $p->cotisation?->typeCotisation?->libelle ?? '—';
+      $periodeLabel = ($p->cotisation?->mois && $p->cotisation?->annee)
+          ? \Carbon\Carbon::create($p->cotisation->annee, $p->cotisation->mois)->translatedFormat('F Y')
+          : $p->date_paiement->translatedFormat('F Y');
+      $ref = $p->reference ?? 'PAY-' . str_pad($p->id, 6, '0', STR_PAD_LEFT);
+      $pillClass = match($p->statut) {
+          'success'    => 'pill-ok',
+          'en_attente' => 'pill-warn',
+          default      => 'pill-danger',
+      };
+      $pillLabel = match($p->statut) {
+          'success'    => 'Succès',
+          'en_attente' => 'En attente',
+          'echec'      => 'Échoué',
+          'refund'     => 'Remboursé',
+          default      => '—',
+      };
+      $prefix = $p->statut === 'success' ? '+' : '';
+    @endphp
+
+    <div class="pay-item"
+         data-statut="{{ $statutJs }}"
+         wire:click="showDetail({{ $p->id }})"
+         wire:key="pay-{{ $p->id }}"
+         style="cursor:pointer">
+      <div class="pay-icon" style="background:{{ $iconBg }};color:{{ $iconColor }}">
+        <i class="{{ $iconClass }}"></i>
       </div>
- 
-      <!-- Grille infos -->
+      <div class="pay-body">
+        <div class="pay-title">{{ $typeLabel }}{{ $periodeLabel !== '—' ? ' — ' . $periodeLabel : '' }}</div>
+        <div class="pay-meta">
+          {{ $p->date_paiement->format('d/m/Y H:i') }} · {{ $modeLabel }} ·
+          <span class="pay-ref">{{ $ref }}</span>
+        </div>
+      </div>
+      <div class="pay-right">
+        <div class="pay-amount" style="color:{{ $amountColor }}">
+          {{ $prefix }}{{ number_format($p->montant, 0, ',', ' ') }}
+        </div>
+        <span class="pill {{ $pillClass }} pay-pill">{{ $pillLabel }}</span>
+      </div>
+    </div>
+
+    @empty
+    <div style="text-align:center;padding:40px 20px;color:var(--muted)">
+      <i class="ri-inbox-line" style="font-size:36px;display:block;margin-bottom:10px;opacity:.4"></i>
+      <div style="font-size:14px;font-weight:600">Aucun paiement enregistré</div>
+    </div>
+    @endforelse
+
+  </div>
+
+  <div style="height:24px"></div>
+
+</main>
+
+
+{{-- ══════════════════════════════════════════════════════════
+     MODAL DÉTAIL PAIEMENT
+     Classe "open" rendue par Blade → zéro JS pour l'overlay
+══════════════════════════════════════════════════════════ --}}
+<div class="pay-modal-overlay {{ $detailId ? 'open' : '' }}" @if($detailId) wire:ignore.self @endif>
+
+  <div class="pay-modal" wire:click.stop>
+
+    @if($detailPaiement)
+    @php
+      $dp = $detailPaiement;
+
+      $headerBg = match($dp->statut) {
+          'success'    => 'linear-gradient(135deg,#089383,#0ab39c)',
+          'en_attente' => 'linear-gradient(135deg,#c07a10,#f7b84b)',
+          'echec'      => 'linear-gradient(135deg,#c0341a,#f06548)',
+          'refund'     => 'linear-gradient(135deg,#1a6080,#299cdb)',
+          default      => 'linear-gradient(135deg,#2d3a63,#405189)',
+      };
+      $headerIcon = match($dp->mode_paiement) {
+          'mobile_money' => 'ri-smartphone-line',
+          'espece'       => 'ri-money-dollar-circle-line',
+          'virement'     => 'ri-bank-line',
+          default        => 'ri-bank-card-line',
+      };
+      $statutLabel = match($dp->statut) {
+          'success'    => 'Succès',
+          'en_attente' => 'En attente',
+          'echec'      => 'Échoué',
+          'refund'     => 'Remboursé',
+          default      => '—',
+      };
+      $amountColor = match($dp->statut) {
+          'success' => '#0ab39c',
+          'echec'   => '#f06548',
+          'refund'  => '#299cdb',
+          default   => '#f7b84b',
+      };
+      $statutPillCls = match($dp->statut) {
+          'success'    => 'pill-ok',
+          'en_attente' => 'pill-warn',
+          default      => 'pill-danger',
+      };
+      $modeLabel = match($dp->mode_paiement) {
+          'mobile_money' => 'Mobile Money',
+          'espece'       => 'Espèces',
+          'virement'     => 'Virement',
+          default        => '—',
+      };
+      $typeLabel    = $dp->cotisation?->typeCotisation?->libelle ?? '—';
+      $periodeLabel = ($dp->cotisation?->mois && $dp->cotisation?->annee)
+          ? \Carbon\Carbon::create($dp->cotisation->annee, $dp->cotisation->mois)->translatedFormat('F Y')
+          : '—';
+      $ref = $dp->reference ?? 'PAY-' . str_pad($dp->id, 6, '0', STR_PAD_LEFT);
+      $prefix = $dp->statut === 'success' ? '+' : '';
+
+      // Validated by
+      if ($dp->validated_by) {
+          $validatedBy = 'Admin #' . $dp->validated_by;
+          $validatedAt = $dp->validated_at?->format('d/m/Y H:i') ?? '—';
+      } elseif ($dp->statut === 'success') {
+          $validatedBy = 'Système automatique';
+          $validatedAt = $dp->date_paiement->format('d/m/Y H:i');
+      } else {
+          $validatedBy = '—';
+          $validatedAt = '—';
+      }
+
+      $metadata = $dp->metadata ? json_decode($dp->metadata, true) : [];
+      $operateur = $metadata['operateur'] ?? '—';
+      $note      = $metadata['note'] ?? ($dp->statut === 'en_attente' ? 'En attente de validation par un administrateur.' : '');
+    @endphp
+
+    {{-- Header --}}
+    <div class="pay-modal-header" style="background:{{ $headerBg }}">
+      <div class="pmh-inner">
+        <div class="pmh-icon"><i class="{{ $headerIcon }}"></i></div>
+        <div>
+          <div class="pmh-title">Détail du paiement</div>
+          <div class="pmh-ref">{{ $ref }}</div>
+        </div>
+      </div>
+      <button class="pmh-close" wire:click="closeDetail">
+        <i class="ri-close-line"></i>
+      </button>
+    </div>
+
+    {{-- Corps --}}
+    <div class="pay-modal-body">
+
+      {{-- Montant central --}}
+      <div class="pmd-amount-wrap">
+        <div class="pmd-amount" style="color:{{ $amountColor }}">
+          {{ $prefix }}{{ number_format($dp->montant, 0, ',', ' ') }} FCFA
+        </div>
+        <div class="pmd-statut">
+          <span class="pill {{ $statutPillCls }}">{{ $statutLabel }}</span>
+        </div>
+      </div>
+
+      {{-- Grille infos --}}
       <div class="pmd-grid">
         <div class="pmd-item">
           <div class="pmd-label"><i class="ri-tag-line"></i> Type</div>
-          <div class="pmd-value" id="pmd-type">—</div>
+          <div class="pmd-value">{{ $typeLabel }}</div>
         </div>
         <div class="pmd-item">
           <div class="pmd-label"><i class="ri-calendar-line"></i> Période</div>
-          <div class="pmd-value" id="pmd-periode">—</div>
+          <div class="pmd-value">{{ $periodeLabel }}</div>
         </div>
         <div class="pmd-item">
           <div class="pmd-label"><i class="ri-smartphone-line"></i> Mode</div>
-          <div class="pmd-value" id="pmd-mode">—</div>
+          <div class="pmd-value">{{ $modeLabel }}</div>
         </div>
         <div class="pmd-item">
           <div class="pmd-label"><i class="ri-bank-line"></i> Opérateur</div>
-          <div class="pmd-value" id="pmd-operateur">—</div>
+          <div class="pmd-value">{{ $operateur }}</div>
         </div>
         <div class="pmd-item pmd-full">
           <div class="pmd-label"><i class="ri-hashtag"></i> Référence</div>
-          <div class="pmd-value pmd-mono" id="pmd-ref-val">—</div>
+          <div class="pmd-value pmd-mono">{{ $ref }}</div>
         </div>
         <div class="pmd-item">
           <div class="pmd-label"><i class="ri-time-line"></i> Date paiement</div>
-          <div class="pmd-value" id="pmd-date">—</div>
+          <div class="pmd-value">{{ $dp->date_paiement->format('d/m/Y H:i') }}</div>
         </div>
         <div class="pmd-item">
           <div class="pmd-label"><i class="ri-shield-check-line"></i> Validé par</div>
-          <div class="pmd-value" id="pmd-validated-by">—</div>
+          <div class="pmd-value">{{ $validatedBy }}</div>
         </div>
         <div class="pmd-item">
-          <div class="pmd-label"><i class="ri-time-line"></i> Validé le</div>
-          <div class="pmd-value" id="pmd-validated-at">—</div>
+          <div class="pmd-label"><i class="ri-calendar-check-line"></i> Validé le</div>
+          <div class="pmd-value">{{ $validatedAt }}</div>
         </div>
-        <div class="pmd-item pmd-full" id="pmd-note-wrap" style="display:none">
+        @if($note)
+        <div class="pmd-item pmd-full">
           <div class="pmd-label"><i class="ri-information-line"></i> Note</div>
-          <div class="pmd-value pmd-note" id="pmd-note">—</div>
+          <div class="pmd-value pmd-note">{{ $note }}</div>
         </div>
+        @endif
       </div>
- 
+
     </div>
- 
-    <!-- Footer -->
+
+    {{-- Footer --}}
     <div class="pay-modal-footer">
-      <button class="btn-outline" style="height:46px;font-size:14px" onclick="closeDetail()">
+      <button class="btn-outline" style="height:46px;font-size:14px"
+              wire:click="closeDetail">
         <i class="ri-close-line"></i> Fermer
       </button>
-      <button class="btn-main" style="height:46px;font-size:14px" onclick="printDetail()">
+      <button class="btn-main" style="height:46px;font-size:14px"
+              onclick="printDetail()">
         <i class="ri-printer-line"></i> Imprimer / PDF
       </button>
     </div>
- 
+
+    @endif
   </div>
 </div>
- 
-<!-- Zone d'impression -->
+
+{{-- Zone impression --}}
+@if($detailPaiement)
+@php $dp = $detailPaiement; @endphp
 <div class="print-zone" id="print-zone" style="display:none">
   <div class="print-header">
     <div class="print-logo">🕌 ISL Mosquée — Espace Fidèle</div>
     <div class="print-title">Reçu de paiement</div>
   </div>
   <div class="print-fidele">
-    Fidèle : <strong>Moussa Koné</strong> — +225 07 00 11 22
+    Fidèle : <strong>{{ auth('customer')->user()->prenom }} {{ auth('customer')->user()->nom }}</strong>
+    — {{ auth('customer')->user()->dial_code }} {{ auth('customer')->user()->phone }}
   </div>
-  <table class="print-table" id="print-table">
-    <tr><td>Référence</td><td id="pr-ref">—</td></tr>
-    <tr><td>Type</td><td id="pr-type">—</td></tr>
-    <tr><td>Période</td><td id="pr-periode">—</td></tr>
-    <tr><td>Montant</td><td id="pr-montant">—</td></tr>
-    <tr><td>Mode de paiement</td><td id="pr-mode">—</td></tr>
-    <tr><td>Opérateur</td><td id="pr-operateur">—</td></tr>
-    <tr><td>Date</td><td id="pr-date">—</td></tr>
-    <tr><td>Validé par</td><td id="pr-valby">—</td></tr>
-    <tr><td>Validé le</td><td id="pr-valat">—</td></tr>
-    <tr><td>Statut</td><td id="pr-statut">—</td></tr>
+  <table class="print-table">
+    <tr><td>Référence</td><td>{{ $dp->reference ?? 'PAY-'.str_pad($dp->id,6,'0',STR_PAD_LEFT) }}</td></tr>
+    <tr><td>Type</td><td>{{ $dp->cotisation?->typeCotisation?->libelle ?? '—' }}</td></tr>
+    <tr><td>Période</td><td>
+      {{ ($dp->cotisation?->mois && $dp->cotisation?->annee) ? \Carbon\Carbon::create($dp->cotisation->annee, $dp->cotisation->mois)->translatedFormat('F Y') : '—' }}
+    </td></tr>
+    <tr><td>Montant</td><td>{{ number_format($dp->montant,0,',',' ') }} FCFA</td></tr>
+    <tr><td>Mode de paiement</td><td>{{ match($dp->mode_paiement){ 'mobile_money'=>'Mobile Money','espece'=>'Espèces','virement'=>'Virement',default=>'—'} }}</td></tr>
+    <tr><td>Date</td><td>{{ $dp->date_paiement->format('d/m/Y H:i') }}</td></tr>
+    <tr><td>Statut</td><td>{{ match($dp->statut){ 'success'=>'Succès','en_attente'=>'En attente','echec'=>'Échoué',default=>$dp->statut} }}</td></tr>
   </table>
   <div class="print-footer">
-    Document généré le <span id="pr-now"></span> — ISL Mosquée © 2025
+    Document généré le <span id="pr-now"></span> — ISL Mosquée © {{ now()->year }}
   </div>
 </div>
+@endif
 
-@endpush
+</div>{{-- /root Livewire --}}
 
 
 @push('scripts')
-<script src="{{ asset('frontend/js/paiement.js') }}"></script>
+<script>
+/* ── Filtre statut JS ── */
+function filterPay(btn) {
+  document.querySelectorAll('.pay-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const f = btn.dataset.filter;
+  document.querySelectorAll('.pay-item').forEach(item => {
+    item.style.display = (f === 'tous' || item.dataset.statut === f) ? '' : 'none';
+  });
+}
+
+// une fonction pour closeDetatil qui vas ecouter un event de livewire et fermer le modal selon son id  
+window.addEventListener('closePayDetail', event => {
+        //pas de fonction ph mais plutot une fermeture ici en js ex un display none sur le modal
+        const modalOverlay = document.querySelector('.pay-modal-overlay');
+        if (modalOverlay) {       
+                modalOverlay.classList.remove('open');
+                @this.set('detailId', null); // reset detailId pour éviter les problèmes à l'ouverture suivante
+        }
+
+});
+
+
+window.addEventListener('OpenPayDetail', event => {
+        //pas de fonction ph mais plutot une fermeture ici en js ex un display none sur le modal
+        const modalOverlay = document.querySelector('.pay-modal-overlay');
+        if (modalOverlay) {       
+                modalOverlay.classList.add('open');
+        }
+
+});
+
+/* ── Impression ── */
+function printDetail() {
+  const zone = document.getElementById('print-zone');
+  if (!zone) return;
+  const now = new Date().toLocaleString('fr-FR');
+  const el = document.getElementById('pr-now');
+  if (el) el.textContent = now;
+  zone.style.display = 'block';
+  window.print();
+  zone.style.display = 'none';
+}
+</script>
 @endpush

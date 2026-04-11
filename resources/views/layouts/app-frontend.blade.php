@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css"/>
+    <link href="{{ asset('assets/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
+
   <link rel="stylesheet" href="{{ asset('frontend/css/pwa.css') }}"/>
   <link rel="stylesheet" href="{{ asset('frontend/css/shell.css') }}"/>
   <link rel="stylesheet" href="{{ asset('frontend/css/app.css') }}"/>
@@ -51,5 +53,13 @@
 <script src="{{ asset('frontend/js/add-cotisation.js') }}"></script>
 <script src="{{ asset('frontend/js/profile.js') }}"></script>
 <script src="{{ asset('frontend/js/reclammation.js') }}"></script>
+
+
+  <!-- Sweet Alerts js -->
+  <script src="{{ asset('assets/libs/sweetalert2/sweetalert2.min.js') }}"></script>
+
+  <!-- Sweet alert init js-->
+  <script src="{{ asset('assets/js/pages/sweetalerts.init.js') }}"></script>
+  <script src="{{ asset('assets/js/NotifSweet.js') }}"></script>
 </body>
 </html>
