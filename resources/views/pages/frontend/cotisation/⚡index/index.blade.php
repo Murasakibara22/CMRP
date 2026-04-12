@@ -167,8 +167,7 @@
      contient déjà "open" → le CSS l'affiche immédiatement.
      Zéro JS pour l'ouverture/fermeture.
 ══════════════════════════════════════════════════════════ --}}
-<div class="cot-modal-overlay {{ $detailId ? 'open' : '' }}"
-    @if($detailId) wire:ignore.self @endif>
+<div class="cot-modal-overlay" id="cot-detail-overlay" wire:ignore.self>
 
   <div class="cot-modal" wire:click.stop>
 
@@ -346,7 +345,7 @@
      MODAL RÉCLAMATION
      Même principe : classe "open" via $showRecla Blade
 ══════════════════════════════════════════════════════════ --}}
-<div @if($showRecla ) wire:ignore.self @endif class="cot-modal-overlay {{ $showRecla ? 'open' : '' }}"
+<div id="cot-recla-overlay" @if($showRecla ) wire:ignore.self @endif class="cot-modal-overlay {{ $showRecla ? 'open' : '' }}"
       >
 
   <div class="cot-modal cot-modal-sm" wire:click.stop>
@@ -369,20 +368,20 @@
       </div>
     </div>
 
-    <div class="cot-modal-body" >
+    <div class="cot-modal-body">
 
       <div class="f-group">
         <label class="f-label-sm">Cotisation concernée</label>
         <input type="text" class="f-input-sm" value="{{ $reclaLabel }}" readonly/>
       </div>
 
-      <div class="f-group" >
+      <div class="f-group" wire:ignore>
         <label class="f-label-sm">Titre <span style="color:#f06548">*</span></label>
         <div class="f-input-wrap-sm">
           <i class="ri-text f-ico-sm"></i>
           <input type="text" 
                  class="f-input-sm "
-                 wire:model.lazy="reclaTitle"
+                 wire:model.defer="reclaTitle"
                  placeholder="ex : Paiement non enregistré"/>
         </div>
         @if($errorReclaTitle)
@@ -457,26 +456,23 @@ function filterCot(btn) {
   if (empty) empty.style.display = visible === 0 ? 'flex' : 'none';
 }
 
-window.addEventListener('closeReclaModal', event => {
-        //pas de fonction ph mais plutot une fermeture ici en js ex un display none sur le modal
-        const modalOverlayClose = document.querySelector('.cot-modal-overlay');
-        if (modalOverlayClose) {       
 
-                @this.set('showRecla', false);
-
-                modalOverlayClose.classList.remove('open');
-        }
-
+window.addEventListener('OpenDetailCot', () => {
+  document.getElementById('cot-detail-overlay')?.classList.add('open');
+  document.body.style.overflow = 'hidden';
+});
+window.addEventListener('closeDetailCot', () => {
+  document.getElementById('cot-detail-overlay')?.classList.remove('open');
+  document.body.style.overflow = '';
 });
 
-
-window.addEventListener('openRecla', event => {
-        //pas de fonction ph mais plutot une fermeture ici en js ex un display none sur le modal
-        const modalOverlay = document.querySelector('.cot-modal-overlay');
-        if (modalOverlay) {       
-                modalOverlay.classList.add('open');
-        }
-
+window.addEventListener('OpenReclaModal', () => {
+  document.getElementById('cot-recla-overlay')?.classList.add('open');
+  document.body.style.overflow = 'hidden';
+});
+window.addEventListener('closeReclaModal', () => {
+  document.getElementById('cot-recla-overlay')?.classList.remove('open');
+  document.body.style.overflow = '';
 });
 
 /* ══ Animations entrée ══ */

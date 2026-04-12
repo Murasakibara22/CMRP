@@ -65,6 +65,33 @@ new  class extends Component
         ]);
     }
 
+    public function exportBilanPdf()
+    {
+        // Réutilise toutes les données déjà calculées dans with()
+        $data = $this->with();
+
+        $periode = match($this->periode) {
+            'mois'      => now()->translatedFormat('F Y'),
+            'trimestre' => 'Trimestre '.now()->quarter.' '.now()->year,
+            'annee'     => 'Année '.now()->year,
+            default     => \Carbon\Carbon::parse($this->dateDebut)->translatedFormat('d M Y').
+                        ' au '.
+                        \Carbon\Carbon::parse($this->dateFin)->translatedFormat('d M Y'),
+        };
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.bilan-general', array_merge($data, [
+            'periode'     => $periode,
+            'dateDebut'   => $this->dateDebut,
+            'dateFin'     => $this->dateFin,
+            'genereLe'    => now()->translatedFormat('d F Y à H:i'),
+        ]))->setPaper('a4', 'landscape');
+
+        return response()->streamDownload(
+            fn() => print($pdf->output()),
+            'bilan-general-'.now()->format('Ymd').'.pdf'
+        );
+    }
+
     /* ── Données vue ──────────────────────────────────────── */
     public function with(): array
     {

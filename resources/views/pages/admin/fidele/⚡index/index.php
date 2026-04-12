@@ -31,6 +31,11 @@ new  class extends Component
     public string $dateAdhesion      = '';
     public ?int   $montantEngagement = null;
 
+    /* ── Export PDF bilan fidèle ─────────────────────────── */
+    public string $exportDebut = '';
+    public string $exportFin   = '';
+    public bool   $exportTout  = false;
+
     // ─── Modal détail ─────────────────────────────────────
     public ?int $detailCustomerId = null;
 
@@ -227,6 +232,58 @@ new  class extends Component
         $this->dateAdhesion      = '';
         $this->montantEngagement = null;
         $this->resetErrorBag();
+    }
+
+
+    public function openExportFidele(): void
+    {
+        $this->closeModal_after_edit('modalDetailFidele');
+        $this->exportDebut = now()->startOfYear()->format('Y-m-d');
+        $this->exportFin   = now()->format('Y-m-d');
+        $this->exportTout  = false;
+        $this->launch_modal('modalExportFidele');
+    }
+
+    public function exportBilanFidele()
+    {
+        $customer = Customer::with([
+            'cotisations.typeCotisation',
+            'paiements',
+        ])->findOrFail($this->detailCustomerId);
+
+        $debut = $this->exportTout ? null : \Carbon\Carbon::parse($this->exportDebut)->startOfDay();
+        $fin   = $this->exportTout ? null : \Carbon\Carbon::parse($this->exportFin)->endOfDay();
+
+        $cotisations = $customer->cotisations()
+            ->with('typeCotisation')
+            ->when(! $this->exportTout, fn($q) => $q->whereBetween('created_at', [$debut, $fin]))
+            ->orderByDesc('annee')->orderByDesc('mois')
+            ->get();
+
+        $paiements = $customer->paiements()
+            ->where('statut', 'success')
+            ->when(! $this->exportTout, fn($q) => $q->whereBetween('date_paiement', [$debut, $fin]))
+            ->orderByDesc('date_paiement')
+            ->get();
+
+        $totalPaye   = $paiements->sum('montant');
+        $totalDu     = $cotisations->sum('montant_du');
+        $totalRestant= $cotisations->sum('montant_restant');
+        $periode     = $this->exportTout ? 'Tout l\'historique' :
+            \Carbon\Carbon::parse($this->exportDebut)->translatedFormat('d F Y') . ' au ' .
+            \Carbon\Carbon::parse($this->exportFin)->translatedFormat('d F Y');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.bilan-fidele', compact(
+            'customer', 'cotisations', 'paiements',
+            'totalPaye', 'totalDu', 'totalRestant', 'periode'
+        ))->setPaper('a4');
+
+        $this->closeModal_after_edit('modalExportFidele');
+
+        return response()->streamDownload(
+            fn() => print($pdf->output()),
+            "bilan-{$customer->nom}-{$customer->prenom}-".now()->format('Ymd').".pdf"
+        );
     }
 
     // ─── Données pour la vue ──────────────────────────────

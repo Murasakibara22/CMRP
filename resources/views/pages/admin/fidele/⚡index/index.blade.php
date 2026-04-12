@@ -440,6 +440,11 @@
                     data-bs-dismiss="modal">
               <i class="ri-delete-bin-line me-1"></i> Supprimer
             </button>
+            <button wire:click="openExportFidele"
+                    class="btn btn-sm btn-soft-success waves-effect"
+                    title="Exporter le bilan PDF">
+                <i class="ri-file-pdf-line me-1"></i> Bilan PDF
+            </button>
           </div>
         </div>
 
@@ -694,6 +699,55 @@
       </div>
 
     </div>{{-- /modal-content --}}
+  </div>
+</div>
+
+{{-- ══ MODAL EXPORT BILAN FIDÈLE ═════════════════════════ --}}
+<div class="modal fade" id="modalExportFidele" tabindex="-1" aria-hidden="true" wire:ignore.self>
+  <div class="modal-dialog" style="max-width:420px">
+    <div class="modal-content" style="border:none;border-radius:16px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="background:linear-gradient(135deg,#c0341a,#f06548);padding:20px 24px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff">
+            <i class="ri-file-pdf-line"></i>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:800;color:#fff">Exporter le bilan</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.65)">Choisissez la période</div>
+          </div>
+        </div>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div style="padding:22px 24px 0">
+        <div class="mb-3">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:600;color:#495057">
+            <input type="checkbox" wire:model.live="exportTout" style="width:18px;height:18px;accent-color:#405189"/>
+            Tout l'historique du fidèle
+          </label>
+        </div>
+        @if(! $exportTout)
+        <div class="row g-2">
+          <div class="col-6">
+            <label style="font-size:11px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px">Du</label>
+            <input type="date" class="form-control" wire:model="exportDebut"
+                   style="border-radius:9px;border:1.5px solid #e9ebec;font-size:13px"/>
+          </div>
+          <div class="col-6">
+            <label style="font-size:11px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px">Au</label>
+            <input type="date" class="form-control" wire:model="exportFin"
+                   style="border-radius:9px;border:1.5px solid #e9ebec;font-size:13px"/>
+          </div>
+        </div>
+        @endif
+      </div>
+      <div style="padding:16px 24px;display:flex;justify-content:space-between;gap:10px;border-top:1px solid #e9ebec;margin-top:20px">
+        <button class="btn btn-light" data-bs-dismiss="modal" style="border-radius:9px;font-weight:700">Annuler</button>
+        <button wire:click="exportBilanFidele"
+                style="background:linear-gradient(135deg,#c0341a,#f06548);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;padding:9px 20px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <i class="ri-download-line"></i> Télécharger le PDF
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 

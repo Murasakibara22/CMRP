@@ -14,9 +14,13 @@
       </nav>
     </div>
     <div class="d-flex gap-2">
-      <button class="btn btn-soft-success btn-sm waves-effect">
-        <i class="ri-file-excel-2-line me-1"></i> Exporter PDF
-      </button>
+      <button wire:click="exportBilanPdf"
+                class="btn btn-soft-danger btn-sm waves-effect"
+                wire:loading.attr="disabled">
+            <span wire:loading wire:target="exportBilanPdf" class="spinner-border spinner-border-sm me-1"></span>
+            <i class="ri-file-pdf-line me-1" wire:loading.remove wire:target="exportBilanPdf"></i>
+            Exporter PDF
+        </button>
     </div>
   </div>
 

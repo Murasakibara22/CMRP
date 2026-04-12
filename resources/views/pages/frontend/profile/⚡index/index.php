@@ -82,7 +82,7 @@ new #[Layout('layouts.app-frontend')] class extends Component
     public function deconnexion(): void
     {
         auth('customer')->logout();
-        $this->redirect(route('customer.login'));
+        $this->redirect(route('login-user'));
     }
 
     /* ── Données vue ────────────────────────────────────── */

@@ -146,6 +146,17 @@ new  class extends Component
         $this->send_event_at_toast('Paiement remboursé', 'success', 'top-end');
     }
 
+    public function exportRecu(int $id): \Symfony\Component\HttpFoundation\Response
+    {
+        $paiement = \App\Models\Paiement::with(['customer','cotisation.typeCotisation'])->findOrFail($id);
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.recu-paiement', compact('paiement'))
+            ->setPaper([0, 0, 420, 595]); // A5
+        return response()->streamDownload(
+            fn() => print($pdf->output()),
+            'recu-'.$paiement->id.'.pdf'
+        );
+    }
+
     /* ── Données vue ────────────────────────────────────── */
     public function with(): array
     {

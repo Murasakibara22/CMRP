@@ -14,6 +14,10 @@ Route::get('/test', function () {
     return view('test');
 });
 
+Route::get('/login', function () {
+    return redirect()->route('login-user');
+})->name('login');
+
 Route::prefix('auth')->group(function () {
 
 
@@ -22,7 +26,7 @@ Route::prefix('auth')->group(function () {
         return redirect()->route('admin.home');
     }
 
-    Route::livewire('connexion', 'auth::login')->name('login');
+    Route::livewire('connexion', 'auth::login')->name('login-admin');
 
 });
 
@@ -30,7 +34,7 @@ Route::prefix('sign')->group(function () {
 
 
     // si deja connecté rediriger sur la page de admin
-   
+
 
     Route::livewire('connexion/fidele', 'auth::login-frontend')->name('login-user')->middleware('check.customer.login');
 
@@ -47,7 +51,7 @@ Route::group(['middleware' => 'customer.verify'], function () {
         Route::livewire('paiements', 'frontend::paiement.index')->name('paiements');
         Route::livewire('profile', 'frontend::profile.index')->name('profile');
         Route::livewire('reclamations', 'frontend::reclammation.index')->name('reclamations');
-        Route::livewire('reclamations', 'frontend::reclammation.index')->name('documents');
+        Route::livewire('documents', 'frontend::document.index')->name('documents');
 
     });
 });
@@ -66,6 +70,10 @@ Route::middleware('auth')->group(function () {
         Route::livewire('type-depenses', 'admin::typedepense.index')->name('type-depenses.index');
         Route::livewire('depenses', 'admin::depense.index')->name('depenses.index');
         Route::livewire('users', 'admin::user.index')->name('users.index');
+        Route::livewire('messages', 'admin::messagegroupe.index')->name('messages.index');
+        Route::livewire('reclamations', 'admin::reclammation.index')->name('reclamations.index');
+        Route::livewire('roles', 'admin::settingrole.index')->name('roles.index');
+        Route::livewire('cout-engagement', 'admin::coutengagement.index')->name('cout-engagement.index');
 
     });
 });

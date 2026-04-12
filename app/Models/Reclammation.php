@@ -17,6 +17,8 @@ class Reclammation extends Model
         'status',
         'user_charged_id',
         'cotisation_id',
+        'reponse',
+        'resolved_at',
     ];
 
     public function customer()

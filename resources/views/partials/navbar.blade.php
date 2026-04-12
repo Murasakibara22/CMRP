@@ -102,7 +102,7 @@
 
 
                     <li class="nav-item">
-                        <a class="nav-link menu-link " href="#">
+                        <a class="nav-link menu-link {{ request()->routeIs('admin.cout-engagement.index') ? 'active' : ''}}" href="{{ route('admin.cout-engagement.index') }}">
                             <i class="ri-timer-fill"></i> <span data-key="t-widgets">Coût d'engagement</span>
                         </a>
                     </li>
@@ -175,7 +175,25 @@
 
                 <li class="nav-item">
                     <a class="nav-link menu-link {{ request()->routeIs('admin.users.index') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
-                        <i class=" ri-shield-user-fill"></i> <span data-key="t-widgets">Administrateurs & roles</span>
+                        <i class=" ri-shield-user-fill"></i> <span data-key="t-widgets">Administrateurs</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link {{ request()->routeIs('admin.roles.index') ? 'active' : '' }}" href="{{ route('admin.roles.index') }}">
+                        <i class=" ri-shield-user-fill"></i> <span data-key="t-widgets">Roles et permissions</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link {{ request()->routeIs('admin.reclamations.index') ? 'active' : '' }}" href="{{ route('admin.reclamations.index') }}">
+                        <i class=" ri-question-answer-fill"></i> <span data-key="t-widgets">Réclammations</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link {{ request()->routeIs('admin.messages.index') ? 'active' : '' }}" href="{{ route('admin.messages.index') }}">
+                        <i class=" ri-question-answer-fill"></i> <span data-key="t-widgets">Messages Grouper</span>
                     </a>
                 </li>
 

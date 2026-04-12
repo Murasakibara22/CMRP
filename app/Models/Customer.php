@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\MessageGroupe;
 use App\Models\Reclammation;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Tymon\JWTAuth\Contracts\JWTSubject;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class Customer extends  Authenticatable implements JWTSubject
 {
@@ -49,6 +51,13 @@ class Customer extends  Authenticatable implements JWTSubject
     public function reclammation(): HasMany
     {
         return $this->hasMany(Reclammation::class);
+    }
+
+     public function messageGroupes(): BelongsToMany
+    {
+        return $this->belongsToMany(MessageGroupe::class, 'message_groupe_customer')
+                ->withPivot(['statut', 'envoye_le', 'erreur'])
+            ->withTimestamps();
     }
 
     // ─── Scopes ──────────────────────────────────────────────

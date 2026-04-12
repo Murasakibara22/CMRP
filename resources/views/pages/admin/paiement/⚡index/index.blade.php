@@ -210,6 +210,10 @@
                         wire:click="openDetail({{ $pay->id }})" title="Voir détails">
                   <i class="ri-eye-line"></i>
                 </button>
+                <button wire:click="exportRecu({{ $pay->id }})"
+                        class="btn btn-soft-danger btn-sm waves-effect" title="Reçu PDF">
+                    <i class="ri-file-pdf-line"></i>
+                </button>
                 @if($pay->statut === 'en_attente' && $pay->mode_paiement === 'espece')
                 <button class="btn btn-soft-success waves-effect"
                         wire:click="confirmerValidation({{ $pay->id }})" title="Valider">

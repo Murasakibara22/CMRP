@@ -28,14 +28,15 @@ new #[Layout('layouts.app-frontend')] class extends Component
     /* ── Ouvrir / fermer modal détail ───────────────────── */
     public function showDetail(int $id): void
     {
-        $this->showRecla = false;
         $this->detailId  = $id;
+        $this->dispatch('OpenDetailCot');
     }
 
     public function closeDetail(): void
     {
+        $this->dispatch('closeDetailCot');
         $this->detailId  = null;
-        $this->showRecla = false;
+
     }
 
     /* ── Ouvrir modal réclamation depuis le détail ──────── */
@@ -53,16 +54,17 @@ new #[Layout('layouts.app-frontend')] class extends Component
               . ($cot->mois ? ' — ' . Carbon::create($cot->annee, $cot->mois)->translatedFormat('F Y') : '')
             : '—';
 
+
         $this->detailId  = null;  // ferme le détail
 
-        $this->dispatch('openRecla');
-        $this->showRecla = true;  // ouvre la réclamation
+        $this->dispatch('OpenReclaModal');
+        // $this->showRecla = true;  // ouvre la réclamation
     }
 
     public function closeRecla(): void
     {
-        $this->dispatch('closeReclaModal'); // pour fermer la modale via JS (ex: Escape)
-        $this->showRecla     = false;
+        // $this->dispatch('closeReclaModal'); // pour fermer la modale via JS (ex: Escape)
+        // $this->showRecla     = false;
         // $this->reclaCotId    = null;
         // $this->reclaLabel    = '';
         // // $this->reclaTitle    = '';

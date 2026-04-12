@@ -1,0 +1,99 @@
+/* ============================================================
+   MOSQUÉE – Rôles & Permissions BO CSS  --rp-*
+   ============================================================ */
+:root {
+  --rp-primary:      #405189;
+  --rp-primary-soft: rgba(64,81,137,.08);
+  --rp-surface:      #ffffff;
+  --rp-bg:           #f3f6f9;
+  --rp-border:       #e9ebec;
+  --rp-text:         #212529;
+  --rp-muted:        #878a99;
+  --rp-accent:       #0ab39c;
+  --rp-danger:       #f06548;
+  --rp-shadow-sm:    0 2px 8px rgba(64,81,137,.07);
+  --rp-shadow-md:    0 6px 24px rgba(64,81,137,.12);
+  --rp-radius:       14px;
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+.rp-page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.rp-page-header h4{font-size:20px;font-weight:800;color:#212529;margin:0}
+.btn-rp-primary{background:#405189;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;padding:10px 20px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .2s;font-family:'Nunito',sans-serif}
+.btn-rp-primary:hover{background:#2d3a63;transform:translateY(-1px);box-shadow:0 4px 14px rgba(64,81,137,.3)}
+
+/* ── Stats strip ─────────────────────────────────────────── */
+.rp-stats-strip{display:flex;align-items:center;gap:0;background:var(--rp-surface);border:1px solid var(--rp-border);border-radius:var(--rp-radius);padding:16px 24px;margin-bottom:24px;box-shadow:var(--rp-shadow-sm);flex-wrap:wrap}
+.rp-stat{display:flex;align-items:center;gap:12px;flex:1;min-width:120px}
+.rp-stat-div{width:1px;height:40px;background:var(--rp-border);margin:0 20px;flex-shrink:0}
+.rps-val{font-size:24px;font-weight:900;color:#212529;line-height:1}
+.rps-label{font-size:11px;color:var(--rp-muted);font-weight:600;margin-top:2px}
+
+/* ── Section header ──────────────────────────────────────── */
+.rp-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+
+/* ── Grille rôles ────────────────────────────────────────── */
+.rp-roles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:1199px){.rp-roles-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:767px){.rp-roles-grid{grid-template-columns:1fr}}
+
+/* ── Carte rôle ──────────────────────────────────────────── */
+.rp-role-card{background:var(--rp-surface);border:1px solid var(--rp-border);border-radius:var(--rp-radius);padding:20px;box-shadow:var(--rp-shadow-sm);transition:box-shadow .2s,transform .2s;display:flex;flex-direction:column}
+.rp-role-card:hover{box-shadow:var(--rp-shadow-md);transform:translateY(-2px)}
+
+.rrc-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+.rrc-icon{width:42px;height:42px;border-radius:10px;background:rgba(64,81,137,.08);color:#405189;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.rrc-title{font-size:15px;font-weight:800;color:#212529}
+.rrc-users{font-size:11px;color:var(--rp-muted);display:flex;align-items:center;gap:3px;margin-top:2px}
+
+.rrc-desc{font-size:12px;color:var(--rp-muted);line-height:1.5;margin-bottom:14px;flex:1}
+.rrc-no-perm{font-size:12px;color:var(--rp-muted);font-style:italic;margin-bottom:14px}
+
+.rrc-perms-title{font-size:11px;font-weight:700;color:var(--rp-text);margin-bottom:8px}
+.rrc-perms-list{display:flex;flex-direction:column;gap:5px;margin-bottom:16px}
+.rrc-perm-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--rp-text)}
+
+.rrc-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto;padding-top:14px;border-top:1px solid var(--rp-border)}
+.rrc-btn-modifier{border:none;border-radius:8px;background:rgba(64,81,137,.08);color:#405189;font-size:13px;font-weight:700;padding:8px;cursor:pointer;transition:all .18s;font-family:'Nunito',sans-serif}
+.rrc-btn-modifier:hover{background:rgba(64,81,137,.15)}
+.rrc-btn-supprimer{border:none;border-radius:8px;background:rgba(240,101,72,.08);color:#f06548;font-size:12px;font-weight:700;padding:8px;cursor:pointer;transition:all .18s;font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-content:center;gap:4px}
+.rrc-btn-supprimer:hover{background:rgba(240,101,72,.15)}
+
+/* ── Formulaire modal ────────────────────────────────────── */
+.rp-form-section{background:#fff;border:1px solid var(--rp-border);border-radius:12px;padding:22px;margin-bottom:20px}
+.rp-form-section-title{font-size:14px;font-weight:800;color:#212529;margin-bottom:16px}
+
+.rp-form-label{font-size:11px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block}
+.rp-form-label .req{color:#f06548;margin-left:2px}
+.rp-input-wrap{position:relative}
+.rp-input-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:#878a99;pointer-events:none}
+.rp-input{border:1.5px solid var(--rp-border);border-radius:9px;height:42px;padding:0 14px 0 38px;font-size:13px;font-family:'Nunito',sans-serif;font-weight:500;background:#f8f9fa;color:#212529;width:100%;transition:all .2s}
+.rp-input:focus{border-color:#405189;background:#fff;box-shadow:0 0 0 3px rgba(64,81,137,.08);outline:none}
+.rp-input-err{border-color:#f06548!important;background:rgba(240,101,72,.03)!important}
+.rp-input-mono{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.5px}
+
+/* ── Permissions ─────────────────────────────────────────── */
+.rp-perm-group{background:#f8f9fa;border:1px solid var(--rp-border);border-radius:10px;padding:16px;margin-bottom:14px}
+.rp-perm-group:last-child{margin-bottom:0}
+.rp-perm-group-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.rp-toggle-all{background:none;border:none;font-size:12px;font-weight:700;color:#405189;cursor:pointer;font-family:'Nunito',sans-serif;padding:0;transition:color .18s}
+.rp-toggle-all:hover{color:#2d3a63}
+
+.rp-perm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(max-width:767px){.rp-perm-grid{grid-template-columns:1fr}}
+
+.rp-perm-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;border:1.5px solid var(--rp-border);background:#fff;cursor:pointer;transition:all .18s;user-select:none}
+.rp-perm-item:hover{border-color:#405189;background:rgba(64,81,137,.04)}
+.rp-perm-item.checked{border-color:#405189;background:rgba(64,81,137,.07)}
+
+.rp-perm-checkbox{width:18px;height:18px;border-radius:5px;border:1.5px solid #ced4da;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;font-size:11px}
+.rp-checked{border-color:#405189;background:#405189;color:#fff}
+
+.rp-perm-label{font-size:12px;font-weight:600;color:#212529}
+
+/* ── Boutons footer modal ────────────────────────────────── */
+.rp-btn-cancel{border:1.5px solid var(--rp-border);border-radius:10px;background:#fff;color:#495057;font-size:14px;font-weight:700;padding:11px 24px;cursor:pointer;transition:all .2s;font-family:'Nunito',sans-serif}
+.rp-btn-cancel:hover{border-color:#405189;color:#405189}
+.rp-btn-save{border:none;border-radius:10px;background:#405189;color:#fff;font-size:14px;font-weight:700;padding:11px 28px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .22s;font-family:'Nunito',sans-serif}
+.rp-btn-save:hover{background:#2d3a63;transform:translateY(-1px);box-shadow:0 4px 16px rgba(64,81,137,.3)}
+.rp-btn-save:disabled{opacity:.65}
