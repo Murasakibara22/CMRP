@@ -145,12 +145,12 @@
 <body>
 
 {{-- ══ HEADER ══ --}}
-<div class="recu-header">
+{{-- <div class="recu-header">
   <div class="recu-logo">🕌</div>
   <div class="recu-mosque">ISL Mosquée</div>
   <div class="recu-sub">Gestion des cotisations et paiements</div>
   <div class="recu-badge">✅ REÇU DE PAIEMENT OFFICIEL</div>
-</div>
+</div> --}}
 
 {{-- ══ RÉFÉRENCE ══ --}}
 <div class="recu-ref-block">

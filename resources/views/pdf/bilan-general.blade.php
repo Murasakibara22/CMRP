@@ -128,7 +128,7 @@
 
 {{-- ══ HEADER ══ --}}
 <div class="pdf-header">
-  <div class="header-top">
+  {{-- <div class="header-top">
     <div class="mosque-brand">
       <div class="mosque-logo">🕌</div>
       <div class="mosque-name">ISL Mosquée</div>
@@ -139,7 +139,7 @@
       <div class="doc-periode">{{ $periode }}</div>
       <div class="doc-gen">Généré le {{ $genereLe }}</div>
     </div>
-  </div>
+  </div> --}}
 
   <div class="solde-banner">
     <div class="sb-item">

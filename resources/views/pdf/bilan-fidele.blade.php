@@ -11,7 +11,7 @@
   /* ── Header mosquée ── */
   .pdf-header {
     background: linear-gradient(135deg, #2d3a63 0%, #405189 60%, #3577f1 100%);
-    padding: 28px 32px 24px;
+    padding: 0px 32px 24px;
     color: #fff;
     position: relative;
     overflow: hidden;
@@ -182,14 +182,14 @@
 <body>
 
 {{-- ══ HEADER ══ --}}
-<div class="pdf-header">
+{{-- <div class="pdf-header">
   <div class="mosque-logo">🕌</div>
-  <div class="mosque-name">ISL Mosquée</div>
+  <div class="mosque-name">CMRP Mosquée</div>
   <div class="mosque-sub">Espace Fidèle — Bilan personnel</div>
   <div class="doc-title">Relevé de cotisations</div>
   <div class="doc-periode">Période : {{ $periode }}</div>
   <div class="doc-meta">Généré le {{ now()->translatedFormat('d F Y à H:i') }}</div>
-</div>
+</div> --}}
 
 {{-- ══ INFOS FIDÈLE ══ --}}
 <div class="fidele-block">
@@ -328,7 +328,7 @@
 {{-- ══ FOOTER ══ --}}
 <div class="pdf-footer">
   <div>
-    <strong>ISL Mosquée</strong> — Document généré automatiquement<br>
+    <strong>CMRP Mosquée</strong> — Document généré automatiquement<br>
     Ce document est un relevé officiel de vos cotisations.
   </div>
   <div style="text-align:right">
