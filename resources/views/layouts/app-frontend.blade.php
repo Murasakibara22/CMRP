@@ -5,6 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <meta name="theme-color" content="#405189"/>
   <meta name="csrf-token" content="{{ csrf_token() }}">
+
+  {{-- Referencemnt --}}
+
+  <!-- ── Description & Keywords ── -->
+<meta name="description" content="Espace fidèle du CMRP (Comité des Mosquées de la Riviera Palmeraie). Gérez vos cotisations mensuelles, consultez votre historique de paiements et suivez votre situation en temps réel.">
+<meta name="keywords" content="CMRP, cotisation mosquée Abidjan, Riviera Palmeraie, espace fidèle, gestion cotisation, mosquée Côte d'Ivoire, paiement cotisation mensuel">
+
+<!-- ── L'espace fidèle est privé → pas d'indexation ── -->
+<meta name="robots" content="/login-user">
+
+<!-- ── Géolocalisation ── -->
+<meta name="geo.region"    content="CI-AB">
+<meta name="geo.placename" content="Abidjan, Riviera Palmeraie">
+<meta name="geo.position"  content="5.3599517;-4.0082563">
+<meta name="ICBM"          content="5.3599517, -4.0082563">
+
+<!-- ── Open Graph (WhatsApp, Facebook) ── -->
+<meta property="og:locale"      content="fr_CI">
+<meta property="og:type"        content="website">
+<meta property="og:site_name"   content="CMRP">
+<meta property="og:title"       content="CMRP — Espace Fidèle | Gestion des cotisations">
+<meta property="og:description" content="Gérez vos cotisations mensuelles, consultez votre historique et suivez votre situation au sein du CMRP.">
+<meta property="og:url"         content="{{ url('/customer/home') }}">
+<meta property="og:image"       content="{{ asset('images/icons/android/launchericon-512x512.png') }}">
+<meta property="og:image:width"  content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:image:alt"    content="CMRP - Espace Fidèle">
+
+<!-- ── Twitter Card ── -->
+<meta name="twitter:card"        content="summary">
+<meta name="twitter:title"       content="CMRP — Espace Fidèle">
+<meta name="twitter:description" content="Gérez vos cotisations mensuelles au sein du CMRP.">
+<meta name="twitter:image"       content="{{ asset('images/icons/android/launchericon-512x512.png') }}">
+
+<!-- ── Schema.org ── -->
+@php
+$schema = json_encode([
+    '@context'    => 'https://schema.org',
+    '@type'       => 'Organization',
+    'name'        => 'CMRP - Comité des Mosquées de la Riviera Palmeraie',
+    'description' => 'Gestion des cotisations et suivi des fidèles de la mosquée de la Riviera Palmeraie à Abidjan.',
+    'url'         => url('/'),
+    'logo'        => asset('images/icons/android/launchericon-512x512.png'),
+    'address'     => [
+        '@type'           => 'PostalAddress',
+        'streetAddress'   => 'Riviera Palmeraie',
+        'addressLocality' => 'Abidjan',
+        'addressCountry'  => 'CI',
+    ],
+    'geo' => [
+        '@type'     => 'GeoCoordinates',
+        'latitude'  => '5.3599517',
+        'longitude' => '-4.0082563',
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+@endphp
+
+
    <!-- ── PWA ───────────────────────────────────────────── -->
     <link rel="manifest" href="/manifest.json">
     <meta name="author" content="CMRP">
@@ -38,6 +96,11 @@
 
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/png" href="{{ asset('images/icons/android/launchericon-96x96.png') }}">
+
+
+
+
+
 
     <style>
         .pwa-splash {
@@ -162,5 +225,11 @@
             });
         }
     </script>
+
+    <script type="application/ld+json">{!! $schema !!}</script>
+
+<!-- ── Preconnect ── -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
 </body>
 </html>
