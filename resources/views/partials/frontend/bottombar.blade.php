@@ -22,3 +22,5 @@
       <span>Profil</span>
     </button>
   </nav>
+
+<div class="d-block d-lg-none" style="height: 15px;"></div>
