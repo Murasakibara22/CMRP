@@ -6,8 +6,8 @@ const PRECACHE = [
     '/customer/home',
     '/offline',
     '/manifest.json',
-    '/images/icons/android/launchericon-192-192.png',
-    '/images/icons/android/launchericon-512-512.png',
+    '/images/icons/android/launchericon-192x192.png',
+    '/images/icons/android/launchericon-512x512.png',
 ];
 
 /* ── Install ── */
