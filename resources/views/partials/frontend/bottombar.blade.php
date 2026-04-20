@@ -1,5 +1,5 @@
 <!-- ══ BOTTOM BAR ════════════════════════════════════ -->
-  <nav class="bottom-bar" style="margin-bottom: 15px;">
+  <nav class="bottom-bar" style="padding-bottom: 15px;">
     <button class="bb-item {{ request()->routeIs('customer.home') ? 'active' : ''}}" onclick="window.location.href='{{ route('customer.home') }}'">
       <i class="ri-home-5-fill"></i>
       <span>Accueil</span>
