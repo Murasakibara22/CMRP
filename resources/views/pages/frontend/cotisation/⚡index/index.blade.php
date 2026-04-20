@@ -24,6 +24,26 @@
     </div>
   </div>
 
+  {{-- ══ BOUTON PAYER EN AVANCE ══════════════════════════════ --}}
+  <div style="padding:0 16px 14px;display:flex;justify-content:flex-end">
+    <button wire:click="openAvance"
+            style="
+              display:inline-flex;align-items:center;gap:8px;
+              padding:10px 18px;border-radius:12px;
+              background:{{ $hasMensuel ? 'linear-gradient(135deg,#2d3a63,#405189)' : '#e9ebec' }};
+              color:{{ $hasMensuel ? '#fff' : '#878a99' }};
+              border:none;font-size:13px;font-weight:700;
+              cursor:{{ $hasMensuel ? 'pointer' : 'not-allowed' }};
+              font-family:inherit;transition:all .2s;
+            ">
+      <i class="ri-calendar-check-2-line" style="font-size:16px"></i>
+      Payer en avance
+      @if(! $hasMensuel)
+      <span style="font-size:10px;font-weight:500;background:rgba(135,138,153,.2);padding:2px 6px;border-radius:6px">Mensuel requis</span>
+      @endif
+    </button>
+  </div>
+
   {{-- ══ FILTRES STATUT ═════════════════════════════════════ --}}
   <div class="status-tabs">
     <button class="stab active" data-statut="tous" onclick="filterCot(this)">Tous</button>
@@ -97,15 +117,13 @@
         default
             => 'Don ponctuel · ' . $cot->created_at->format('d/m/Y'),
     };
+
+    /* Paiement en attente = montant_paye > 0 mais pas encore validée */
+    $paiementEnAttente = $statut !== 'a_jour'
+        && $cot->montant_paye > 0
+        && ! $cot->validated_at;
   @endphp
 
-  {{--
-    IMPORTANT : wire:click sur la div principale.
-    On NE met PAS wire:ignore ici car les items doivent
-    re-render quand Livewire met à jour la liste.
-    L'overlay est en dehors du @forelse donc il ne subit
-    pas de re-render partiel qui effacerait la classe CSS.
-  --}}
   <div class="cot-item"
        data-statut="{{ $statutJs }}"
        wire:click="showDetail({{ $cot->id }})"
@@ -116,7 +134,12 @@
       </div>
       <div class="cot-body">
         <div class="cot-name">{{ $tc?->libelle ?? '—' }}</div>
-        <div class="cot-sub">{{ $subLine }}</div>
+        <div class="cot-sub">
+          {{ $subLine }}
+          @if($paiementEnAttente)
+            <span style="display:inline-block;background:rgba(247,184,75,.15);color:#c07a10;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px">En attente validation</span>
+          @endif
+        </div>
         <div class="cot-progress">
           <div class="cot-fill" style="width:{{ $pct }}%;background:{{ $barColor }}"></div>
         </div>
@@ -154,21 +177,15 @@
     <div class="es-sub">Aucune cotisation ne correspond à ce filtre.</div>
   </div>
 
-  <div style="height:24px"></div>
+  <div style="height:80px"></div>
 
 </main>
 
 
 {{-- ══════════════════════════════════════════════════════════
      MODAL DÉTAIL COTISATION
-     ──────────────────────────────────────────────────────────
-     LA CLÉ DU FIX : la classe "open" est rendue directement
-     par Blade via $detailId. Livewire re-render → le HTML
-     contient déjà "open" → le CSS l'affiche immédiatement.
-     Zéro JS pour l'ouverture/fermeture.
 ══════════════════════════════════════════════════════════ --}}
 <div class="cot-modal-overlay" id="cot-detail-overlay" wire:ignore.self>
-
   <div class="cot-modal" wire:click.stop>
 
     @if($detailCotisation)
@@ -210,13 +227,17 @@
           : 'Ponctuel';
 
       $pillHtml = match($statut) {
-          'a_jour'    => '<span class="pill" style="background:rgba(255,255,255,.2);color:#fff;font-size:11px"><i class="ri-checkbox-circle-line"></i> À jour</span>',
-          'partiel'   => '<span class="pill" style="background:rgba(255,255,255,.2);color:#fff;font-size:11px"><i class="ri-error-warning-line"></i> Partiel</span>',
-          default     => '<span class="pill" style="background:rgba(255,255,255,.2);color:#fff;font-size:11px"><i class="ri-time-line"></i> En retard</span>',
+          'a_jour'  => '<span class="pill" style="background:rgba(255,255,255,.2);color:#fff;font-size:11px"><i class="ri-checkbox-circle-line"></i> À jour</span>',
+          'partiel' => '<span class="pill" style="background:rgba(255,255,255,.2);color:#fff;font-size:11px"><i class="ri-error-warning-line"></i> Partiel</span>',
+          default   => '<span class="pill" style="background:rgba(255,255,255,.2);color:#fff;font-size:11px"><i class="ri-time-line"></i> En retard</span>',
       };
+
+      /* Payer visible si cotisation non validée */
+      $peutPayer = $statut !== 'a_jour' && ! $dc->validated_at;
+      /* Paiement déjà en attente = montant_paye > 0 mais pas validé */
+      $dejaEnAttente = $statut !== 'a_jour' && $dc->montant_paye > 0 && ! $dc->validated_at;
     @endphp
 
-    {{-- Header --}}
     <div class="cot-modal-header" id="cot-modal-header" style="background:{{ $headerBg }}">
       <div class="cmh-drag"></div>
       <div class="cmh-top">
@@ -241,8 +262,19 @@
       </div>
     </div>
 
-    {{-- Corps scrollable --}}
     <div class="cot-modal-body">
+
+      {{-- Alerte paiement en attente --}}
+      @if($dejaEnAttente)
+      <div style="background:rgba(247,184,75,.08);border:1.5px solid #f7b84b;border-left:4px solid #f7b84b;border-radius:0 10px 10px 0;padding:12px 14px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#c07a10;margin-bottom:2px">
+          <i class="ri-time-line me-1"></i>Paiement en attente de validation
+        </div>
+        <div style="font-size:11px;color:#495057">
+          Votre paiement de {{ number_format($dc->montant_paye, 0, ',', ' ') }} FCFA a été enregistré et attend la validation de l'administration.
+        </div>
+      </div>
+      @endif
 
       {{-- Grille infos --}}
       <div class="cot-det-grid">
@@ -284,14 +316,14 @@
       <div class="cot-det-prog-wrap">
         <div class="cot-det-prog-header">
           <span class="cot-det-prog-label"><i class="ri-bar-chart-line"></i> Progression</span>
-          <span class="cot-det-prog-pct" id="det-pct-label" style="color:{{ $progColor }}">{{ $pctDet }}%</span>
+          <span class="cot-det-prog-pct" style="color:{{ $progColor }}">{{ $pctDet }}%</span>
         </div>
         <div class="cot-det-prog-track">
-          <div class="cot-det-prog-fill" id="det-prog-fill" style="width:{{ $pctDet }}%;background:{{ $progColor }}"></div>
+          <div class="cot-det-prog-fill" style="width:{{ $pctDet }}%;background:{{ $progColor }}"></div>
         </div>
         <div class="cot-det-prog-footer">
-          <span id="det-prog-paye-lbl">{{ number_format($dc->montant_paye, 0, ',', ' ') }} FCFA payé</span>
-          <span id="det-prog-du-lbl">{{ $dc->montant_du ? number_format($dc->montant_du, 0, ',', ' ').' FCFA dû' : '—' }}</span>
+          <span>{{ number_format($dc->montant_paye, 0, ',', ' ') }} FCFA payé</span>
+          <span>{{ $dc->montant_du ? number_format($dc->montant_du, 0, ',', ' ').' FCFA dû' : '—' }}</span>
         </div>
       </div>
 
@@ -299,9 +331,9 @@
       <div class="cot-det-section-title">
         <i class="ri-bank-card-line"></i> Paiements liés
       </div>
-      <div class="cot-det-pay-list" id="det-pay-list">
+      <div class="cot-det-pay-list">
         @forelse($detailPaiements as $p)
-        <div class="cot-pay-row">
+        <div class="cot-pay-item">
           <div class="cot-pay-icon" style="background:{{ $p['iconBg'] }};color:{{ $p['iconColor'] }}">
             <i class="{{ $p['icon'] }}"></i>
           </div>
@@ -314,7 +346,7 @@
           </div>
         </div>
         @empty
-        <div class="cot-pay-empty" id="det-pay-empty">
+        <div class="cot-pay-empty">
           <i class="ri-inbox-line"></i> Aucun paiement enregistré
         </div>
         @endforelse
@@ -325,29 +357,322 @@
     {{-- Footer --}}
     <div class="cot-modal-footer">
       <button class="cot-footer-recla" wire:click="openRecla({{ $dc->id }})">
-        <i class="ri-flag-line"></i> Faire une réclamation
+        <i class="ri-flag-line"></i> Réclamation
       </button>
-      @if($statut !== 'a_jour')
-      <button class="cot-footer-pay"
-              wire:click="closeDetail"
-              onclick="window.location.href='{{ route('customer.ajout-cotisations') }}'">
-        <i class="ri-add-circle-line"></i> Payer
-      </button>
+      {{--
+        Bouton Payer :
+        - Visible si cotisation non validée
+        - Grisé si paiement déjà en attente (montant_paye > 0)
+      --}}
+      @if($peutPayer)
+        @if($dejaEnAttente)
+        <button style="
+          display:inline-flex;align-items:center;gap:6px;
+          padding:10px 18px;border-radius:12px;border:none;
+          background:#e9ebec;color:#878a99;
+          font-size:13px;font-weight:700;cursor:not-allowed;font-family:inherit;
+        " disabled title="Paiement déjà en attente de validation">
+          <i class="ri-time-line"></i> En attente
+        </button>
+        @else
+        <button class="cot-footer-pay" wire:click="openPaiement({{ $dc->id }})">
+          <i class="ri-bank-card-line"></i> Payer
+        </button>
+        @endif
       @endif
     </div>
 
     @endif
-  </div>{{-- /cot-modal --}}
-</div>{{-- /cot-modal-overlay détail --}}
+  </div>
+</div>
+
+
+{{-- ══════════════════════════════════════════════════════════
+     MODAL PAIEMENT SIMPLE
+══════════════════════════════════════════════════════════ --}}
+<div class="cot-modal-overlay" id="cot-paiement-overlay" wire:ignore.self>
+  <div class="cot-modal cot-modal-sm" wire:click.stop>
+
+    <div class="cot-modal-header" style="background:linear-gradient(135deg,#2d3a63,#405189)">
+      <div class="cmh-drag"></div>
+      <div class="cmh-top">
+        <div class="cmh-left">
+          <div class="cmh-icon" style="background:rgba(255,255,255,.18)">
+            <i class="ri-bank-card-line" style="color:#fff"></i>
+          </div>
+          <div>
+            <div class="cmh-type" style="color:rgba(255,255,255,.8);font-size:11px">PAIEMENT</div>
+            <div class="cmh-period" style="color:#fff;font-size:14px;font-weight:800">{{ $paiementLabel }}</div>
+          </div>
+        </div>
+        <button class="cmh-close" wire:click="closePaiement"><i class="ri-close-line"></i></button>
+      </div>
+      <div class="cmh-amount-row">
+        <div class="cmh-amount">{{ number_format($paiementMontant, 0, ',', ' ') }} FCFA</div>
+        <span class="pill" style="background:rgba(255,255,255,.2);color:#fff;font-size:11px">À régler</span>
+      </div>
+    </div>
+
+    <div class="cot-modal-body">
+
+      {{-- Montant récapitulatif --}}
+      <div style="background:rgba(64,81,137,.05);border-radius:12px;padding:14px 16px;margin-bottom:20px;text-align:center">
+        <div style="font-size:11px;color:#878a99;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Montant à payer</div>
+        <div style="font-size:28px;font-weight:900;color:#405189;font-family:'JetBrains Mono',monospace">
+          {{ number_format($paiementMontant, 0, ',', ' ') }}
+          <span style="font-size:14px;font-weight:600">FCFA</span>
+        </div>
+      </div>
+
+      {{-- Choisir le mode --}}
+      <div style="font-size:12px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">
+        Mode de paiement
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+
+        {{-- Espèces --}}
+        <div wire:click="selectPaiementMode('espece')"
+             style="
+               display:flex;align-items:center;gap:12px;
+               border:2px solid {{ $paiementMode === 'espece' ? '#405189' : '#e9ebec' }};
+               background:{{ $paiementMode === 'espece' ? 'rgba(64,81,137,.06)' : '#fff' }};
+               border-radius:12px;padding:14px;cursor:pointer;transition:all .2s;
+             ">
+          <div style="width:42px;height:42px;border-radius:10px;background:{{ $paiementMode === 'espece' ? 'rgba(64,81,137,.15)' : 'rgba(247,184,75,.1)' }};display:flex;align-items:center;justify-content:center;font-size:20px;color:{{ $paiementMode === 'espece' ? '#405189' : '#d4a843' }};flex-shrink:0">
+            <i class="ri-money-dollar-circle-line"></i>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:{{ $paiementMode === 'espece' ? '#405189' : '#212529' }}">Espèces</div>
+            <div style="font-size:11px;color:#878a99;margin-top:2px">Remise en main propre à l'administration</div>
+          </div>
+          <div style="margin-left:auto;width:22px;height:22px;border-radius:50%;border:2px solid {{ $paiementMode === 'espece' ? '#405189' : '#e9ebec' }};background:{{ $paiementMode === 'espece' ? '#405189' : 'transparent' }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            @if($paiementMode === 'espece')<i class="ri-check-line" style="color:#fff;font-size:12px"></i>@endif
+          </div>
+        </div>
+
+        {{-- Mobile Money --}}
+        <div wire:click="selectPaiementMode('mobile_money')"
+             style="
+               display:flex;align-items:center;gap:12px;
+               border:2px solid {{ $paiementMode === 'mobile_money' ? '#405189' : '#e9ebec' }};
+               background:{{ $paiementMode === 'mobile_money' ? 'rgba(64,81,137,.06)' : '#fff' }};
+               border-radius:12px;padding:14px;cursor:pointer;transition:all .2s;
+             ">
+          <div style="width:42px;height:42px;border-radius:10px;background:{{ $paiementMode === 'mobile_money' ? 'rgba(64,81,137,.15)' : 'rgba(10,179,156,.1)' }};display:flex;align-items:center;justify-content:center;font-size:20px;color:{{ $paiementMode === 'mobile_money' ? '#405189' : '#0ab39c' }};flex-shrink:0">
+            <i class="ri-smartphone-line"></i>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:{{ $paiementMode === 'mobile_money' ? '#405189' : '#212529' }}">Mobile Money / Carte</div>
+            <div style="font-size:11px;color:#878a99;margin-top:2px">Orange Money, MTN MoMo, Wave, carte visa</div>
+          </div>
+          <div style="margin-left:auto;width:22px;height:22px;border-radius:50%;border:2px solid {{ $paiementMode === 'mobile_money' ? '#405189' : '#e9ebec' }};background:{{ $paiementMode === 'mobile_money' ? '#405189' : 'transparent' }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            @if($paiementMode === 'mobile_money')<i class="ri-check-line" style="color:#fff;font-size:12px"></i>@endif
+          </div>
+        </div>
+
+      </div>
+
+      @if($errorPaiement)
+      <div style="font-size:12px;color:#f06548;font-weight:600;margin-bottom:12px">
+        <i class="ri-error-warning-line me-1"></i>{{ $errorPaiement }}
+      </div>
+      @endif
+
+      {{-- Note espèces --}}
+      @if($paiementMode === 'espece')
+      <div style="background:rgba(247,184,75,.08);border-left:3px solid #f7b84b;border-radius:0 10px 10px 0;padding:10px 12px;margin-bottom:4px">
+        <div style="font-size:11px;color:#c07a10;line-height:1.5">
+          <i class="ri-information-line me-1"></i>
+          Votre paiement sera enregistré en <strong>attente de validation</strong>.
+          Remettez le montant en espèces à l'administration qui le validera.
+        </div>
+      </div>
+      @endif
+
+      @if($paiementMode === 'mobile_money')
+      <div style="background:rgba(10,179,156,.06);border-left:3px solid #0ab39c;border-radius:0 10px 10px 0;padding:10px 12px;margin-bottom:4px">
+        <div style="font-size:11px;color:#089383;line-height:1.5">
+          <i class="ri-information-line me-1"></i>
+          Votre paiement sera enregistré en <strong>attente de validation</strong>.
+          Effectuez le virement et l'administration confirmera la réception.
+        </div>
+      </div>
+      @endif
+
+    </div>
+
+    <div class="cot-modal-footer" style="border-top:1px solid var(--border)">
+      <button class="cot-footer-recla" style="border-color:rgba(135,138,153,.3);color:var(--muted)" wire:click="closePaiement">
+        <i class="ri-close-line"></i> Annuler
+      </button>
+      <button class="cot-footer-pay"
+              wire:click="submitPaiement"
+              wire:loading.attr="disabled">
+        <span wire:loading wire:target="submitPaiement"><div class="spinner"></div></span>
+        <span wire:loading.remove wire:target="submitPaiement">
+          <i class="ri-check-line"></i> Confirmer
+        </span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+
+{{-- ══════════════════════════════════════════════════════════
+     MODAL PAIEMENT EN AVANCE
+══════════════════════════════════════════════════════════ --}}
+<div class="cot-modal-overlay" id="cot-avance-overlay" wire:ignore.self>
+  <div class="cot-modal" wire:click.stop>
+
+    <div class="cot-modal-header" style="background:linear-gradient(135deg,#0a5a50,#0ab39c)">
+      <div class="cmh-drag"></div>
+      <div class="cmh-top">
+        <div class="cmh-left">
+          <div class="cmh-icon" style="background:rgba(255,255,255,.18)">
+            <i class="ri-calendar-check-2-line" style="color:#fff"></i>
+          </div>
+          <div>
+            <div class="cmh-type" style="color:rgba(255,255,255,.8);font-size:11px">PAIEMENT EN AVANCE</div>
+            <div class="cmh-period" style="color:#fff;font-size:14px;font-weight:800">
+              Cotisation mensuelle
+              @if($customer->typeCotisationMensuel ?? null)
+                — {{ $customer->typeCotisationMensuel->libelle }}
+              @endif
+            </div>
+          </div>
+        </div>
+        <button class="cmh-close" wire:click="closeAvance"><i class="ri-close-line"></i></button>
+      </div>
+      @if($customer->montant_engagement && count($previewAvance))
+      <div class="cmh-amount-row">
+        <div class="cmh-amount">
+          {{ number_format(count($previewAvance) * $customer->montant_engagement, 0, ',', ' ') }} FCFA
+        </div>
+        <span class="pill" style="background:rgba(255,255,255,.2);color:#fff;font-size:11px">
+          {{ count($previewAvance) }} mois
+        </span>
+      </div>
+      @endif
+    </div>
+
+    <div class="cot-modal-body">
+
+      {{-- Nombre de mois --}}
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">
+          Nombre de mois à payer en avance
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <button wire:click="$set('nbMoisAvance', {{ max(1, $nbMoisAvance - 1) }})"
+                  style="width:36px;height:36px;border-radius:50%;border:2px solid #e9ebec;background:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#405189;flex-shrink:0">
+            −
+          </button>
+          <div style="flex:1;text-align:center">
+            <div style="font-size:32px;font-weight:900;color:#405189">{{ $nbMoisAvance }}</div>
+            <div style="font-size:11px;color:#878a99">mois</div>
+          </div>
+          <button wire:click="$set('nbMoisAvance', {{ min(24, $nbMoisAvance + 1) }})"
+                  style="width:36px;height:36px;border-radius:50%;border:2px solid #e9ebec;background:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#405189;flex-shrink:0">
+            +
+          </button>
+        </div>
+        <input type="range" wire:model.live="nbMoisAvance" min="1" max="24"
+               style="width:100%;margin-top:10px;accent-color:#405189"/>
+      </div>
+
+      {{-- Prévisualisation des mois --}}
+      @if(count($previewAvance))
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">
+          Mois qui seront créés
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;padding-right:4px">
+          @foreach($previewAvance as $i => $row)
+          <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(10,179,156,.05);border:1px solid rgba(10,179,156,.15);border-radius:10px;padding:10px 12px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:28px;height:28px;border-radius:8px;background:rgba(10,179,156,.12);color:#0ab39c;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">
+                {{ $i + 1 }}
+              </div>
+              <div style="font-size:13px;font-weight:600;color:#212529">{{ $row['label'] }}</div>
+            </div>
+            <div style="font-size:13px;font-weight:800;color:#0ab39c;font-family:'JetBrains Mono',monospace">
+              {{ number_format($row['montant'], 0, ',', ' ') }} FCFA
+            </div>
+          </div>
+          @endforeach
+        </div>
+
+        {{-- Total --}}
+        <div style="background:rgba(64,81,137,.06);border-radius:10px;padding:12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;font-weight:700;color:#495057">Total</span>
+          <span style="font-size:18px;font-weight:900;color:#405189;font-family:'JetBrains Mono',monospace">
+            {{ number_format(count($previewAvance) * ($customer->montant_engagement ?? 0), 0, ',', ' ') }} FCFA
+          </span>
+        </div>
+      </div>
+      @endif
+
+      {{-- Mode de paiement --}}
+      <div style="font-size:12px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">
+        Mode de paiement
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+        <div wire:click="selectAvanceMode('espece')"
+             style="display:flex;align-items:center;gap:10px;border:2px solid {{ $avanceMode === 'espece' ? '#405189' : '#e9ebec' }};background:{{ $avanceMode === 'espece' ? 'rgba(64,81,137,.06)' : '#fff' }};border-radius:12px;padding:12px;cursor:pointer;transition:all .2s">
+          <div style="width:36px;height:36px;border-radius:9px;background:rgba(247,184,75,.1);display:flex;align-items:center;justify-content:center;font-size:18px;color:#d4a843;flex-shrink:0">
+            <i class="ri-money-dollar-circle-line"></i>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:{{ $avanceMode === 'espece' ? '#405189' : '#212529' }}">Espèces</div>
+          <div style="margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid {{ $avanceMode === 'espece' ? '#405189' : '#e9ebec' }};background:{{ $avanceMode === 'espece' ? '#405189' : 'transparent' }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            @if($avanceMode === 'espece')<i class="ri-check-line" style="color:#fff;font-size:11px"></i>@endif
+          </div>
+        </div>
+
+        <div wire:click="selectAvanceMode('mobile_money')"
+             style="display:flex;align-items:center;gap:10px;border:2px solid {{ $avanceMode === 'mobile_money' ? '#405189' : '#e9ebec' }};background:{{ $avanceMode === 'mobile_money' ? 'rgba(64,81,137,.06)' : '#fff' }};border-radius:12px;padding:12px;cursor:pointer;transition:all .2s">
+          <div style="width:36px;height:36px;border-radius:9px;background:rgba(10,179,156,.1);display:flex;align-items:center;justify-content:center;font-size:18px;color:#0ab39c;flex-shrink:0">
+            <i class="ri-smartphone-line"></i>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:{{ $avanceMode === 'mobile_money' ? '#405189' : '#212529' }}">Mobile Money / Carte</div>
+          <div style="margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid {{ $avanceMode === 'mobile_money' ? '#405189' : '#e9ebec' }};background:{{ $avanceMode === 'mobile_money' ? '#405189' : 'transparent' }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            @if($avanceMode === 'mobile_money')<i class="ri-check-line" style="color:#fff;font-size:11px"></i>@endif
+          </div>
+        </div>
+      </div>
+
+      @if($errorAvance)
+      <div style="font-size:12px;color:#f06548;font-weight:600">
+        <i class="ri-error-warning-line me-1"></i>{{ $errorAvance }}
+      </div>
+      @endif
+
+    </div>
+
+    <div class="cot-modal-footer" style="border-top:1px solid var(--border)">
+      <button class="cot-footer-recla" style="border-color:rgba(135,138,153,.3);color:var(--muted)" wire:click="closeAvance">
+        <i class="ri-close-line"></i> Annuler
+      </button>
+      <button class="cot-footer-pay"
+              wire:click="submitAvance"
+              wire:loading.attr="disabled">
+        <span wire:loading wire:target="submitAvance"><div class="spinner"></div></span>
+        <span wire:loading.remove wire:target="submitAvance">
+          <i class="ri-check-double-line"></i> Confirmer {{ count($previewAvance) }} mois
+        </span>
+      </button>
+    </div>
+
+  </div>
+</div>
 
 
 {{-- ══════════════════════════════════════════════════════════
      MODAL RÉCLAMATION
-     Même principe : classe "open" via $showRecla Blade
 ══════════════════════════════════════════════════════════ --}}
-<div id="cot-recla-overlay" @if($showRecla ) wire:ignore.self @endif class="cot-modal-overlay {{ $showRecla ? 'open' : '' }}"
-      >
-
+<div id="cot-recla-overlay" class="cot-modal-overlay" wire:ignore.self>
   <div class="cot-modal cot-modal-sm" wire:click.stop>
 
     <div class="cot-modal-header" style="background:linear-gradient(135deg,#e8a53a,#f7b84b)">
@@ -362,9 +687,7 @@
             <div class="cmh-period" style="color:#fff;font-size:15px;font-weight:900">Signaler un problème</div>
           </div>
         </div>
-        <button class="cmh-close" wire:click="closeRecla">
-          <i class="ri-close-line"></i>
-        </button>
+        <button class="cmh-close" wire:click="closeRecla"><i class="ri-close-line"></i></button>
       </div>
     </div>
 
@@ -375,48 +698,38 @@
         <input type="text" class="f-input-sm" value="{{ $reclaLabel }}" readonly/>
       </div>
 
-      <div class="f-group" wire:ignore>
+      <div class="f-group">
         <label class="f-label-sm">Titre <span style="color:#f06548">*</span></label>
         <div class="f-input-wrap-sm">
           <i class="ri-text f-ico-sm"></i>
-          <input type="text" 
-                 class="f-input-sm "
-                 wire:model.defer="reclaTitle"
+          <input type="text"
+                 class="f-input-sm"
+                 wire:model.lazy="reclaTitle"
                  placeholder="ex : Paiement non enregistré"/>
         </div>
         @if($errorReclaTitle)
-        <div style="font-size:12px;color:#f06548;margin-top:4px;font-weight:600">
-          {{ $errorReclaTitle }}
-        </div>
+        <div style="font-size:12px;color:#f06548;margin-top:4px;font-weight:600">{{ $errorReclaTitle }}</div>
         @endif
       </div>
 
-      <div class="f-group" wire:ignore>
+      <div class="f-group">
         <label class="f-label-sm">Message <span style="color:#f06548">*</span></label>
         <textarea class="f-input-sm f-textarea-sm {{ $errorReclaMessage ? 'err' : '' }}"
                   wire:model.lazy="reclaMessage"
                   placeholder="Décrivez le problème en détail…"></textarea>
         @if($errorReclaMessage)
-        <div style="font-size:12px;color:#f06548;margin-top:4px;font-weight:600">
-          {{ $errorReclaMessage }}
-        </div>
+        <div style="font-size:12px;color:#f06548;margin-top:4px;font-weight:600">{{ $errorReclaMessage }}</div>
         @endif
       </div>
 
     </div>
 
     <div class="cot-modal-footer" style="border-top:1px solid var(--border)">
-      <button class="cot-footer-recla"
-              style="border-color:rgba(135,138,153,.3);color:var(--muted)"
-              wire:click="closeRecla">
+      <button class="cot-footer-recla" style="border-color:rgba(135,138,153,.3);color:var(--muted)" wire:click="closeRecla">
         <i class="ri-close-line"></i> Annuler
       </button>
-      <button class="cot-footer-pay"
-              wire:click="submitRecla"
-              wire:loading.attr="disabled">
-        <span wire:loading wire:target="submitRecla">
-          <div class="spinner"></div>
-        </span>
+      <button class="cot-footer-pay" wire:click="submitRecla" wire:loading.attr="disabled">
+        <span wire:loading wire:target="submitRecla"><div class="spinner"></div></span>
         <span wire:loading.remove wire:target="submitRecla">
           <i class="ri-send-plane-line"></i> Envoyer
         </span>
@@ -424,14 +737,14 @@
     </div>
 
   </div>
-</div>{{-- /cot-modal-overlay réclamation --}}
+</div>
 
 </div>{{-- /root div Livewire --}}
 
 
 @push('scripts')
 <script>
-/* ══ Filtre statut — JS pur, ne touche pas aux overlays ══ */
+/* ══ Filtre statut ══ */
 function filterCot(btn) {
   document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -456,24 +769,18 @@ function filterCot(btn) {
   if (empty) empty.style.display = visible === 0 ? 'flex' : 'none';
 }
 
+/* ══ Overlay helpers ══ */
+function openOverlay(id)  { document.getElementById(id)?.classList.add('open');    document.body.style.overflow = 'hidden'; }
+function closeOverlay(id) { document.getElementById(id)?.classList.remove('open'); document.body.style.overflow = ''; }
 
-window.addEventListener('OpenDetailCot', () => {
-  document.getElementById('cot-detail-overlay')?.classList.add('open');
-  document.body.style.overflow = 'hidden';
-});
-window.addEventListener('closeDetailCot', () => {
-  document.getElementById('cot-detail-overlay')?.classList.remove('open');
-  document.body.style.overflow = '';
-});
-
-window.addEventListener('OpenReclaModal', () => {
-  document.getElementById('cot-recla-overlay')?.classList.add('open');
-  document.body.style.overflow = 'hidden';
-});
-window.addEventListener('closeReclaModal', () => {
-  document.getElementById('cot-recla-overlay')?.classList.remove('open');
-  document.body.style.overflow = '';
-});
+window.addEventListener('OpenDetailCot',    () => openOverlay('cot-detail-overlay'));
+window.addEventListener('closeDetailCot',   () => closeOverlay('cot-detail-overlay'));
+window.addEventListener('OpenPaiementModal',() => openOverlay('cot-paiement-overlay'));
+window.addEventListener('closePaiementModal',()=> closeOverlay('cot-paiement-overlay'));
+window.addEventListener('OpenAvanceModal',  () => openOverlay('cot-avance-overlay'));
+window.addEventListener('closeAvanceModal', () => closeOverlay('cot-avance-overlay'));
+window.addEventListener('OpenReclaModal',   () => openOverlay('cot-recla-overlay'));
+window.addEventListener('closeReclaModal',  () => closeOverlay('cot-recla-overlay'));
 
 /* ══ Animations entrée ══ */
 document.querySelectorAll('.cot-item').forEach((item, i) => {
@@ -488,9 +795,11 @@ document.querySelectorAll('.cot-item').forEach((item, i) => {
 
 /* ══ Escape ══ */
 document.addEventListener('keydown', e => {
-  if (e.key !== 'Escape') {
-    @this.call('closeRecla');
+  if (e.key === 'Escape') {
     @this.call('closeDetail');
+    @this.call('closePaiement');
+    @this.call('closeAvance');
+    @this.call('closeRecla');
   }
 });
 
@@ -500,6 +809,14 @@ Livewire.on('modalShowmessageToast', (payload) => {
   if (typeof Swal !== 'undefined') {
     Swal.mixin({ toast:true, position:'top-end', showConfirmButton:false, timer:3000, timerProgressBar:true })
         .fire({ icon: data.type, title: data.title });
+  }
+});
+
+/* ══ SweetAlert simple ══ */
+Livewire.on('swal:modalGetInfo_message_not_timer', (payload) => {
+  const data = Array.isArray(payload) ? payload[0] : payload;
+  if (typeof Swal !== 'undefined') {
+    Swal.fire({ title: data.title, text: data.text, icon: data.type });
   }
 });
 </script>

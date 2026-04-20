@@ -34,13 +34,13 @@
     @forelse($reclammations as $r)
     @php
       $statutJs = match($r->status) {
-          'ouverte', 'en_cours' => 'en_cours',
+          'en_attente', 'en_cours' => 'en_cours',
           'resolu'              => 'resolu',
           'rejete'              => 'rejete',
           default               => 'en_cours',
       };
       [$iconClass, $iconBg, $iconColor, $pillClass, $pillLabel] = match($r->status) {
-          'ouverte','en_cours' => ['ri-flag-line',         'rgba(41,156,219,.12)', '#299cdb', 'pill-info',   'En cours'],
+          'en_attente','en_cours' => ['ri-flag-line',         'rgba(41,156,219,.12)', '#299cdb', 'pill-info',   'En cours'],
           'resolu'             => ['ri-check-double-line', 'rgba(10,179,156,.10)', '#0ab39c', 'pill-ok',     'Résolu'],
           'rejete'             => ['ri-close-circle-line', 'rgba(240,101,72,.10)', '#f06548', 'pill-danger', 'Rejeté'],
           default              => ['ri-flag-line',         'rgba(41,156,219,.12)', '#299cdb', 'pill-info',   'En cours'],
@@ -188,7 +188,7 @@
     @php
       $dr = $detailRecla;
       [$pillClass, $pillLabel] = match($dr->status) {
-          'ouverte','en_cours' => ['pill-info',   'En cours'],
+          'en_attente','en_cours' => ['pill-info',   'En cours'],
           'resolu'             => ['pill-ok',     'Résolu'],
           'rejete'             => ['pill-danger', 'Rejeté'],
           default              => ['pill-info',   'En cours'],
@@ -199,9 +199,7 @@
                 ? ' — ' . \Carbon\Carbon::create($dr->cotisation->annee, $dr->cotisation->mois)->translatedFormat('F Y')
                 : '')
           : null;
-      $reponseAdmin = $dr->historiqueReclammation
-          ->where('description', '!=', 'Réclamation créée par le fidèle.')
-          ->last();
+      $reponseAdmin = $dr->reponse;
     @endphp
 
     <div class="pwa-modal-body">
@@ -229,8 +227,8 @@
 
       @if($reponseAdmin)
       <div class="recla-section-label">Réponse de l'administration</div>
-      <div class="recla-reponse-box">{{ $reponseAdmin->description }}</div>
-      @elseif(in_array($dr->status, ['ouverte', 'en_cours']))
+      <div class="recla-reponse-box">{{ $reponseAdmin }}</div>
+      @elseif(in_array($dr->status, ['en_attente', 'en_cours']))
       <div style="font-size:13px;color:var(--muted);font-style:italic;margin-top:16px;text-align:center">
         <i class="ri-time-line"></i> En attente de réponse de l'administration…
       </div>

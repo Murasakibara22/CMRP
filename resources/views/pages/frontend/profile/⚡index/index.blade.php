@@ -59,6 +59,14 @@
             <div class="prof-info-label"><i class="ri-map-pin-line"></i> Adresse</div>
             <div class="prof-info-value">{{ $customer->adresse ?? '—' }}</div>
           </div>
+          @if($customer->typeCotisationMensuel)
+          <div class="prof-info-row">
+            <div class="prof-info-label"><i class="ri-calendar-check-line"></i> Type de cotisation</div>
+            <div class="prof-info-value" style="color:var(--p);font-weight:700">
+              {{ $customer->typeCotisationMensuel->libelle }}
+            </div>
+          </div>
+          @endif
           @if($customer->montant_engagement)
           <div class="prof-info-row">
             <div class="prof-info-label"><i class="ri-money-cny-circle-line"></i> Engagement mensuel</div>
@@ -126,7 +134,7 @@
           <div class="pmi-icon" style="background:rgba(64,81,137,.10);color:#405189"><i class="ri-pencil-line"></i></div>
           <div class="pmi-body">
             <div class="pmi-title">Modifier mes informations</div>
-            <div class="pmi-sub">Nom, adresse, contact</div>
+            <div class="pmi-sub">Nom, adresse, cotisation mensuelle</div>
           </div>
           <i class="ri-arrow-right-s-line pmi-arrow"></i>
         </button>
@@ -208,6 +216,7 @@
 {{-- ══ MODAL MODIFIER INFOS ════════════════════════════════ --}}
 <div class="pwa-modal-overlay" id="edit-overlay" wire:ignore.self>
   <div class="pwa-modal" wire:click.stop>
+
     <div class="pwa-modal-header">
       <div class="pwa-modal-drag"></div>
       <div class="pwa-modal-title-row">
@@ -215,8 +224,10 @@
         <button class="pwa-modal-close" wire:click="closeEdit"><i class="ri-close-line"></i></button>
       </div>
     </div>
+
     <div class="pwa-modal-body">
 
+      {{-- ── Identité ─────────────────────────────────── --}}
       <div class="f-group">
         <label class="f-label">Nom <span class="req">*</span></label>
         <input type="text"
@@ -253,7 +264,193 @@
         <div class="f-hint">Le numéro est utilisé pour la connexion OTP.</div>
       </div>
 
-    </div>
+      {{-- ── Cotisation mensuelle ──────────────────────── --}}
+      <div style="padding-top:20px;border-top:1px dashed rgba(64,81,137,.2);margin-top:4px">
+        <div style="font-size:13px;font-weight:800;color:#405189;margin-bottom:4px;display:flex;align-items:center;gap:6px">
+          <i class="ri-calendar-check-line"></i> Type de cotisation mensuel
+          <span style="font-size:10px;font-weight:500;color:#878a99">(optionnel)</span>
+        </div>
+        <div style="font-size:12px;color:#878a99;margin-bottom:14px;line-height:1.5">
+          Choisissez votre catégorie de cotisation mensuelle.
+        </div>
+
+        {{-- Sélection type --}}
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+
+          @foreach($typesMensuels as $tm)
+          @php $selected = $typeCotisationMensuelId === $tm->id; @endphp
+          <div wire:click="selectTypeMensuel({{ $tm->id }})"
+               style="
+                 display:flex;align-items:center;justify-content:space-between;
+                 border:1.5px solid {{ $selected ? '#405189' : 'rgba(64,81,137,.15)' }};
+                 background:{{ $selected ? 'rgba(64,81,137,.06)' : '#fff' }};
+                 border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .2s;
+               ">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:32px;height:32px;border-radius:8px;background:{{ $selected ? 'rgba(64,81,137,.15)' : 'rgba(135,138,153,.08)' }};color:{{ $selected ? '#405189' : '#878a99' }};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">
+                <i class="ri-calendar-check-line"></i>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:{{ $selected ? '#405189' : '#212529' }}">
+                  {{ $tm->libelle }}
+                </div>
+                @if($tm->montant_minimum)
+                <div style="font-size:11px;color:#878a99;margin-top:2px">
+                  Minimum {{ number_format($tm->montant_minimum, 0, ',', ' ') }} FCFA/mois
+                </div>
+                @endif
+              </div>
+            </div>
+            <div style="width:20px;height:20px;border-radius:50%;border:2px solid {{ $selected ? '#405189' : '#e9ebec' }};background:{{ $selected ? '#405189' : 'transparent' }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              @if($selected)<i class="ri-check-line" style="color:#fff;font-size:11px"></i>@endif
+            </div>
+          </div>
+          @endforeach
+
+          {{-- Aucun type --}}
+          <div wire:click="selectTypeMensuel(null)"
+               style="
+                 display:flex;align-items:center;gap:10px;
+                 border:1.5px solid {{ ! $typeCotisationMensuelId ? '#405189' : 'rgba(64,81,137,.15)' }};
+                 background:{{ ! $typeCotisationMensuelId ? 'rgba(64,81,137,.06)' : '#fff' }};
+                 border-radius:12px;padding:10px 14px;cursor:pointer;transition:all .2s;
+               ">
+            <div style="width:32px;height:32px;border-radius:8px;background:rgba(135,138,153,.08);color:#878a99;display:flex;align-items:center;justify-content:center;font-size:15px">
+              <i class="ri-user-line"></i>
+            </div>
+            <div style="font-size:13px;font-weight:700;color:{{ ! $typeCotisationMensuelId ? '#405189' : '#212529' }}">
+              Sans cotisation mensuelle
+            </div>
+          </div>
+        </div>
+
+        {{--
+          BLOC CONFIRMATION CHANGEMENT DE TYPE
+          Affiché uniquement si showConfirmChangementType = true
+        --}}
+        @if($showConfirmChangementType)
+        <div style="
+          background:rgba(247,184,75,.07);border:1.5px solid #f7b84b;
+          border-left:4px solid #f7b84b;border-radius:0 12px 12px 0;
+          padding:14px 16px;margin-bottom:14px;
+        ">
+          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
+            <i class="ri-swap-line" style="color:#f7b84b;font-size:20px;flex-shrink:0;margin-top:1px"></i>
+            <div>
+              <div style="font-size:13px;font-weight:800;color:#c07a10;margin-bottom:4px">
+                Changement de catégorie
+              </div>
+              <div style="font-size:12px;color:#495057;line-height:1.6">
+                {{ $confirmChangementMessage }}
+              </div>
+            </div>
+          </div>
+
+          {{-- Nouveau montant d'engagement --}}
+          <div style="font-size:11px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
+            Nouveau montant mensuel <span style="color:#f06548">*</span>
+          </div>
+
+          @if($coutEngagements->count())
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+            @foreach($coutEngagements as $cout)
+            <div wire:click="selectNouvelEngagement({{ $cout->montant }})"
+                 style="
+                   padding:7px 12px;border-radius:20px;cursor:pointer;
+                   border:1.5px solid {{ $nouvelEngagement === $cout->montant ? '#405189' : '#e9ebec' }};
+                   background:{{ $nouvelEngagement === $cout->montant ? 'rgba(64,81,137,.08)' : '#fff' }};
+                   color:{{ $nouvelEngagement === $cout->montant ? '#405189' : '#495057' }};
+                   font-size:12px;font-weight:700;transition:all .15s;
+                 ">
+              {{ number_format($cout->montant, 0, ',', ' ') }} FCFA
+            </div>
+            @endforeach
+          </div>
+          @endif
+
+          <div style="position:relative;margin-bottom:8px">
+            <i class="ri-money-cny-circle-line" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#878a99;font-size:14px;pointer-events:none"></i>
+            <input type="number"
+                   wire:model.live="nouvelEngagement"
+                   min="1"
+                   placeholder="Ou saisir un montant…"
+                   inputmode="numeric"
+                   style="
+                     border:1.5px solid {{ $errorEngagement ? '#f06548' : '#e9ebec' }};
+                     border-radius:10px;height:42px;padding:0 12px 0 34px;
+                     font-size:13px;width:100%;background:#fff;color:#212529;
+                   "/>
+          </div>
+
+          @if($errorEngagement)
+          <div style="font-size:12px;color:#f06548;margin-bottom:8px;font-weight:600">
+            <i class="ri-error-warning-line me-1"></i>{{ $errorEngagement }}
+          </div>
+          @endif
+        </div>
+        @endif
+
+        {{--
+          Montant d'engagement si PREMIER type sélectionné
+          (pas de confirmation nécessaire)
+        --}}
+        @php
+          $ancienTypeId = auth('customer')->user()->type_cotisation_mensuel_id;
+          $estPremierTypeForm = $typeCotisationMensuelId && ! $ancienTypeId;
+        @endphp
+        @if($estPremierTypeForm && ! $showConfirmChangementType)
+        <div style="margin-top:4px">
+          <div style="font-size:11px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
+            Montant d'engagement mensuel <span style="color:#f06548">*</span>
+          </div>
+
+          @if($coutEngagements->count())
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+            @foreach($coutEngagements as $cout)
+            <div wire:click="selectEngagement({{ $cout->montant }})"
+                 style="
+                   padding:7px 12px;border-radius:20px;cursor:pointer;
+                   border:1.5px solid {{ $montantEngagement === $cout->montant ? '#405189' : '#e9ebec' }};
+                   background:{{ $montantEngagement === $cout->montant ? 'rgba(64,81,137,.08)' : '#fff' }};
+                   color:{{ $montantEngagement === $cout->montant ? '#405189' : '#495057' }};
+                   font-size:12px;font-weight:700;transition:all .15s;
+                 ">
+              {{ number_format($cout->montant, 0, ',', ' ') }} FCFA
+            </div>
+            @endforeach
+          </div>
+          @endif
+
+          <div style="position:relative">
+            <i class="ri-money-cny-circle-line" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#878a99;font-size:14px;pointer-events:none"></i>
+            <input type="number"
+                   wire:model.live="montantEngagement"
+                   min="1"
+                   placeholder="Ou saisir un montant…"
+                   inputmode="numeric"
+                   style="
+                     border:1.5px solid {{ $errorEngagement ? '#f06548' : '#e9ebec' }};
+                     border-radius:10px;height:42px;padding:0 12px 0 34px;
+                     font-size:13px;width:100%;background:#fff;color:#212529;
+                   "/>
+          </div>
+
+          @if($errorEngagement)
+          <div style="font-size:12px;color:#f06548;margin-top:6px;font-weight:600">
+            <i class="ri-error-warning-line me-1"></i>{{ $errorEngagement }}
+          </div>
+          @endif
+
+          <div style="font-size:11px;color:#878a99;margin-top:6px;line-height:1.5">
+            Une cotisation sera créée pour le mois en cours avec le statut <em>En retard</em>.
+          </div>
+        </div>
+        @endif
+
+      </div>{{-- /cotisation mensuelle --}}
+
+    </div>{{-- /pwa-modal-body --}}
+
     <div class="pwa-modal-footer">
       <button class="btn-outline" style="height:46px;font-size:14px" wire:click="closeEdit">
         <i class="ri-close-line"></i> Annuler
@@ -261,9 +458,13 @@
       <button class="btn-main" style="height:46px;font-size:14px"
               wire:click="saveEdit" wire:loading.attr="disabled">
         <span wire:loading wire:target="saveEdit"><div class="spinner"></div></span>
-        <span wire:loading.remove wire:target="saveEdit"><i class="ri-save-line"></i> Enregistrer</span>
+        <span wire:loading.remove wire:target="saveEdit">
+          <i class="ri-save-line"></i>
+          {{ $showConfirmChangementType ? 'Confirmer et enregistrer' : 'Enregistrer' }}
+        </span>
       </button>
     </div>
+
   </div>
 </div>
 
@@ -310,13 +511,11 @@
 
 @push('scripts')
 <script>
-/* ── Pattern dispatch → window.addEventListener ── */
 window.addEventListener('OpenEditModal',   () => { document.getElementById('edit-overlay')?.classList.add('open');    document.body.style.overflow = 'hidden'; });
 window.addEventListener('closeEditModal',  () => { document.getElementById('edit-overlay')?.classList.remove('open'); document.body.style.overflow = ''; });
 window.addEventListener('OpenPhotoModal',  () => { document.getElementById('photo-overlay')?.classList.add('open');   document.body.style.overflow = 'hidden'; });
 window.addEventListener('closePhotoModal', () => { document.getElementById('photo-overlay')?.classList.remove('open'); document.body.style.overflow = ''; });
 
-/* ── Toast ── */
 Livewire.on('modalShowmessageToast', (payload) => {
   const data = Array.isArray(payload) ? payload[0] : payload;
   if (typeof Swal !== 'undefined') {
@@ -325,7 +524,6 @@ Livewire.on('modalShowmessageToast', (payload) => {
   }
 });
 
-/* ── Photo JS ── */
 function triggerCamera()  { const f = document.getElementById('file-input'); f.setAttribute('capture','environment'); f.click(); }
 function triggerGallery() { const f = document.getElementById('file-input'); f.removeAttribute('capture'); f.click(); }
 function removePhoto()    { document.getElementById('photo-preview').textContent = '{{ $initiales }}'; }
@@ -341,12 +539,12 @@ function onFileSelect(input) {
 </script>
 @endpush
 
-
 @push('styles')
 <style>
   .f-err { font-size:12px; color:#f06548; margin-top:4px; font-weight:600; }
   .f-input-err { border-color:#f06548 !important; }
   .spinner { width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:_spin .7s linear infinite;display:inline-block; }
   @keyframes _spin { to { transform:rotate(360deg); } }
+  @keyframes fadeIn { from { opacity:0;transform:translateY(-4px); } to { opacity:1;transform:translateY(0); } }
 </style>
 @endpush

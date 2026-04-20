@@ -68,13 +68,13 @@ new #[Layout('layouts.app-frontend')] class extends Component
             'cotisation_id' => $this->addCotisationId ?: null,
             'sujet'         => trim($this->addTitre),
             'description'   => trim($this->addMessage),
-            'status'        => 'ouverte',
+            'status'        => 'en_attente',
         ]);
 
         HistoriqueReclammation::create([
             'reclammation_id'       => $recla->id,
             'description'           => 'Réclamation créée par le fidèle.',
-            'status'                => 'ouverte',
+            'status'                => 'en_attente',
             'snapshot_reclammation' => json_encode($recla->toArray()),
         ]);
 

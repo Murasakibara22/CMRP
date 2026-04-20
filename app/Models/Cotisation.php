@@ -23,6 +23,8 @@ class Cotisation extends Model
         'mode_paiement',
         'validated_by',
         'validated_at',
+
+        'paiement_id',
     ];
 
     protected $casts = [

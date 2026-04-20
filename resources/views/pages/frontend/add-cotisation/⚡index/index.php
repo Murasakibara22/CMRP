@@ -102,30 +102,7 @@ new #[Layout('layouts.app-frontend')] class extends Component
         $tc = TypeCotisation::find($this->typeCotisationId);
 
         /* 2. Mensuel obligatoire : vérifier/définir engagement */
-        $isMensuelObligatoire = $tc->type === 'mensuel' && $tc->is_required;
-
-        if ($isMensuelObligatoire) {
-            /* Période obligatoire */
-            if (! $this->mois || ! $this->annee) {
-                $this->errorPeriode = 'Veuillez sélectionner le mois et l\'année.';
-                return;
-            }
-
-            /* Engagement : déjà défini ou à choisir maintenant */
-            if (! $customer->montant_engagement) {
-                $engagement = $this->showMontantLibre
-                    ? $this->montantLibre
-                    : $this->engagementChoisi;
-
-                if (! $engagement || $engagement < 500) {
-                    $this->errorEngagement = 'Veuillez choisir un montant d\'engagement (minimum 500 FCFA).';
-                    return;
-                }
-
-                /* Sauvegarder l'engagement sur le customer */
-                $customer->update(['montant_engagement' => $engagement]);
-            }
-        }
+        $isMensuelObligatoire = false;
 
         /* 3. Montant payé */
         $montant = $this->montantPaye;
@@ -215,9 +192,13 @@ new #[Layout('layouts.app-frontend')] class extends Component
         $customerId = auth('customer')->user()->id;
         $customer   = Customer::find($customerId);
 
-        $typesCotisation = TypeCotisation::where('status', 'actif')
-            ->orderBy('libelle')
-            ->get();
+       $typesCotisation = TypeCotisation::where('status', 'actif')
+        ->where(fn($q) =>
+            $q->where('type', '!=', 'mensuel')
+            ->orWhere('is_required', false)
+        )
+        ->orderBy('libelle')
+        ->get();
 
         $coutEngagements = CoutEngagement::orderBy('montant')->get();
 

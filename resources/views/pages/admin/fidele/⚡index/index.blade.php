@@ -122,6 +122,7 @@
               <th>Engagement mensuel</th>
               <th>Date adhésion</th>
               <th>Statut cotisation</th>
+              <th>Type de cotisation mensuel</th>
               <th>Montant dû</th>
               <th>Actions</th>
             </tr>
@@ -129,7 +130,10 @@
           <tbody>
             @forelse($customers as $customer)
             @php
-              $cotisationMois = $customer->cotisations->first();
+              $cotisationMois = $customer->cotisations
+                  ->where('annee', now()->year)
+                  ->where('mois', now()->month)
+                  ->first();
               $statut         = $cotisationMois?->statut ?? ($customer->montant_engagement ? 'en_retard' : null);
               $montantDu      = $cotisationMois?->montant_restant ?? 0;
               $initiales      = strtoupper(substr($customer->prenom, 0, 1) . substr($customer->nom, 0, 1));
@@ -164,6 +168,13 @@
                   <span class="statut-pill sp-partiel"><i class="ri-error-warning-line"></i> Partiel</span>
                 @else
                   <span class="statut-pill sp-retard"><i class="ri-time-line"></i> En retard</span>
+                @endif
+              </td>
+              <td>
+                @if($customer->typeCotisationMensuel)
+                  <span class="statut-pill sp-ajour"><i class="ri-checkbox-circle-line"></i> {{$customer->typeCotisationMensuel->libelle}}</span>
+                @else
+                  <span class="statut-pill sp-libre"><i class="ri-user-line"></i> Sans engagement</span>
                 @endif
               </td>
               <td>
@@ -628,44 +639,184 @@
 
       {{-- ── PANEL 2 : Engagement mensuel ─────────────────── --}}
       @if($formStep === 2)
-      <div class="add-panel active">
+<div class="add-panel active">
 
-        <p style="font-size:13px;color:var(--msq-muted);margin-bottom:16px;">
-          <i class="ri-information-line me-1"></i>
-          Sélectionnez le montant d'engagement mensuel. Laissez vide pour un fidèle sans cotisation mensuelle.
-        </p>
+  <p style="font-size:13px;color:var(--msq-muted);margin-bottom:20px">
+    <i class="ri-information-line me-1"></i>
+    Choisissez le type de cotisation mensuel et le montant d'engagement.
+    Ces champs sont optionnels — le cron créera automatiquement la cotisation chaque mois.
+  </p>
 
-        <label class="form-label-msq">Montant d'engagement mensuel</label>
-        <div class="engagement-grid">
-          @foreach($coutEngagements as $cout)
-          <div class="eng-pill {{ $montantEngagement === $cout->montant ? 'selected' : '' }}"
-               wire:click="selectEngagement({{ $cout->montant }})">
-            <div class="ep-val">{{ number_format($cout->montant, 0, ',', ' ') }}</div>
-            <div class="ep-lbl">FCFA / mois</div>
+  {{-- ── Type de cotisation mensuel ─────────────────── --}}
+  <div class="mb-4">
+    <label class="form-label-msq" style="margin-bottom:10px">
+      Type de cotisation mensuel
+      <span style="font-size:10px;font-weight:500;color:var(--msq-muted)">(optionnel)</span>
+    </label>
+
+    <div style="display:flex;flex-direction:column;gap:8px">
+      @foreach($typesMensuels as $tm)
+      @php
+        $selected = $typeCotisationMensuelId === $tm->id;
+        $isRequis = $tm->is_required;
+      @endphp
+      <div wire:click="selectTypeMensuel({{ $tm->id }})"
+           style="
+             display:flex;align-items:center;justify-content:space-between;
+             border:1.5px solid {{ $selected ? '#405189' : '#e9ebec' }};
+             background:{{ $selected ? 'rgba(64,81,137,.06)' : '#fff' }};
+             border-radius:10px;padding:12px 14px;cursor:pointer;
+             transition:all .2s;
+           ">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="
+            width:34px;height:34px;border-radius:8px;
+            background:{{ $selected ? 'rgba(64,81,137,.12)' : 'rgba(135,138,153,.08)' }};
+            color:{{ $selected ? '#405189' : '#878a99' }};
+            display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0
+          ">
+            <i class="ri-calendar-check-line"></i>
           </div>
-          @endforeach
-        </div>
-
-        <div class="mt-3">
-          <label class="form-label-msq">Ou saisir un montant personnalisé</label>
-          <div class="input-with-icon">
-            <i class="ri-money-cny-circle-line ii-icon"></i>
-            <input type="number" class="input-msq"
-                   wire:model.live="montantEngagement"
-                   placeholder="Montant en FCFA">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:{{ $selected ? '#405189' : '#212529' }}">
+              {{ $tm->libelle }}
+            </div>
+            <div style="font-size:11px;color:var(--msq-muted);display:flex;align-items:center;gap:6px;margin-top:2px">
+              @if($isRequis)
+                <span style="background:rgba(240,101,72,.1);color:#f06548;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700">OBLIGATOIRE</span>
+              @endif
+              @if($tm->montant_minimum)
+                <span>min. {{ number_format($tm->montant_minimum, 0, ',', ' ') }} FCFA/mois</span>
+              @endif
+            </div>
           </div>
         </div>
-
-        <div class="mt-4 p-3" style="background:rgba(64,81,137,.06);border-radius:10px;border-left:3px solid #405189;">
-          <p style="font-size:12px;color:var(--msq-text);margin:0;">
-            <i class="ri-information-line me-1" style="color:#405189"></i>
-            <strong>Note :</strong> Si un engagement est sélectionné, une première cotisation sera créée
-            pour le mois en cours avec le statut <em>En retard</em> jusqu'au premier paiement.
-          </p>
+        <div style="
+          width:20px;height:20px;border-radius:50%;
+          border:2px solid {{ $selected ? '#405189' : '#e9ebec' }};
+          background:{{ $selected ? '#405189' : 'transparent' }};
+          display:flex;align-items:center;justify-content:center;flex-shrink:0
+        ">
+          @if($selected)
+          <i class="ri-check-line" style="color:#fff;font-size:11px"></i>
+          @endif
         </div>
-
       </div>
+      @endforeach
+
+      {{-- Aucun type --}}
+      <div wire:click="selectTypeMensuel(null)"
+           style="
+             display:flex;align-items:center;gap:10px;
+             border:1.5px solid {{ ! $typeCotisationMensuelId ? '#405189' : '#e9ebec' }};
+             background:{{ ! $typeCotisationMensuelId ? 'rgba(64,81,137,.06)' : '#fff' }};
+             border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .2s;
+           ">
+        <div style="width:34px;height:34px;border-radius:8px;background:rgba(135,138,153,.08);color:#878a99;display:flex;align-items:center;justify-content:center;font-size:16px">
+          <i class="ri-user-line"></i>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:{{ ! $typeCotisationMensuelId ? '#405189' : '#212529' }}">
+          Sans cotisation mensuelle
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- ── Bloc confirmation changement de type ───────── --}}
+  @if($showConfirmChangementType)
+  <div style="
+    background:rgba(247,184,75,.07);border:1.5px solid #f7b84b;
+    border-left:4px solid #f7b84b;border-radius:0 10px 10px 0;
+    padding:16px;margin-bottom:20px;
+  ">
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px">
+      <i class="ri-swap-line" style="color:#f7b84b;font-size:20px;flex-shrink:0;margin-top:1px"></i>
+      <div>
+        <div style="font-size:13px;font-weight:800;color:#c07a10;margin-bottom:6px">
+          Changement de catégorie de cotisation
+        </div>
+        <div style="font-size:12px;color:#495057;line-height:1.6">
+          {{ $confirmChangementMessage }}
+        </div>
+      </div>
+    </div>
+
+    {{-- Champ nouveau montant d'engagement --}}
+    <div style="margin-bottom:10px">
+      <label style="display:block;font-size:11px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+        Nouveau montant d'engagement mensuel <span style="color:#f06548">*</span>
+      </label>
+      <div style="position:relative">
+        <i class="ri-money-cny-circle-line" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;color:#878a99;pointer-events:none"></i>
+        <input type="number"
+               wire:model="nouvelEngagement"
+               min="1"
+               placeholder="ex : 10000"
+               inputmode="numeric"
+               style="
+                 border:1.5px solid {{ $errorNouvelEngagement ? '#f06548' : '#e9ebec' }};
+                 border-radius:9px;height:40px;padding:0 14px 0 38px;
+                 font-size:13px;font-family:'Nunito',sans-serif;font-weight:600;
+                 background:#fff;color:#212529;width:100%;
+               "/>
+      </div>
+      @if($errorNouvelEngagement)
+      <div style="font-size:11px;color:#f06548;margin-top:4px;font-weight:600">{{ $errorNouvelEngagement }}</div>
       @endif
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button type="button" wire:click="annulerChangementType"
+              style="border:1.5px solid #e9ebec;border-radius:8px;background:#fff;color:#878a99;font-size:12px;font-weight:700;padding:7px 14px;cursor:pointer;font-family:'Nunito',sans-serif">
+        <i class="ri-close-line me-1"></i>Annuler
+      </button>
+      <button type="button" wire:click="confirmerChangementType" wire:loading.attr="disabled"
+              style="background:linear-gradient(135deg,#c07a10,#f7b84b);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;padding:7px 16px;cursor:pointer;font-family:'Nunito',sans-serif;display:inline-flex;align-items:center;gap:5px">
+        <span wire:loading wire:target="confirmerChangementType" class="spinner-border spinner-border-sm"></span>
+        <i class="ri-check-double-line" wire:loading.remove wire:target="confirmerChangementType"></i>
+        <span wire:loading.remove wire:target="confirmerChangementType">Confirmer</span>
+        <span wire:loading wire:target="confirmerChangementType">…</span>
+      </button>
+    </div>
+  </div>
+  @endif
+
+  {{-- ── Montant d'engagement ─────────────────────── --}}
+  @if(! $showConfirmChangementType)
+  <div class="mb-3">
+    <label class="form-label-msq">Montant d'engagement mensuel</label>
+    <div class="engagement-grid">
+      @foreach($coutEngagements as $cout)
+      <div class="eng-pill {{ $montantEngagement === $cout->montant ? 'selected' : '' }}"
+           wire:click="selectEngagement({{ $cout->montant }})">
+        <div class="ep-val">{{ number_format($cout->montant, 0, ',', ' ') }}</div>
+        <div class="ep-lbl">FCFA / mois</div>
+      </div>
+      @endforeach
+    </div>
+
+    <div class="mt-3">
+      <label class="form-label-msq">Ou saisir un montant personnalisé</label>
+      <div class="input-with-icon">
+        <i class="ri-money-cny-circle-line ii-icon"></i>
+        <input type="number" class="input-msq"
+               wire:model.live="montantEngagement"
+               placeholder="Montant en FCFA">
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-3 p-3" style="background:rgba(64,81,137,.06);border-radius:10px;border-left:3px solid #405189;">
+    <p style="font-size:12px;color:var(--msq-text);margin:0">
+      <i class="ri-information-line me-1" style="color:#405189"></i>
+      <strong>Note :</strong> La cotisation mensuelle sera créée automatiquement chaque 5 du mois
+      par le système, basée sur le type et le montant d'engagement définis ici.
+    </p>
+  </div>
+  @endif
+
+</div>
+@endif
 
       {{-- Footer --}}
       <div class="modal-add-footer">

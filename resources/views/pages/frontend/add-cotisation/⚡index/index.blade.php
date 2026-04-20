@@ -70,76 +70,9 @@
       </div>{{-- /section 1 --}}
 
 
-      {{-- ═══════════════════════════════════════════════════
-           SECTION 2 : ENGAGEMENT (mensuel + pas encore défini)
-      ═══════════════════════════════════════════════════ --}}
-      @if($isMensuelObligatoire && ! $customerHasEngagement)
-      <div class="ac-section">
-        <div class="ac-section-title">
-          <span class="ac-section-bar" style="background:#f7b84b"></span>
-          Choisir votre engagement mensuel
-        </div>
-
-        <div class="ac-hint-box">
-          <i class="ri-information-line"></i>
-          Vous n'avez pas encore de montant d'engagement défini.
-          Choisissez un palier ou saisissez un montant libre.
-        </div>
-
-        {{-- Paliers depuis CoutEngagement --}}
-        <div class="f-group">
-          <label class="f-label">Paliers suggérés</label>
-          <div class="ac-paliers">
-            @foreach($coutEngagements as $ce)
-            <button type="button"
-                    class="ac-palier {{ $engagementChoisi === $ce->montant && ! $showMontantLibre ? 'selected' : '' }}"
-                    wire:click="selectPalier({{ $ce->montant }})">
-              {{ number_format($ce->montant, 0, ',', ' ') }}
-            </button>
-            @endforeach
-            <button type="button"
-                    class="ac-palier ac-palier-autre {{ $showMontantLibre ? 'selected' : '' }}"
-                    wire:click="selectPalierAutre()">
-              <i class="ri-edit-line"></i> Autre
-            </button>
-          </div>
-          @if($errorEngagement)
-          <div class="f-err">{{ $errorEngagement }}</div>
-          @endif
-        </div>
-
-        {{-- Montant libre si "Autre" --}}
-        @if($showMontantLibre)
-        <div class="f-group">
-          <label class="f-label">Montant libre <span class="req">*</span></label>
-          <div class="f-input-wrap">
-            <i class="ri-money-cny-circle-line f-input-icon"></i>
-            <input type="number"
-                   class="f-input has-sfx {{ $errorEngagement ? 'f-input-err' : '' }}"
-                   wire:model.live="montantLibre"
-                   placeholder="ex : 7500"
-                   inputmode="numeric"
-                   min="500"/>
-            <span class="f-input-suffix">FCFA</span>
-          </div>
-          <div class="f-hint">Minimum recommandé : 500 FCFA</div>
-        </div>
-        @endif
-
-      </div>{{-- /section 2 --}}
-      @endif
 
 
-      {{-- ═══════════════════════════════════════════════════
-           Info engagement déjà défini
-      ═══════════════════════════════════════════════════ --}}
-      @if($isMensuelObligatoire && $customerHasEngagement)
-      <div class="ac-hint-box" style="margin-bottom:16px;background:rgba(64,81,137,.05);border-color:rgba(64,81,137,.2)">
-        <i class="ri-checkbox-circle-line" style="color:#405189"></i>
-        Votre engagement mensuel est de
-        <strong style="color:#405189">{{ number_format($customer->montant_engagement, 0, ',', ' ') }} FCFA</strong>.
-      </div>
-      @endif
+
 
 
       {{-- ═══════════════════════════════════════════════════

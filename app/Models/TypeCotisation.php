@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Customer;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Carbon\Carbon;
 
 class TypeCotisation extends Model
 {
@@ -20,6 +21,8 @@ class TypeCotisation extends Model
         'status',
         'start_at',
         'end_at',
+
+        'montant_minimum',
     ];
 
     protected $casts = [
@@ -39,6 +42,11 @@ class TypeCotisation extends Model
     public function paiements(): HasMany
     {
         return $this->hasMany(Paiement::class);
+    }
+
+    public function customersMensuel(): HasMany
+    {
+        return $this->hasMany(Customer::class, 'type_cotisation_mensuel_id');
     }
 
     // ─── Scopes ──────────────────────────────────────────────
@@ -87,6 +95,8 @@ class TypeCotisation extends Model
     {
         return $this->status === 'actif';
     }
+
+
 
     /**
      * Vérifie si la période est actuellement active (pour Ramadan)

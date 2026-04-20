@@ -13,7 +13,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="google-site-verification" content="itv20t_EIkdJtaNJewNkkPEcIsSXaD0cNP7fUj1SVLM" />
     <!-- App favicon -->
-    <link rel="shortcut icon" href="{{ asset('logo.jpg')}}">
+    <link rel="shortcut icon" href="{{ asset('logo.png')}}">
 
     <!-- swiper slider css -->
     <link href="{{ asset('assets/libs/swiper/swiper-bundle.min.css') }}" rel="stylesheet" />

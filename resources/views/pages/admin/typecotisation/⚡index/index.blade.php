@@ -270,6 +270,7 @@
               <th>Catégorie</th>
               <th>Obligatoire</th>
               <th>Objectif</th>
+              <th>Montant Minimum</th>
               <th>Collecte totale</th>
               <th>Statut</th>
               <th>Actions</th>
@@ -312,6 +313,14 @@
               <td>
                 @if($tc->montant_objectif)
                   <span style="font-weight:700;font-size:13px;color:var(--tc-accent)">{{ number_format($tc->montant_objectif, 0, ',', ' ') }}</span>
+                  <span style="font-size:11px;color:var(--tc-muted)"> FCFA</span>
+                @else
+                  <span style="color:var(--tc-muted);font-size:12px">—</span>
+                @endif
+              </td>
+              <td>
+                @if($tc->montant_minimum)
+                  <span style="font-weight:700;font-size:13px;color:var(--tc-accent)">{{ number_format($tc->montant_minimum, 0, ',', ' ') }}</span>
                   <span style="font-size:11px;color:var(--tc-muted)"> FCFA</span>
                 @else
                   <span style="color:var(--tc-muted);font-size:12px">—</span>
@@ -634,6 +643,19 @@
             </div>
 
             {{-- Objectif global --}}
+            <div class="cond-field show">
+              <label class="form-label-tc">
+                <i class="ri-target-line me-1"></i>Montant Minimum à cotiser
+                <span style="font-size:10px;color:var(--tc-muted);font-weight:500;text-transform:none;letter-spacing:0">(optionnel)</span>
+              </label>
+              <div class="input-tc-wrap">
+                <i class="ri-money-cny-circle-line itw-icon"></i>
+                <input type="number" class="input-tc with-suffix" wire:model="montant_minimum" placeholder="ex : 10 000" min="10000">
+                <span class="itw-suffix">FCFA</span>
+              </div>
+              @error('montant_minimum') <div class="err-msg show">{{ $message }}</div> @enderror
+            </div>
+
             <div class="cond-field {{ in_array($type, ['ramadan', 'ordinaire', 'jour_precis']) ? 'show' : '' }}">
               <label class="form-label-tc">
                 <i class="ri-target-line me-1"></i>Objectif global de collecte

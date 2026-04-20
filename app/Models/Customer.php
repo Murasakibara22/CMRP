@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\MessageGroupe;
 use App\Models\Reclammation;
+use App\Models\TypeCotisation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,6 +25,9 @@ class Customer extends  Authenticatable implements JWTSubject
         'montant_engagement',
         'date_adhesion',
         'status',
+
+        'type_cotisation_mensuel_id',
+        'matricule',
     ];
 
     protected $casts = [
@@ -58,6 +62,11 @@ class Customer extends  Authenticatable implements JWTSubject
         return $this->belongsToMany(MessageGroupe::class, 'message_groupe_customer')
                 ->withPivot(['statut', 'envoye_le', 'erreur'])
             ->withTimestamps();
+    }
+
+    public function typeCotisationMensuel()
+    {
+        return $this->belongsTo(TypeCotisation::class, 'type_cotisation_mensuel_id');
     }
 
     // ─── Scopes ──────────────────────────────────────────────
@@ -119,6 +128,21 @@ class Customer extends  Authenticatable implements JWTSubject
         $derniere = $this->derniereCotisationMensuelle();
 
         return $derniere?->statut ?? 'en_retard';
+    }
+
+    //le matricule se genere a la creation d'un customer
+    public function generateMatricule(): void
+    {
+        $this->matricule = 'F'.str_pad($this->id, 5, '0', STR_PAD_LEFT);
+        $this->save();
+    }
+
+    static function boot()
+    {
+        parent::boot();
+        static::created(function ($customer) {
+            $customer->generateMatricule();
+        });
     }
 
 

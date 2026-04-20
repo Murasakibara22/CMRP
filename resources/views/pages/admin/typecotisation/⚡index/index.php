@@ -26,6 +26,7 @@ new  class extends Component
     public string $startAt         = '';
     public string $endAt           = '';
     public ?int   $montantObjectif = null;
+    public ?int   $montant_minimum = null;
 
     // ─── Modal détail ─────────────────────────────────────
     public ?int $detailId = null;
@@ -57,6 +58,7 @@ new  class extends Component
         $this->startAt         = $tc->start_at?->format('Y-m-d') ?? '';
         $this->endAt           = $tc->end_at?->format('Y-m-d') ?? '';
         $this->montantObjectif = $tc->montant_objectif;
+        $this->montant_minimum = $tc->montant_minimum;
 
         $this->launch_modal('modalTypeCotisation');
     }
@@ -109,6 +111,7 @@ new  class extends Component
             'is_required'      => $this->isRequired,
             'jour_recurrence'  => $this->jourRecurrence ?: null,
             'montant_objectif' => $this->montantObjectif,
+            'montant_minimum'  => $this->montant_minimum,
             'start_at'         => $this->startAt ?: null,
             'end_at'           => $this->endAt ?: null,
             'status'           => 'actif',
@@ -201,6 +204,7 @@ new  class extends Component
         $this->startAt         = '';
         $this->endAt           = '';
         $this->montantObjectif = null;
+        $this->montant_minimum = null;
         $this->resetErrorBag();
     }
 

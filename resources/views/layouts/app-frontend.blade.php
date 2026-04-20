@@ -4,11 +4,14 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <meta name="theme-color" content="#405189"/>
-  <title>Espace Fidèle</title>
+  <title>CMRP | Espace Fidèle</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css"/>
     <link href="{{ asset('assets/libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
+
+    <link rel="shortcut icon" href="{{ asset('logo.png')}}">
+
 
   <link rel="stylesheet" href="{{ asset('frontend/css/pwa.css') }}"/>
   <link rel="stylesheet" href="{{ asset('frontend/css/shell.css') }}"/>
