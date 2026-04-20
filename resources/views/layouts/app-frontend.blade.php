@@ -31,13 +31,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="CMRP">
-    <link rel="apple-touch-icon" href="{{ asset('/images/icons/android/android-launchericon-192-192.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('/images/icons/android/launchericon-192-192.png') }}">
 
     {{-- Splash screens iOS (optionnel) --}}
-    <link rel="apple-touch-startup-image" href="{{ asset('/images/icons/android/android-launchericon-512-512.png') }}">
+    <link rel="apple-touch-startup-image" href="{{ asset('/images/icons/android/launchericon-512-512.png') }}">
 
     <!-- Favicon -->
-    <link rel="shortcut icon" type="image/png" href="{{ asset('/images/icons/android/android-launchericon-96-96.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('/images/icons/android/launchericon-96-96.png') }}">
 
     <style>
         .pwa-splash {
@@ -76,7 +76,7 @@
     {{-- ── Splash screen PWA ─────────────────────────────── --}}
     <div id="pwa-splash-loader" class="pwa-splash">
         <div class="splash-content">
-            <img src="{{ asset('images/icons/android/android-launchericon-192-192.png') }}"
+            <img src="{{ asset('images/icons/android/launchericon-192-192.png') }}"
                  alt="CMRP"
                  class="splash-logo">
             <p class="splash-text">Chargement...</p>
