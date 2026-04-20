@@ -6,8 +6,8 @@ const PRECACHE = [
     '/customer/home',
     '/offline',
     '/manifest.json',
-    '/images/icons/android/android-launchericon-192-192.png',
-    '/images/icons/android/android-launchericon-512-512.png',
+    '/images/icons/android/launchericon-192-192.png',
+    '/images/icons/android/launchericon-512-512.png',
 ];
 
 /* ── Install ── */
@@ -59,8 +59,8 @@ self.addEventListener('push', event => {
     event.waitUntil(
         self.registration.showNotification(data.title ?? 'CMRP', {
             body:    data.body  ?? 'Vous avez une notification.',
-            icon:    '/images/icons/android/android-launchericon-192-192.png',
-            badge:   '/images/icons/android/android-launchericon-72-72.png',
+            icon:    '/images/icons/android/launchericon-192-192.png',
+            badge:   '/images/icons/android/launchericon-72-72.png',
             data:    { url: data.url ?? '/customer/home' },
             vibrate: [200, 100, 200],
         })
