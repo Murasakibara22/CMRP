@@ -28,10 +28,10 @@
       </button>
     </nav>
     <div class="sb-profile">
-      <div class="sb-avatar">{{ substr(auth('customers')->user()->nom, 0, 2) }}</div>
+      <div class="sb-avatar">{{ substr(auth('customer')->user()->nom, 0, 2) }}</div>
       <div>
-        <div class="sb-profile-name">{{ auth('customers')->user()->nom. ' ' . auth('customers')->user()->prenom }}</div>
-        <div class="sb-profile-phone">{{ auth('customers')->user()->dial_code }} {{ auth('customers')->user()->phone }}</div>
+        <div class="sb-profile-name">{{ auth('customer')->user()->nom. ' ' . auth('customer')->user()->prenom }}</div>
+        <div class="sb-profile-phone">{{ auth('customer')->user()->dial_code }} {{ auth('customer')->user()->phone }}</div>
       </div>
     </div>
   </aside>
