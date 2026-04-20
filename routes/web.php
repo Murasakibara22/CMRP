@@ -94,3 +94,6 @@ Route::get('/deconnexion', function () {
     }
 
 })->name('deconnexion');
+
+
+Route::get('/offline', fn() => view('offline'))->name('offline');

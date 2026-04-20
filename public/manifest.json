@@ -1,0 +1,72 @@
+{
+  "name": "CMRP - Espace Fidèle",
+  "short_name": "CMRP",
+  "description": "Gérez vos cotisations, suivez votre historique et restez connecté à votre mosquée CMRP.",
+  "start_url": "/customer/home",
+  "scope": "/customer",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#405189",
+  "orientation": "portrait-primary",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/images/icons/android/android-launchericon-48-48.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/icons/android/android-launchericon-72-72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/icons/android/android-launchericon-96-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/icons/android/android-launchericon-144-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/icons/android/android-launchericon-192-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icons/android/android-launchericon-512-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Mes cotisations",
+      "short_name": "Cotisations",
+      "description": "Voir mes cotisations",
+      "url": "/customer/cotisations",
+      "icons": [
+        {
+          "src": "/images/icons/android/android-launchericon-96-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Mon profil",
+      "short_name": "Profil",
+      "description": "Gérer mon profil",
+      "url": "/customer/profile",
+      "icons": [
+        {
+          "src": "/images/icons/android/android-launchericon-96-96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}
