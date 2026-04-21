@@ -2,6 +2,7 @@
 
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\WithFileUploads;
 use App\Models\Customer;
 use App\Models\Cotisation;
 use App\Models\Paiement;
@@ -10,33 +11,25 @@ use App\Models\CoutEngagement;
 use App\Models\HistoriqueCotisation;
 use App\Traits\UtilsSweetAlert;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 new #[Layout('layouts.app-frontend')] class extends Component
 {
-    use UtilsSweetAlert;
+    use UtilsSweetAlert, WithFileUploads;
 
     /* ── Formulaire édition ─────────────────────────────── */
     public string $nom     = '';
     public string $prenom  = '';
     public string $adresse = '';
     public string $phone   = '';
-
     public string $errorNom    = '';
     public string $errorPrenom = '';
 
-    /*
-     * Cotisation mensuelle — modification depuis le profil.
-     *
-     * Flux :
-     * 1. L'utilisateur ouvre le modal → on pré-remplit
-     *    typeCotisationMensuelId et montantEngagement avec
-     *    les valeurs actuelles.
-     * 2. S'il change de type (type différent de l'actuel) →
-     *    showConfirmChangementType = true → on lui demande
-     *    de confirmer et de saisir le nouveau montant.
-     * 3. saveEdit() vérifie, MAJ customer, crée cotisation
-     *    du mois si nouveau type ou si premier type.
-     */
+    /* ── Photo de profil ────────────────────────────────── */
+    public $photoFile       = null;  // fichier uploadé (Livewire WithFileUploads)
+    public bool $photoReady = false; // true = photo sélectionnée, prête à sauvegarder
+
+    /* ── Cotisation mensuelle ───────────────────────────── */
     public ?int   $typeCotisationMensuelId   = null;
     public ?int   $montantEngagement         = null;
     public bool   $showConfirmChangementType = false;
@@ -44,34 +37,41 @@ new #[Layout('layouts.app-frontend')] class extends Component
     public ?int   $nouvelEngagement          = null;
     public string $errorEngagement           = '';
 
+    /* ── Bilan PDF ──────────────────────────────────────── */
+    public bool   $showBilan   = false;
+    public string $bilanDebut  = '';
+    public string $bilanFin    = '';
+    public bool   $bilanTout   = false;
+
     public function mount(): void
     {
         $c = auth('customer')->user();
-        $this->nom                    = $c->nom;
-        $this->prenom                 = $c->prenom;
-        $this->adresse                = $c->adresse ?? '';
-        $this->phone                  = $c->phone   ?? '';
+        $this->nom                     = $c->nom;
+        $this->prenom                  = $c->prenom;
+        $this->adresse                 = $c->adresse ?? '';
+        $this->phone                   = $c->phone   ?? '';
         $this->typeCotisationMensuelId = $c->type_cotisation_mensuel_id;
-        $this->montantEngagement      = $c->montant_engagement;
+        $this->montantEngagement       = $c->montant_engagement;
     }
 
-    /* ── Modaux ─────────────────────────────────────────── */
+    /* ═══════════════════════════════════════════════════════
+       MODAUX
+    ═══════════════════════════════════════════════════════ */
     public function openEdit(): void
     {
         $c = auth('customer')->user();
-        $this->nom                    = $c->nom;
-        $this->prenom                 = $c->prenom;
-        $this->adresse                = $c->adresse ?? '';
-        $this->phone                  = $c->phone   ?? '';
-        $this->typeCotisationMensuelId = $c->type_cotisation_mensuel_id;
-        $this->montantEngagement      = $c->montant_engagement;
-        $this->errorNom               = '';
-        $this->errorPrenom            = '';
-        $this->errorEngagement        = '';
+        $this->nom                       = $c->nom;
+        $this->prenom                    = $c->prenom;
+        $this->adresse                   = $c->adresse ?? '';
+        $this->phone                     = $c->phone   ?? '';
+        $this->typeCotisationMensuelId   = $c->type_cotisation_mensuel_id;
+        $this->montantEngagement         = $c->montant_engagement;
+        $this->errorNom                  = '';
+        $this->errorPrenom               = '';
+        $this->errorEngagement           = '';
         $this->showConfirmChangementType = false;
         $this->confirmChangementMessage  = '';
         $this->nouvelEngagement          = null;
-
         $this->dispatch('OpenEditModal');
     }
 
@@ -82,10 +82,172 @@ new #[Layout('layouts.app-frontend')] class extends Component
         $this->dispatch('closeEditModal');
     }
 
-    public function openPhoto(): void { $this->dispatch('OpenPhotoModal'); }
-    public function closePhoto(): void { $this->dispatch('closePhotoModal'); }
+    public function openPhoto(): void
+    {
+        $this->photoFile  = null;
+        $this->photoReady = false;
+        $this->dispatch('OpenPhotoModal');
+    }
 
-    /* ── Sélection type mensuel dans le modal ───────────── */
+    public function closePhoto(): void
+    {
+        $this->photoFile  = null;
+        $this->photoReady = false;
+        $this->dispatch('closePhotoModal');
+    }
+
+    /* ─────────────────────────────────────────────────────
+       PHOTO — Sauvegarde
+       - Redimensionne à 400×400 si GD est disponible
+       - Stocke dans storage/app/public/avatars/{customer_id}.jpg
+       - MAJ champ photo_path sur le customer
+    ───────────────────────────────────────────────────── */
+    public function sauvegarderPhoto(): void
+    {
+        $this->validate([
+            'photoFile' => 'required|image|max:5120', // max 5 Mo
+        ]);
+
+        $customer = Customer::findOrFail(auth('customer')->user()->id);
+
+        /* Supprimer l'ancienne photo si elle existe */
+        if ($customer->photo_path && Storage::disk('public')->exists($customer->photo_path)) {
+            Storage::disk('public')->delete($customer->photo_path);
+        }
+
+        /* Stocker la nouvelle dans public/avatars/ */
+        $ext      = $this->photoFile->getClientOriginalExtension() ?: 'jpg';
+        $filename = 'avatars/' . $customer->id . '_' . now()->format('YmdHis') . '.' . $ext;
+
+        /* Tenter un redimensionnement GD vers 400×400 */
+        try {
+            $tmpPath = $this->photoFile->getRealPath();
+            $mime    = $this->photoFile->getMimeType();
+
+            $src = match($mime) {
+                'image/jpeg', 'image/jpg' => imagecreatefromjpeg($tmpPath),
+                'image/png'               => imagecreatefrompng($tmpPath),
+                'image/webp'              => imagecreatefromwebp($tmpPath),
+                default                   => null,
+            };
+
+            if ($src) {
+                $dst = imagecreatetruecolor(400, 400);
+                imagecopyresampled($dst, $src, 0, 0, 0, 0, 400, 400, imagesx($src), imagesy($src));
+
+                ob_start();
+                imagejpeg($dst, null, 90);
+                $imgData = ob_get_clean();
+                imagedestroy($src);
+                imagedestroy($dst);
+
+                Storage::disk('public')->put('avatars/' . $customer->id . '_' . now()->format('YmdHis') . '.jpg', $imgData);
+                $filename = 'avatars/' . $customer->id . '_' . now()->format('YmdHis') . '.jpg';
+            } else {
+                /* GD ne supporte pas ce format → stocker brut */
+                $filename = $this->photoFile->storeAs('avatars', $customer->id . '_' . now()->format('YmdHis') . '.' . $ext, 'public');
+            }
+        } catch (\Throwable $e) {
+            /* Fallback sans redimensionnement */
+            $filename = $this->photoFile->storeAs('avatars', $customer->id . '_' . now()->format('YmdHis') . '.' . $ext, 'public');
+        }
+
+        $customer->update([
+            'photo_path' => $filename,
+            'photo_url'  => Storage::disk('public')->url($filename),
+            ]);
+
+        $this->photoFile  = null;
+        $this->photoReady = false;
+        $this->dispatch('closePhotoModal');
+        $this->dispatch('photoSauvegardee', path: Storage::disk('public')->url($filename));
+        $this->send_event_at_toast('Photo de profil mise à jour !', 'success', 'top-end');
+    }
+
+    public function supprimerPhoto(): void
+    {
+        $customer = Customer::findOrFail(auth('customer')->user()->id);
+
+        if ($customer->photo_path && Storage::disk('public')->exists($customer->photo_path)) {
+            Storage::disk('public')->delete($customer->photo_path);
+        }
+
+        $customer->update([
+            'photo_path' => null,
+            'photo_url'  => null
+            ]);
+        $this->dispatch('closePhotoModal');
+        $this->dispatch('photoSupprimee');
+        $this->send_event_at_toast('Photo supprimée.', 'success', 'top-end');
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       BILAN PDF
+    ═══════════════════════════════════════════════════════ */
+    public function openBilan(): void
+    {
+        $this->bilanDebut = now()->startOfYear()->format('Y-m-d');
+        $this->bilanFin   = now()->format('Y-m-d');
+        $this->bilanTout  = false;
+        $this->showBilan  = true;
+        $this->dispatch('OpenBilanModal');
+    }
+
+    public function closeBilan(): void
+    {
+        $this->showBilan = false;
+        $this->dispatch('closeBilanModal');
+    }
+
+    public function telechargerBilan()
+    {
+        $customer = Customer::with(['typeCotisationMensuel'])->findOrFail(auth('customer')->user()->id);
+
+        $debut = $this->bilanTout ? null : Carbon::parse($this->bilanDebut)->startOfDay();
+        $fin   = $this->bilanTout ? null : Carbon::parse($this->bilanFin)->endOfDay();
+
+        $cotisations = Cotisation::with('typeCotisation')
+            ->where('customer_id', $customer->id)
+            ->when(! $this->bilanTout, fn($q) => $q->whereBetween('created_at', [$debut, $fin]))
+            ->orderByDesc('annee')->orderByDesc('mois')
+            ->get();
+
+        $paiements = Paiement::where('customer_id', $customer->id)
+            ->where('statut', 'success')
+            ->when(! $this->bilanTout, fn($q) => $q->whereBetween('date_paiement', [$debut, $fin]))
+            ->orderByDesc('date_paiement')
+            ->get();
+
+        $totalPaye    = $paiements->sum('montant');
+        $totalDu      = $cotisations->whereIn('statut', ['en_retard', 'partiel'])->sum('montant_restant');
+        $totalRestant = $cotisations->sum('montant_restant');
+        $nbAjour      = $cotisations->where('statut', 'a_jour')->count();
+        $nbRetard     = $cotisations->where('statut', 'en_retard')->count();
+        $nbPartiel    = $cotisations->where('statut', 'partiel')->count();
+
+        $periode = $this->bilanTout
+            ? "Tout l'historique"
+            : Carbon::parse($this->bilanDebut)->translatedFormat('d F Y') . ' au ' .
+              Carbon::parse($this->bilanFin)->translatedFormat('d F Y');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.frontend.bilan-fidele', compact(
+            'customer', 'cotisations', 'paiements',
+            'totalPaye', 'totalDu', 'totalRestant',
+            'nbAjour', 'nbRetard', 'nbPartiel',
+            'periode'
+        ))->setPaper('a4');
+
+        $this->dispatch('closeBilanModal');
+
+        return response()->streamDownload(
+            fn() => print($pdf->output()),
+            "bilan-{$customer->nom}-{$customer->prenom}-" . now()->format('Ymd') . ".pdf"
+        );
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       SÉLECTION TYPE MENSUEL
+    ═══════════════════════════════════════════════════════ */
     public function selectTypeMensuel(?int $id): void
     {
         $this->typeCotisationMensuelId   = $id;
@@ -93,14 +255,11 @@ new #[Layout('layouts.app-frontend')] class extends Component
         $this->confirmChangementMessage  = '';
         $this->nouvelEngagement          = null;
         $this->errorEngagement           = '';
-
-        /* Si pas de type sélectionné → on réinitialise l'engagement */
         if (! $id) {
             $this->montantEngagement = auth('customer')->user()->montant_engagement;
         }
     }
 
-    /* ── Sélection montant d'engagement ─────────────────── */
     public function selectEngagement(?int $montant): void
     {
         $this->montantEngagement = $montant;
@@ -109,44 +268,37 @@ new #[Layout('layouts.app-frontend')] class extends Component
 
     public function selectNouvelEngagement(?int $montant): void
     {
-        $this->nouvelEngagement  = $montant;
-        $this->errorEngagement   = '';
+        $this->nouvelEngagement = $montant;
+        $this->errorEngagement  = '';
     }
 
-    /* ── Sauvegarder ────────────────────────────────────── */
+    /* ═══════════════════════════════════════════════════════
+       SAVE EDIT
+    ═══════════════════════════════════════════════════════ */
     public function saveEdit(): void
     {
-        $this->errorNom       = '';
-        $this->errorPrenom    = '';
+        $this->errorNom        = '';
+        $this->errorPrenom     = '';
         $this->errorEngagement = '';
 
         if (! trim($this->nom))    { $this->errorNom    = 'Le nom est obligatoire.'; }
         if (! trim($this->prenom)) { $this->errorPrenom = 'Le prénom est obligatoire.'; }
         if ($this->errorNom || $this->errorPrenom) return;
 
-        $customer  = Customer::find(auth('customer')->user()->id);
+        $customer     = Customer::find(auth('customer')->user()->id);
         $ancienTypeId = $customer->type_cotisation_mensuel_id;
 
         $tcNouveau = $this->typeCotisationMensuelId
             ? TypeCotisation::find($this->typeCotisationMensuelId)
             : null;
 
-        $estChangementDeType = $tcNouveau
-            && $ancienTypeId
-            && $ancienTypeId !== $this->typeCotisationMensuelId;
+        $estChangementDeType = $tcNouveau && $ancienTypeId && $ancienTypeId !== $this->typeCotisationMensuelId;
+        $estPremierType      = $tcNouveau && ! $ancienTypeId;
 
-        $estPremierType = $tcNouveau && ! $ancienTypeId;
-
-        /*
-         * CAS 1 : Changement de type mensuel
-         * → demander confirmation + nouveau montant d'engagement
-         */
         if ($estChangementDeType && ! $this->showConfirmChangementType) {
             $ancienType = TypeCotisation::find($ancienTypeId);
             $minLabel   = $tcNouveau->montant_minimum
-                ? ' (minimum ' . number_format($tcNouveau->montant_minimum, 0, ',', ' ') . ' FCFA/mois)'
-                : '';
-
+                ? ' (minimum ' . number_format($tcNouveau->montant_minimum, 0, ',', ' ') . ' FCFA/mois)' : '';
             $this->showConfirmChangementType = true;
             $this->nouvelEngagement          = null;
             $this->errorEngagement           = '';
@@ -158,40 +310,29 @@ new #[Layout('layouts.app-frontend')] class extends Component
             return;
         }
 
-        /*
-         * CAS 2 : Confirmation changement de type — valider nouvelEngagement
-         */
         if ($estChangementDeType && $this->showConfirmChangementType) {
             if (! $this->nouvelEngagement || $this->nouvelEngagement < 1) {
-                $this->errorEngagement = 'Veuillez renseigner votre nouveau montant d\'engagement.';
+                $this->errorEngagement = "Veuillez renseigner votre nouveau montant d'engagement.";
                 return;
             }
             if ($tcNouveau->montant_minimum && $this->nouvelEngagement < $tcNouveau->montant_minimum) {
-                $this->errorEngagement =
-                    "Le minimum pour « {$tcNouveau->libelle} » est " .
-                    number_format($tcNouveau->montant_minimum, 0, ',', ' ') . " FCFA/mois.";
+                $this->errorEngagement = "Le minimum pour « {$tcNouveau->libelle} » est " . number_format($tcNouveau->montant_minimum, 0, ',', ' ') . " FCFA/mois.";
                 return;
             }
             $this->montantEngagement = $this->nouvelEngagement;
         }
 
-        /*
-         * CAS 3 : Premier type mensuel — valider montantEngagement
-         */
         if ($estPremierType) {
             if (! $this->montantEngagement || $this->montantEngagement < 1) {
-                $this->errorEngagement = 'Veuillez renseigner votre montant d\'engagement mensuel.';
+                $this->errorEngagement = "Veuillez renseigner votre montant d'engagement mensuel.";
                 return;
             }
             if ($tcNouveau->montant_minimum && $this->montantEngagement < $tcNouveau->montant_minimum) {
-                $this->errorEngagement =
-                    "Le minimum pour « {$tcNouveau->libelle} » est " .
-                    number_format($tcNouveau->montant_minimum, 0, ',', ' ') . " FCFA/mois.";
+                $this->errorEngagement = "Le minimum pour « {$tcNouveau->libelle} » est " . number_format($tcNouveau->montant_minimum, 0, ',', ' ') . " FCFA/mois.";
                 return;
             }
         }
 
-        /* ── MAJ customer ────────────────────────────────── */
         $customer->update([
             'nom'                        => strtoupper(trim($this->nom)),
             'prenom'                     => ucwords(strtolower(trim($this->prenom))),
@@ -201,17 +342,10 @@ new #[Layout('layouts.app-frontend')] class extends Component
             'montant_engagement'         => $tcNouveau ? $this->montantEngagement : null,
         ]);
 
-        /*
-         * Créer une cotisation pour le mois en cours si :
-         * - Premier type mensuel (pas de cotisation ce mois)
-         * - Changement de type (pas de cotisation du nouveau type ce mois)
-         */
         if ($tcNouveau && ($estPremierType || $estChangementDeType)) {
             $existeDejaCeMois = Cotisation::where('customer_id', $customer->id)
                 ->where('type_cotisation_id', $tcNouveau->id)
-                ->where('mois',  now()->month)
-                ->where('annee', now()->year)
-                ->exists();
+                ->where('mois', now()->month)->where('annee', now()->year)->exists();
 
             if (! $existeDejaCeMois) {
                 $cot = Cotisation::create([
@@ -223,16 +357,11 @@ new #[Layout('layouts.app-frontend')] class extends Component
                     'montant_paye'       => 0,
                     'montant_restant'    => $this->montantEngagement,
                     'statut'             => 'en_retard',
-                    'mode_paiement'      => null,
-                    'reference'          => null,
-                    'validated_by'       => null,
-                    'validated_at'       => null,
+                    'mode_paiement'      => null, 'reference' => null,
+                    'validated_by'       => null, 'validated_at' => null,
                 ]);
-
                 HistoriqueCotisation::log($cot, 'creation', $this->montantEngagement,
-                    $estChangementDeType
-                        ? 'Première cotisation suite au changement de type'
-                        : 'Première cotisation mensuelle');
+                    $estChangementDeType ? 'Première cotisation suite au changement de type' : 'Première cotisation mensuelle');
             }
         }
 
@@ -254,36 +383,30 @@ new #[Layout('layouts.app-frontend')] class extends Component
         $customer = Customer::with('typeCotisationMensuel')
             ->find(auth('customer')->user()->id);
 
-        $totalCotise = Paiement::where('customer_id', $customer->id)
-            ->where('statut', 'success')->sum('montant');
-
-        $totalDu = Cotisation::where('customer_id', $customer->id)
-            ->whereIn('statut', ['en_retard', 'partiel'])->sum('montant_restant');
-
+        $totalCotise            = Paiement::where('customer_id', $customer->id)->where('statut', 'success')->sum('montant');
+        $totalDu                = Cotisation::where('customer_id', $customer->id)->whereIn('statut', ['en_retard', 'partiel'])->sum('montant_restant');
         $nbPaiements            = Paiement::where('customer_id', $customer->id)->count();
         $moisRetard             = Cotisation::where('customer_id', $customer->id)->where('statut', 'en_retard')->count();
         $nbDocuments            = $customer->documents()->count();
-        $nbReclammationsEnCours = $customer->reclammation()
-            ->whereIn('status', ['ouverte', 'en_cours'])->count();
+        $nbReclammationsEnCours = $customer->reclammation()->whereIn('status', ['ouverte', 'en_cours'])->count();
 
-        $initiales = strtoupper(
-            substr($customer->prenom, 0, 1) . substr($customer->nom, 0, 1)
-        );
+        $initiales = strtoupper(substr($customer->prenom, 0, 1) . substr($customer->nom, 0, 1));
 
-        $typesMensuels   = TypeCotisation::where('type', 'mensuel')
-            ->where('is_required', true)
-            ->where('status', 'actif')
-            ->orderBy('libelle')
-            ->get();
-
+        $typesMensuels   = TypeCotisation::where('type', 'mensuel')->where('is_required', true)->where('status', 'actif')->orderBy('libelle')->get();
         $coutEngagements = CoutEngagement::actif()->orderBy('montant')->get();
+
+        /* URL photo de profil */
+        $photoUrl = $customer->photo_path
+            ? Storage::disk('public')->url($customer->photo_path)
+            : null;
 
         return compact(
             'customer', 'totalCotise', 'totalDu',
             'nbPaiements', 'moisRetard', 'nbDocuments',
             'nbReclammationsEnCours', 'initiales',
-            'typesMensuels', 'coutEngagements'
+            'typesMensuels', 'coutEngagements',
+            'photoUrl'
         );
     }
-};
+}
 ?>

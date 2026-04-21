@@ -28,6 +28,8 @@ class Customer extends  Authenticatable implements JWTSubject
 
         'type_cotisation_mensuel_id',
         'matricule',
+        'photo_path',
+        'photo_url',
     ];
 
     protected $casts = [

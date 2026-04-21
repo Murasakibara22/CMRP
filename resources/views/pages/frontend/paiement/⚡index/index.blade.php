@@ -276,44 +276,29 @@
               wire:click="closeDetail">
         <i class="ri-close-line"></i> Fermer
       </button>
+      @if($detailPaiement->statut === 'success')
       <button class="btn-main" style="height:46px;font-size:14px"
-              onclick="printDetail()">
-        <i class="ri-printer-line"></i> Imprimer / PDF
+              wire:click="telechargerRecu({{ $detailPaiement->id }})"
+              wire:loading.attr="disabled"
+              wire:target="telechargerRecu">
+        <span wire:loading wire:target="telechargerRecu" class="spinner-border spinner-border-sm me-1"></span>
+        <i class="ri-download-2-line" wire:loading.remove wire:target="telechargerRecu"></i>
+        <span wire:loading.remove wire:target="telechargerRecu"> Télécharger le reçu</span>
+        <span wire:loading wire:target="telechargerRecu"> Génération…</span>
       </button>
+      @else
+      <button class="btn-main" style="height:46px;font-size:14px;opacity:.5;cursor:not-allowed" disabled
+              title="Reçu disponible uniquement pour les paiements validés">
+        <i class="ri-download-2-line"></i> Reçu indisponible
+      </button>
+      @endif
     </div>
 
     @endif
   </div>
 </div>
 
-{{-- Zone impression --}}
-@if($detailPaiement)
-@php $dp = $detailPaiement; @endphp
-<div class="print-zone" id="print-zone" style="display:none">
-  <div class="print-header">
-    <div class="print-logo">🕌 ISL Mosquée — Espace Fidèle</div>
-    <div class="print-title">Reçu de paiement</div>
-  </div>
-  <div class="print-fidele">
-    Fidèle : <strong>{{ auth('customer')->user()->prenom }} {{ auth('customer')->user()->nom }}</strong>
-    — {{ auth('customer')->user()->dial_code }} {{ auth('customer')->user()->phone }}
-  </div>
-  <table class="print-table">
-    <tr><td>Référence</td><td>{{ $dp->reference ?? 'PAY-'.str_pad($dp->id,6,'0',STR_PAD_LEFT) }}</td></tr>
-    <tr><td>Type</td><td>{{ $dp->cotisation?->typeCotisation?->libelle ?? '—' }}</td></tr>
-    <tr><td>Période</td><td>
-      {{ ($dp->cotisation?->mois && $dp->cotisation?->annee) ? \Carbon\Carbon::create($dp->cotisation->annee, $dp->cotisation->mois)->translatedFormat('F Y') : '—' }}
-    </td></tr>
-    <tr><td>Montant</td><td>{{ number_format($dp->montant,0,',',' ') }} FCFA</td></tr>
-    <tr><td>Mode de paiement</td><td>{{ match($dp->mode_paiement){ 'mobile_money'=>'Mobile Money','espece'=>'Espèces','virement'=>'Virement',default=>'—'} }}</td></tr>
-    <tr><td>Date</td><td>{{ $dp->date_paiement->format('d/m/Y H:i') }}</td></tr>
-    <tr><td>Statut</td><td>{{ match($dp->statut){ 'success'=>'Succès','en_attente'=>'En attente','echec'=>'Échoué',default=>$dp->statut} }}</td></tr>
-  </table>
-  <div class="print-footer">
-    Document généré le <span id="pr-now"></span> — ISL Mosquée © {{ now()->year }}
-  </div>
-</div>
-@endif
+{{-- Zone impression supprimée — le PDF est généré côté serveur via DomPDF --}}
 
 </div>{{-- /root Livewire --}}
 
@@ -330,11 +315,11 @@ function filterPay(btn) {
   });
 }
 
-// une fonction pour closeDetatil qui vas ecouter un event de livewire et fermer le modal selon son id  
+// une fonction pour closeDetatil qui vas ecouter un event de livewire et fermer le modal selon son id
 window.addEventListener('closePayDetail', event => {
         //pas de fonction ph mais plutot une fermeture ici en js ex un display none sur le modal
         const modalOverlay = document.querySelector('.pay-modal-overlay');
-        if (modalOverlay) {       
+        if (modalOverlay) {
                 modalOverlay.classList.remove('open');
                 @this.set('detailId', null); // reset detailId pour éviter les problèmes à l'ouverture suivante
         }
@@ -345,22 +330,12 @@ window.addEventListener('closePayDetail', event => {
 window.addEventListener('OpenPayDetail', event => {
         //pas de fonction ph mais plutot une fermeture ici en js ex un display none sur le modal
         const modalOverlay = document.querySelector('.pay-modal-overlay');
-        if (modalOverlay) {       
+        if (modalOverlay) {
                 modalOverlay.classList.add('open');
         }
 
 });
 
-/* ── Impression ── */
-function printDetail() {
-  const zone = document.getElementById('print-zone');
-  if (!zone) return;
-  const now = new Date().toLocaleString('fr-FR');
-  const el = document.getElementById('pr-now');
-  if (el) el.textContent = now;
-  zone.style.display = 'block';
-  window.print();
-  zone.style.display = 'none';
-}
+/* ── Impression retirée — PDF généré via DomPDF (téléchargerRecu) ── */
 </script>
 @endpush

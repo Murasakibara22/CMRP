@@ -11,7 +11,15 @@
         <div class="prof-hero-bg"></div>
         <div class="prof-hero-content">
           <div class="prof-avatar-wrap">
-            <div class="prof-avatar" id="prof-avatar">{{ $initiales }}</div>
+            {{-- Avatar : photo si disponible, sinon initiales --}}
+            <div class="prof-avatar" id="prof-avatar">
+              @if($photoUrl)
+                <img src="{{ $photoUrl }}" id="prof-avatar-img"
+                     style="width:100%;height:100%;object-fit:cover;border-radius:50%">
+              @else
+                <span id="prof-avatar-initiales">{{ $initiales }}</span>
+              @endif
+            </div>
             <button class="prof-avatar-edit" wire:click="openPhoto" title="Changer la photo">
               <i class="ri-camera-line"></i>
             </button>
@@ -130,6 +138,16 @@
           <i class="ri-arrow-right-s-line pmi-arrow"></i>
         </a>
 
+        {{-- Bilan --}}
+        <button class="prof-menu-item" wire:click="openBilan">
+          <div class="pmi-icon" style="background:rgba(10,179,156,.10);color:#0ab39c"><i class="ri-file-chart-line"></i></div>
+          <div class="pmi-body">
+            <div class="pmi-title">Télécharger mon bilan</div>
+            <div class="pmi-sub">Historique cotisations & paiements en PDF</div>
+          </div>
+          <i class="ri-arrow-right-s-line pmi-arrow"></i>
+        </button>
+
         <button class="prof-menu-item" wire:click="openEdit">
           <div class="pmi-icon" style="background:rgba(64,81,137,.10);color:#405189"><i class="ri-pencil-line"></i></div>
           <div class="pmi-body">
@@ -178,6 +196,11 @@
             <strong>{{ $nbDocuments }}</strong>
           </div>
         </div>
+        {{-- Bouton bilan desktop --}}
+        <button wire:click="openBilan"
+                style="margin-top:16px;width:100%;padding:10px;border:1.5px solid rgba(10,179,156,.3);border-radius:10px;background:rgba(10,179,156,.05);color:#0ab39c;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit">
+          <i class="ri-file-chart-line"></i> Télécharger mon bilan
+        </button>
       </div>
 
       <div class="card" style="padding:20px">
@@ -196,8 +219,7 @@
           <div class="pss-step {{ $customer->status === 'actif' ? 'done' : '' }}">
             <div class="pss-dot">
               @if($customer->status === 'actif')<i class="ri-check-line"></i>
-              @else <i class="ri-time-line"></i>
-              @endif
+              @else <i class="ri-time-line"></i>@endif
             </div>
             <div class="pss-text">Compte validé</div>
           </div>
@@ -206,14 +228,16 @@
 
     </div>
 
-  </div>{{-- /prof-layout --}}
+  </div>
 
   <div style="height:24px"></div>
 
 </main>
 
 
-{{-- ══ MODAL MODIFIER INFOS ════════════════════════════════ --}}
+{{-- ══════════════════════════════════════════════════════════
+     MODAL MODIFIER INFOS
+══════════════════════════════════════════════════════════ --}}
 <div class="pwa-modal-overlay" id="edit-overlay" wire:ignore.self>
   <div class="pwa-modal" wire:click.stop>
 
@@ -227,22 +251,17 @@
 
     <div class="pwa-modal-body">
 
-      {{-- ── Identité ─────────────────────────────────── --}}
       <div class="f-group">
         <label class="f-label">Nom <span class="req">*</span></label>
-        <input type="text"
-               class="f-input {{ $errorNom ? 'f-input-err' : '' }}"
-               wire:model.lazy="nom"
-               placeholder="Votre nom"/>
+        <input type="text" class="f-input {{ $errorNom ? 'f-input-err' : '' }}"
+               wire:model.lazy="nom" placeholder="Votre nom"/>
         @if($errorNom)<div class="f-err">{{ $errorNom }}</div>@endif
       </div>
 
       <div class="f-group">
         <label class="f-label">Prénoms <span class="req">*</span></label>
-        <input type="text"
-               class="f-input {{ $errorPrenom ? 'f-input-err' : '' }}"
-               wire:model.lazy="prenom"
-               placeholder="Vos prénoms"/>
+        <input type="text" class="f-input {{ $errorPrenom ? 'f-input-err' : '' }}"
+               wire:model.lazy="prenom" placeholder="Vos prénoms"/>
         @if($errorPrenom)<div class="f-err">{{ $errorPrenom }}</div>@endif
       </div>
 
@@ -258,13 +277,12 @@
         <label class="f-label">Numéro de téléphone</label>
         <div class="f-input-wrap">
           <i class="ri-smartphone-line f-input-icon"></i>
-          <input type="tel" class="f-input" wire:model.lazy="phone"
-                 placeholder="Numéro" inputmode="numeric"/>
+          <input type="tel" class="f-input" wire:model.lazy="phone" placeholder="Numéro" inputmode="numeric"/>
         </div>
         <div class="f-hint">Le numéro est utilisé pour la connexion OTP.</div>
       </div>
 
-      {{-- ── Cotisation mensuelle ──────────────────────── --}}
+      {{-- Cotisation mensuelle --}}
       <div style="padding-top:20px;border-top:1px dashed rgba(64,81,137,.2);margin-top:4px">
         <div style="font-size:13px;font-weight:800;color:#405189;margin-bottom:4px;display:flex;align-items:center;gap:6px">
           <i class="ri-calendar-check-line"></i> Type de cotisation mensuel
@@ -274,30 +292,19 @@
           Choisissez votre catégorie de cotisation mensuelle.
         </div>
 
-        {{-- Sélection type --}}
         <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
-
           @foreach($typesMensuels as $tm)
           @php $selected = $typeCotisationMensuelId === $tm->id; @endphp
           <div wire:click="selectTypeMensuel({{ $tm->id }})"
-               style="
-                 display:flex;align-items:center;justify-content:space-between;
-                 border:1.5px solid {{ $selected ? '#405189' : 'rgba(64,81,137,.15)' }};
-                 background:{{ $selected ? 'rgba(64,81,137,.06)' : '#fff' }};
-                 border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .2s;
-               ">
+               style="display:flex;align-items:center;justify-content:space-between;border:1.5px solid {{ $selected ? '#405189' : 'rgba(64,81,137,.15)' }};background:{{ $selected ? 'rgba(64,81,137,.06)' : '#fff' }};border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .2s;">
             <div style="display:flex;align-items:center;gap:10px">
               <div style="width:32px;height:32px;border-radius:8px;background:{{ $selected ? 'rgba(64,81,137,.15)' : 'rgba(135,138,153,.08)' }};color:{{ $selected ? '#405189' : '#878a99' }};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">
                 <i class="ri-calendar-check-line"></i>
               </div>
               <div>
-                <div style="font-size:13px;font-weight:700;color:{{ $selected ? '#405189' : '#212529' }}">
-                  {{ $tm->libelle }}
-                </div>
+                <div style="font-size:13px;font-weight:700;color:{{ $selected ? '#405189' : '#212529' }}">{{ $tm->libelle }}</div>
                 @if($tm->montant_minimum)
-                <div style="font-size:11px;color:#878a99;margin-top:2px">
-                  Minimum {{ number_format($tm->montant_minimum, 0, ',', ' ') }} FCFA/mois
-                </div>
+                <div style="font-size:11px;color:#878a99;margin-top:2px">Minimum {{ number_format($tm->montant_minimum, 0, ',', ' ') }} FCFA/mois</div>
                 @endif
               </div>
             </div>
@@ -307,149 +314,83 @@
           </div>
           @endforeach
 
-          {{-- Aucun type --}}
           <div wire:click="selectTypeMensuel(null)"
-               style="
-                 display:flex;align-items:center;gap:10px;
-                 border:1.5px solid {{ ! $typeCotisationMensuelId ? '#405189' : 'rgba(64,81,137,.15)' }};
-                 background:{{ ! $typeCotisationMensuelId ? 'rgba(64,81,137,.06)' : '#fff' }};
-                 border-radius:12px;padding:10px 14px;cursor:pointer;transition:all .2s;
-               ">
+               style="display:flex;align-items:center;gap:10px;border:1.5px solid {{ ! $typeCotisationMensuelId ? '#405189' : 'rgba(64,81,137,.15)' }};background:{{ ! $typeCotisationMensuelId ? 'rgba(64,81,137,.06)' : '#fff' }};border-radius:12px;padding:10px 14px;cursor:pointer;transition:all .2s;">
             <div style="width:32px;height:32px;border-radius:8px;background:rgba(135,138,153,.08);color:#878a99;display:flex;align-items:center;justify-content:center;font-size:15px">
               <i class="ri-user-line"></i>
             </div>
-            <div style="font-size:13px;font-weight:700;color:{{ ! $typeCotisationMensuelId ? '#405189' : '#212529' }}">
-              Sans cotisation mensuelle
-            </div>
+            <div style="font-size:13px;font-weight:700;color:{{ ! $typeCotisationMensuelId ? '#405189' : '#212529' }}">Sans cotisation mensuelle</div>
           </div>
         </div>
 
-        {{--
-          BLOC CONFIRMATION CHANGEMENT DE TYPE
-          Affiché uniquement si showConfirmChangementType = true
-        --}}
+        {{-- Confirmation changement de type --}}
         @if($showConfirmChangementType)
-        <div style="
-          background:rgba(247,184,75,.07);border:1.5px solid #f7b84b;
-          border-left:4px solid #f7b84b;border-radius:0 12px 12px 0;
-          padding:14px 16px;margin-bottom:14px;
-        ">
+        <div style="background:rgba(247,184,75,.07);border:1.5px solid #f7b84b;border-left:4px solid #f7b84b;border-radius:0 12px 12px 0;padding:14px 16px;margin-bottom:14px;">
           <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
             <i class="ri-swap-line" style="color:#f7b84b;font-size:20px;flex-shrink:0;margin-top:1px"></i>
             <div>
-              <div style="font-size:13px;font-weight:800;color:#c07a10;margin-bottom:4px">
-                Changement de catégorie
-              </div>
-              <div style="font-size:12px;color:#495057;line-height:1.6">
-                {{ $confirmChangementMessage }}
-              </div>
+              <div style="font-size:13px;font-weight:800;color:#c07a10;margin-bottom:4px">Changement de catégorie</div>
+              <div style="font-size:12px;color:#495057;line-height:1.6">{{ $confirmChangementMessage }}</div>
             </div>
           </div>
-
-          {{-- Nouveau montant d'engagement --}}
           <div style="font-size:11px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
             Nouveau montant mensuel <span style="color:#f06548">*</span>
           </div>
-
           @if($coutEngagements->count())
           <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
             @foreach($coutEngagements as $cout)
             <div wire:click="selectNouvelEngagement({{ $cout->montant }})"
-                 style="
-                   padding:7px 12px;border-radius:20px;cursor:pointer;
-                   border:1.5px solid {{ $nouvelEngagement === $cout->montant ? '#405189' : '#e9ebec' }};
-                   background:{{ $nouvelEngagement === $cout->montant ? 'rgba(64,81,137,.08)' : '#fff' }};
-                   color:{{ $nouvelEngagement === $cout->montant ? '#405189' : '#495057' }};
-                   font-size:12px;font-weight:700;transition:all .15s;
-                 ">
+                 style="padding:7px 12px;border-radius:20px;cursor:pointer;border:1.5px solid {{ $nouvelEngagement === $cout->montant ? '#405189' : '#e9ebec' }};background:{{ $nouvelEngagement === $cout->montant ? 'rgba(64,81,137,.08)' : '#fff' }};color:{{ $nouvelEngagement === $cout->montant ? '#405189' : '#495057' }};font-size:12px;font-weight:700;transition:all .15s;">
               {{ number_format($cout->montant, 0, ',', ' ') }} FCFA
             </div>
             @endforeach
           </div>
           @endif
-
           <div style="position:relative;margin-bottom:8px">
             <i class="ri-money-cny-circle-line" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#878a99;font-size:14px;pointer-events:none"></i>
-            <input type="number"
-                   wire:model.live="nouvelEngagement"
-                   min="1"
-                   placeholder="Ou saisir un montant…"
-                   inputmode="numeric"
-                   style="
-                     border:1.5px solid {{ $errorEngagement ? '#f06548' : '#e9ebec' }};
-                     border-radius:10px;height:42px;padding:0 12px 0 34px;
-                     font-size:13px;width:100%;background:#fff;color:#212529;
-                   "/>
+            <input type="number" wire:model.live="nouvelEngagement" min="1" placeholder="Ou saisir un montant…" inputmode="numeric"
+                   style="border:1.5px solid {{ $errorEngagement ? '#f06548' : '#e9ebec' }};border-radius:10px;height:42px;padding:0 12px 0 34px;font-size:13px;width:100%;background:#fff;color:#212529;"/>
           </div>
-
           @if($errorEngagement)
-          <div style="font-size:12px;color:#f06548;margin-bottom:8px;font-weight:600">
-            <i class="ri-error-warning-line me-1"></i>{{ $errorEngagement }}
-          </div>
+          <div style="font-size:12px;color:#f06548;margin-bottom:8px;font-weight:600"><i class="ri-error-warning-line me-1"></i>{{ $errorEngagement }}</div>
           @endif
         </div>
         @endif
 
-        {{--
-          Montant d'engagement si PREMIER type sélectionné
-          (pas de confirmation nécessaire)
-        --}}
-        @php
-          $ancienTypeId = auth('customer')->user()->type_cotisation_mensuel_id;
-          $estPremierTypeForm = $typeCotisationMensuelId && ! $ancienTypeId;
-        @endphp
+        {{-- Premier type --}}
+        @php $ancienTypeId = auth('customer')->user()->type_cotisation_mensuel_id; $estPremierTypeForm = $typeCotisationMensuelId && ! $ancienTypeId; @endphp
         @if($estPremierTypeForm && ! $showConfirmChangementType)
         <div style="margin-top:4px">
           <div style="font-size:11px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
             Montant d'engagement mensuel <span style="color:#f06548">*</span>
           </div>
-
           @if($coutEngagements->count())
           <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
             @foreach($coutEngagements as $cout)
             <div wire:click="selectEngagement({{ $cout->montant }})"
-                 style="
-                   padding:7px 12px;border-radius:20px;cursor:pointer;
-                   border:1.5px solid {{ $montantEngagement === $cout->montant ? '#405189' : '#e9ebec' }};
-                   background:{{ $montantEngagement === $cout->montant ? 'rgba(64,81,137,.08)' : '#fff' }};
-                   color:{{ $montantEngagement === $cout->montant ? '#405189' : '#495057' }};
-                   font-size:12px;font-weight:700;transition:all .15s;
-                 ">
+                 style="padding:7px 12px;border-radius:20px;cursor:pointer;border:1.5px solid {{ $montantEngagement === $cout->montant ? '#405189' : '#e9ebec' }};background:{{ $montantEngagement === $cout->montant ? 'rgba(64,81,137,.08)' : '#fff' }};color:{{ $montantEngagement === $cout->montant ? '#405189' : '#495057' }};font-size:12px;font-weight:700;transition:all .15s;">
               {{ number_format($cout->montant, 0, ',', ' ') }} FCFA
             </div>
             @endforeach
           </div>
           @endif
-
           <div style="position:relative">
             <i class="ri-money-cny-circle-line" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#878a99;font-size:14px;pointer-events:none"></i>
-            <input type="number"
-                   wire:model.live="montantEngagement"
-                   min="1"
-                   placeholder="Ou saisir un montant…"
-                   inputmode="numeric"
-                   style="
-                     border:1.5px solid {{ $errorEngagement ? '#f06548' : '#e9ebec' }};
-                     border-radius:10px;height:42px;padding:0 12px 0 34px;
-                     font-size:13px;width:100%;background:#fff;color:#212529;
-                   "/>
+            <input type="number" wire:model.live="montantEngagement" min="1" placeholder="Ou saisir un montant…" inputmode="numeric"
+                   style="border:1.5px solid {{ $errorEngagement ? '#f06548' : '#e9ebec' }};border-radius:10px;height:42px;padding:0 12px 0 34px;font-size:13px;width:100%;background:#fff;color:#212529;"/>
           </div>
-
           @if($errorEngagement)
-          <div style="font-size:12px;color:#f06548;margin-top:6px;font-weight:600">
-            <i class="ri-error-warning-line me-1"></i>{{ $errorEngagement }}
-          </div>
+          <div style="font-size:12px;color:#f06548;margin-top:6px;font-weight:600"><i class="ri-error-warning-line me-1"></i>{{ $errorEngagement }}</div>
           @endif
-
           <div style="font-size:11px;color:#878a99;margin-top:6px;line-height:1.5">
             Une cotisation sera créée pour le mois en cours avec le statut <em>En retard</em>.
           </div>
         </div>
         @endif
 
-      </div>{{-- /cotisation mensuelle --}}
+      </div>
 
-    </div>{{-- /pwa-modal-body --}}
+    </div>
 
     <div class="pwa-modal-footer">
       <button class="btn-outline" style="height:46px;font-size:14px" wire:click="closeEdit">
@@ -469,9 +410,12 @@
 </div>
 
 
-{{-- ══ MODAL PHOTO ═════════════════════════════════════════ --}}
+{{-- ══════════════════════════════════════════════════════════
+     MODAL PHOTO DE PROFIL
+══════════════════════════════════════════════════════════ --}}
 <div class="pwa-modal-overlay" id="photo-overlay" wire:ignore.self>
   <div class="pwa-modal pwa-modal-sm" wire:click.stop>
+
     <div class="pwa-modal-header">
       <div class="pwa-modal-drag"></div>
       <div class="pwa-modal-title-row">
@@ -479,12 +423,30 @@
         <button class="pwa-modal-close" wire:click="closePhoto"><i class="ri-close-line"></i></button>
       </div>
     </div>
+
     <div class="pwa-modal-body">
+
+      {{-- Aperçu --}}
       <div class="photo-preview-wrap">
-        <div class="photo-preview" id="photo-preview">{{ $initiales }}</div>
+        <div class="photo-preview" id="photo-preview-modal">
+          @if($photoUrl)
+            <img src="{{ $photoUrl }}" id="photo-preview-img"
+                 style="width:100%;height:100%;object-fit:cover;border-radius:50%">
+          @else
+            <span id="photo-preview-initiales">{{ $initiales }}</span>
+          @endif
+        </div>
         <div class="photo-preview-label">Aperçu</div>
       </div>
-      <div class="photo-btns">
+
+      {{-- Upload via Livewire (caché) --}}
+      <input type="file" id="file-input-lw" accept="image/*"
+             wire:model="photoFile"
+             style="display:none"
+             onchange="previewPhotoLivewire(this)">
+
+      {{-- Boutons de sélection --}}
+      <div class="photo-btns" id="photo-select-btns">
         <button class="photo-btn photo-btn-primary" onclick="triggerCamera()">
           <i class="ri-camera-fill"></i>
           <span>Prendre une photo</span>
@@ -495,14 +457,125 @@
           <span>Choisir dans la galerie</span>
           <div class="photo-btn-sub">Depuis votre téléphone</div>
         </button>
-        <button class="photo-btn photo-btn-danger" onclick="removePhoto()">
+        @if($photoUrl)
+        <button class="photo-btn photo-btn-danger" wire:click="supprimerPhoto" wire:loading.attr="disabled">
           <i class="ri-delete-bin-line"></i>
           <span>Supprimer la photo</span>
           <div class="photo-btn-sub">Retour aux initiales</div>
         </button>
+        @endif
       </div>
-      <input type="file" id="file-input" accept="image/*" style="display:none" onchange="onFileSelect(this)"/>
+
+      {{-- Boutons confirmation (visible après sélection) --}}
+      <div id="photo-confirm-btns" style="display:none;gap:10px;margin-top:14px">
+        <button onclick="annulerPhoto()"
+                style="flex:1;padding:12px;border:1.5px solid #e9ebec;border-radius:12px;background:#fff;color:#878a99;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+          <i class="ri-close-line me-1"></i>Annuler
+        </button>
+        <button wire:click="sauvegarderPhoto"
+                wire:loading.attr="disabled"
+                wire:target="sauvegarderPhoto"
+                style="flex:1;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#2d3a63,#405189);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:6px">
+          <span wire:loading wire:target="sauvegarderPhoto" class="spinner"></span>
+          <i class="ri-save-line" wire:loading.remove wire:target="sauvegarderPhoto"></i>
+          <span wire:loading.remove wire:target="sauvegarderPhoto">Sauvegarder</span>
+          <span wire:loading wire:target="sauvegarderPhoto">Enregistrement…</span>
+        </button>
+      </div>
+
     </div>
+  </div>
+</div>
+
+
+{{-- ══════════════════════════════════════════════════════════
+     MODAL BILAN PDF
+══════════════════════════════════════════════════════════ --}}
+<div class="pwa-modal-overlay" id="bilan-overlay" wire:ignore.self>
+  <div class="pwa-modal pwa-modal-sm" wire:click.stop>
+
+    <div class="pwa-modal-header">
+      <div class="pwa-modal-drag"></div>
+      <div class="pwa-modal-title-row">
+        <div class="pwa-modal-title"><i class="ri-file-chart-line"></i> Télécharger mon bilan</div>
+        <button class="pwa-modal-close" wire:click="closeBilan"><i class="ri-close-line"></i></button>
+      </div>
+    </div>
+
+    <div class="pwa-modal-body">
+
+      <div style="font-size:13px;color:#878a99;margin-bottom:20px;line-height:1.6">
+        Générez un PDF de votre historique de cotisations et paiements.
+      </div>
+
+      {{-- Option : Tout l'historique --}}
+      <div wire:click="$set('bilanTout', true)"
+           style="display:flex;align-items:center;gap:12px;border:1.5px solid {{ $bilanTout ? '#405189' : 'rgba(64,81,137,.15)' }};background:{{ $bilanTout ? 'rgba(64,81,137,.06)' : '#fff' }};border-radius:12px;padding:14px;cursor:pointer;transition:all .2s;margin-bottom:10px">
+        <div style="width:38px;height:38px;border-radius:10px;background:{{ $bilanTout ? 'rgba(64,81,137,.15)' : 'rgba(135,138,153,.08)' }};color:{{ $bilanTout ? '#405189' : '#878a99' }};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">
+          <i class="ri-history-line"></i>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:{{ $bilanTout ? '#405189' : '#212529' }}">Tout l'historique</div>
+          <div style="font-size:11px;color:#878a99;margin-top:2px">Depuis la date d'adhésion jusqu'à aujourd'hui</div>
+        </div>
+        <div style="margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid {{ $bilanTout ? '#405189' : '#e9ebec' }};background:{{ $bilanTout ? '#405189' : 'transparent' }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          @if($bilanTout)<i class="ri-check-line" style="color:#fff;font-size:11px"></i>@endif
+        </div>
+      </div>
+
+      {{-- Option : Période précise --}}
+      <div wire:click="$set('bilanTout', false)"
+           style="display:flex;align-items:center;gap:12px;border:1.5px solid {{ ! $bilanTout ? '#405189' : 'rgba(64,81,137,.15)' }};background:{{ ! $bilanTout ? 'rgba(64,81,137,.06)' : '#fff' }};border-radius:12px;padding:14px;cursor:pointer;transition:all .2s;margin-bottom:16px">
+        <div style="width:38px;height:38px;border-radius:10px;background:{{ ! $bilanTout ? 'rgba(64,81,137,.15)' : 'rgba(135,138,153,.08)' }};color:{{ ! $bilanTout ? '#405189' : '#878a99' }};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">
+          <i class="ri-calendar-range-line"></i>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:{{ ! $bilanTout ? '#405189' : '#212529' }}">Période précise</div>
+          <div style="font-size:11px;color:#878a99;margin-top:2px">Choisir une plage de dates</div>
+        </div>
+        <div style="margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid {{ ! $bilanTout ? '#405189' : '#e9ebec' }};background:{{ ! $bilanTout ? '#405189' : 'transparent' }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          @if(! $bilanTout)<i class="ri-check-line" style="color:#fff;font-size:11px"></i>@endif
+        </div>
+      </div>
+
+      {{-- Champs de dates --}}
+      @if(! $bilanTout)
+      <div style="display:flex;flex-direction:column;gap:10px;animation:fadeIn .2s ease">
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+            <i class="ri-calendar-line me-1"></i>Date de début
+          </label>
+          <input type="date" wire:model="bilanDebut"
+                 style="width:100%;border:1.5px solid #e9ebec;border-radius:10px;height:42px;padding:0 12px;font-size:13px;background:#fff;color:#212529;font-family:inherit"/>
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+            <i class="ri-calendar-check-line me-1"></i>Date de fin
+          </label>
+          <input type="date" wire:model="bilanFin"
+                 style="width:100%;border:1.5px solid #e9ebec;border-radius:10px;height:42px;padding:0 12px;font-size:13px;background:#fff;color:#212529;font-family:inherit"/>
+        </div>
+      </div>
+      @endif
+
+    </div>
+
+    <div class="pwa-modal-footer">
+      <button class="btn-outline" style="height:46px;font-size:14px" wire:click="closeBilan">
+        <i class="ri-close-line"></i> Annuler
+      </button>
+      <button class="btn-main" style="height:46px;font-size:14px"
+              wire:click="telechargerBilan"
+              wire:loading.attr="disabled"
+              wire:target="telechargerBilan">
+        <span wire:loading wire:target="telechargerBilan"><div class="spinner"></div></span>
+        <span wire:loading.remove wire:target="telechargerBilan">
+          <i class="ri-download-2-line"></i> Télécharger le PDF
+        </span>
+        <span wire:loading wire:target="telechargerBilan">Génération…</span>
+      </button>
+    </div>
+
   </div>
 </div>
 
@@ -511,11 +584,78 @@
 
 @push('scripts')
 <script>
-window.addEventListener('OpenEditModal',   () => { document.getElementById('edit-overlay')?.classList.add('open');    document.body.style.overflow = 'hidden'; });
-window.addEventListener('closeEditModal',  () => { document.getElementById('edit-overlay')?.classList.remove('open'); document.body.style.overflow = ''; });
-window.addEventListener('OpenPhotoModal',  () => { document.getElementById('photo-overlay')?.classList.add('open');   document.body.style.overflow = 'hidden'; });
-window.addEventListener('closePhotoModal', () => { document.getElementById('photo-overlay')?.classList.remove('open'); document.body.style.overflow = ''; });
+/* ── Overlays ── */
+function openOverlay(id)  { document.getElementById(id)?.classList.add('open');    document.body.style.overflow = 'hidden'; }
+function closeOverlay(id) { document.getElementById(id)?.classList.remove('open'); document.body.style.overflow = ''; }
 
+window.addEventListener('OpenEditModal',   () => openOverlay('edit-overlay'));
+window.addEventListener('closeEditModal',  () => closeOverlay('edit-overlay'));
+window.addEventListener('OpenPhotoModal',  () => openOverlay('photo-overlay'));
+window.addEventListener('closePhotoModal', () => closeOverlay('photo-overlay'));
+window.addEventListener('OpenBilanModal',  () => openOverlay('bilan-overlay'));
+window.addEventListener('closeBilanModal', () => closeOverlay('bilan-overlay'));
+
+/* ── Photo : sélection ── */
+function triggerCamera() {
+  const f = document.getElementById('file-input-lw');
+  f.setAttribute('capture', 'user');
+  f.click();
+}
+function triggerGallery() {
+  const f = document.getElementById('file-input-lw');
+  f.removeAttribute('capture');
+  f.click();
+}
+
+function previewPhotoLivewire(input) {
+  if (!input.files?.[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('photo-preview-modal');
+    if (preview) preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    /* Afficher les boutons de confirmation */
+    document.getElementById('photo-select-btns').style.display = 'none';
+    const confirm = document.getElementById('photo-confirm-btns');
+    if (confirm) confirm.style.display = 'flex';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function annulerPhoto() {
+  /* Remettre l'aperçu initial */
+  const preview = document.getElementById('photo-preview-modal');
+  const img = document.getElementById('photo-preview-img');
+  const initiales = document.getElementById('photo-preview-initiales');
+  if (preview) {
+    if (img) preview.innerHTML = img.outerHTML;
+    else if (initiales) preview.innerHTML = initiales.outerHTML;
+  }
+  document.getElementById('photo-select-btns').style.display = '';
+  const confirm = document.getElementById('photo-confirm-btns');
+  if (confirm) confirm.style.display = 'none';
+  /* Réinitialiser l'input file */
+  const input = document.getElementById('file-input-lw');
+  if (input) input.value = '';
+}
+
+/* ── Photo sauvegardée → MAJ avatar dans le hero ── */
+Livewire.on('photoSauvegardee', ({ path }) => {
+  closeOverlay('photo-overlay');
+  const avatar = document.getElementById('prof-avatar');
+  if (avatar) {
+    avatar.innerHTML = `<img src="${path}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+  }
+  /* Reset modal */
+  document.getElementById('photo-select-btns').style.display = '';
+  const confirm = document.getElementById('photo-confirm-btns');
+  if (confirm) confirm.style.display = 'none';
+});
+
+Livewire.on('photoSupprimee', () => {
+  closeOverlay('photo-overlay');
+});
+
+/* ── Toast ── */
 Livewire.on('modalShowmessageToast', (payload) => {
   const data = Array.isArray(payload) ? payload[0] : payload;
   if (typeof Swal !== 'undefined') {
@@ -524,18 +664,11 @@ Livewire.on('modalShowmessageToast', (payload) => {
   }
 });
 
-function triggerCamera()  { const f = document.getElementById('file-input'); f.setAttribute('capture','environment'); f.click(); }
-function triggerGallery() { const f = document.getElementById('file-input'); f.removeAttribute('capture'); f.click(); }
-function removePhoto()    { document.getElementById('photo-preview').textContent = '{{ $initiales }}'; }
-function onFileSelect(input) {
-  if (!input.files?.[0]) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('photo-preview').innerHTML =
-      `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-  };
-  reader.readAsDataURL(input.files[0]);
-}
+/* ── SweetAlert ── */
+Livewire.on('swal:modalGetInfo_message_not_timer', (payload) => {
+  const data = Array.isArray(payload) ? payload[0] : payload;
+  if (typeof Swal !== 'undefined') Swal.fire({ title: data.title, text: data.text, icon: data.type });
+});
 </script>
 @endpush
 

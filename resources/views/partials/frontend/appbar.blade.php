@@ -7,7 +7,7 @@
       <div class="ab-name">CMRP Mosquée</div>
     </div>
     <div class="ab-actions">
-      <button class="ab-btn" onclick="window.location.href=''" title="Notifications">
+      <button class="ab-btn" onclick="window.location.href='{{ route('customer.notifications') }}'" title="Notifications">
         <i class="ri-notification-3-line"></i>
         <span class="ab-notif-dot"></span>
       </button>

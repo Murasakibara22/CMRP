@@ -83,6 +83,7 @@ $schema = json_encode([
     <link rel="stylesheet" href="{{ asset('frontend/css/paiement.css') }}"/>
     <link rel="stylesheet" href="{{ asset('frontend/css/profile.css') }}"/>
     <link rel="stylesheet" href="{{ asset('frontend/css/reclammation.css') }}"/>
+    <link rel="stylesheet" href="{{ asset('frontend/css/notification.css') }}"/>
 
 
     {{-- iOS --}}
@@ -178,6 +179,7 @@ $schema = json_encode([
 <script src="{{ asset('frontend/js/add-cotisation.js') }}"></script>
 <script src="{{ asset('frontend/js/profile.js') }}"></script>
 <script src="{{ asset('frontend/js/reclammation.js') }}"></script>
+<script src="{{ asset('frontend/js/notification.js') }}"></script>
 
 
   <!-- Sweet Alerts js -->
