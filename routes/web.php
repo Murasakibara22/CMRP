@@ -55,6 +55,11 @@ Route::group(['middleware' => 'customer.verify'], function () {
         Route::livewire('notifications', 'frontend::notification.index')->name('notifications');
 
     });
+
+    Route::get('/paiements/success', [PaiementCallbackController::class, 'success'])
+        ->name('customer.paiements.success');
+    Route::get('/paiements/cancel',  [PaiementCallbackController::class, 'cancel'])
+        ->name('customer.paiements.cancel');
 });
 
 

@@ -10,6 +10,7 @@ use App\Models\OtpVerification;
 use App\Models\HistoriqueCotisation;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
+use App\Services\SmsService;
 use Carbon\Carbon;
 
 new #[Layout('auth.layouts.app-frontend')] class extends Component
@@ -57,7 +58,17 @@ new #[Layout('auth.layouts.app-frontend')] class extends Component
 
         $fullPhone = $this->dialCode . $clean;
         $otpRecord = OtpVerification::createForPhone($fullPhone, request()->ip());
-        Session::put('otp_debug', $otpRecord->code);
+        // Session::put('otp_debug', $otpRecord->code);
+
+        try {
+            $phonesender = $this->dialCode . trim($this->phone);
+            SmsService::send($phonesender, 'votre code OTP est : '.$otpRecord->code.' , utilisez-le pour vous connecter , il expirera dans 5 minutes !!');
+        } catch (\Exception $e) {
+            // Log::error("Erreur envoi SMS OTP à $fullPhone : " . $e->getMessage());
+            // $this->errorPhone = 'Impossible d\'envoyer le code. Veuillez réessayer plus tard.';
+            // return;
+        }
+
 
         $this->step = 'otp';
     }
@@ -103,6 +114,15 @@ new #[Layout('auth.layouts.app-frontend')] class extends Component
         $fullPhone = $this->dialCode . preg_replace('/\s+/', '', $this->phone);
         $otpRecord = OtpVerification::createForPhone($fullPhone, request()->ip());
         Session::put('otp_debug', $otpRecord->code);
+
+          try {
+            $phonesender = $this->dialCode . trim($this->phone);
+            SmsService::send($phonesender, 'votre code OTP est : '.$otpRecord->code.' , utilisez-le pour vous connecter , il expirera dans 5 minutes !!');
+        } catch (\Exception $e) {
+            // Log::error("Erreur envoi SMS OTP à $fullPhone : " . $e->getMessage());
+            // $this->errorPhone = 'Impossible d\'envoyer le code. Veuillez réessayer plus tard.';
+            // return;
+        }
 
         $this->dispatch('otp-resent');
     }
