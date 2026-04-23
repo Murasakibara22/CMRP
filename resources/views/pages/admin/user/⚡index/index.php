@@ -120,7 +120,7 @@ new class extends Component
             // Associer les permissions du rôle au user
             $user->permissions()->sync($role->permissions->pluck('id'));
 
-            // Mail::to($user->email)->send(new \App\Mail\AdminCredentialsMail($user, $this->password));
+            Mail::to($user->email)->send(new \App\Mail\AdminCredentialsMail($user, $this->password));
 
             $this->closeModal_after_edit('createEditModal');
             $this->send_event_at_toast('Utilisateur créé avec succès', 'success', 'top-end');
@@ -303,8 +303,8 @@ new class extends Component
         $roles = Role::all();
 
         /* Permissions groupées pour le modal user permissions */
-        $allPermissions = Permission::orderBy('module')->orderBy('libelle')->get();
-        $permGrouped = $allPermissions->groupBy('module')->map(fn($perms) =>
+        $allPermissions = Permission::orderBy('code')->orderBy('libelle')->get();
+        $permGrouped = $allPermissions->groupBy('code')->map(fn($perms) =>
             $perms->map(fn($p) => [
                 'id'      => $p->id,
                 'libelle' => $p->libelle,
