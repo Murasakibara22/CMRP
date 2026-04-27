@@ -9,6 +9,7 @@ use App\Models\Cotisation;
 use App\Models\TypeCotisation;
 use App\Models\HistoriqueCotisation;
 use App\Traits\UtilsSweetAlert;
+use App\Models\DemandeChangeCotisationMensuel;
 use Carbon\Carbon;
 
 new class extends Component
@@ -51,6 +52,15 @@ new class extends Component
 
     /* ── Modal détail ───────────────────────────────────── */
     public ?int $detailCustomerId = null;
+
+    public ?int   $avanceCustomerId  = null;
+    public int    $avanceNbMois      = 1;
+    public string $avanceMode        = '';
+    public string $avanceErrorMode   = '';
+    public array  $avancePreview     = [];
+
+    public bool   $supprimerRetardsChangement = false;
+    public int    $nbRetardsAncienType        = 0;
 
     /* ── Reset pagination ───────────────────────────────── */
     public function updatedSearch(): void       { $this->resetPage(); }
@@ -192,6 +202,11 @@ new class extends Component
 
             $this->showConfirmChangementType = true;
             $this->nouvelEngagement          = null;
+            $this->supprimerRetardsChangement  = false;   // ← reset
+            $this->nbRetardsAncienType         = Cotisation::where('customer_id', $customer->id)
+                ->where('type_cotisation_id', $ancienTypeId)
+                ->where('statut', 'en_retard')
+                ->count();                                 // ← compter les retards
             $this->errorNouvelEngagement     = '';
             $this->confirmChangementMessage  =
                 "Ce fidèle est actuellement en « {$ancienType?->libelle} » avec " .
@@ -229,15 +244,43 @@ new class extends Component
             return;
         }
 
-        $this->montantEngagement     = $this->nouvelEngagement;
+        $this->montantEngagement         = $this->nouvelEngagement;
         $this->showConfirmChangementType = false;
         $this->confirmChangementMessage  = '';
         $this->errorNouvelEngagement     = '';
 
-        $customer = $this->customerId ? Customer::findOrFail($this->customerId) : null;
-        $tc       = TypeCotisation::find($this->typeCotisationMensuelId);
+        $customer     = $this->customerId ? Customer::findOrFail($this->customerId) : null;
+        $ancienTypeId = $customer?->type_cotisation_mensuel_id;
 
-        $this->_persistSave($customer, $tc, true);
+        \DB::transaction(function () use ($customer, $tc, $ancienTypeId) {
+
+            /* 1. Créer la DemandeChangeCotisationMensuel (validée directement par l'admin) */
+            DemandeChangeCotisationMensuel::create([
+                'customer_id'                  => $customer->id,
+                'created_by'                   => auth()->id(),
+                'type_demande'                 => 'changement',
+                'ancien_type_cotisation_id'    => $ancienTypeId,
+                'ancien_montant_engagement'    => $customer->montant_engagement,
+                'nouveau_type_cotisation_id'   => $this->typeCotisationMensuelId,
+                'nouveau_montant_engagement'   => $this->montantEngagement,
+                'supprimer_cotisations_retard' => $this->supprimerRetardsChangement,
+                'motif'                        => 'Modification directe par l\'administrateur',
+                'statut'                       => 'validee',
+                'validated_by'                 => auth()->id(),
+                'validated_at'                 => now(),
+            ]);
+
+            /* 2. Supprimer cotisations en retard de l'ANCIEN type si demandé */
+            if ($this->supprimerRetardsChangement && $ancienTypeId) {
+                Cotisation::where('customer_id', $customer->id)
+                    ->where('type_cotisation_id', $ancienTypeId)
+                    ->where('statut', 'en_retard')
+                    ->delete();
+            }
+
+            /* 3. Appliquer le changement sur le customer */
+            $this->_persistSave($customer, $tc, true);
+        });
     }
 
     public function annulerChangementType(): void
@@ -268,7 +311,35 @@ new class extends Component
 
         if ($customer) {
             /* ── MODIFICATION ── */
+            $ancienTypeId     = $customer->type_cotisation_mensuel_id;
             $ancienEngagement = $customer->montant_engagement;
+            $estArret         = $ancienTypeId && ! $this->typeCotisationMensuelId;
+
+            /* Créer une DemandeChangeCotisationMensuel si arrêt de type mensuel */
+            if ($estArret) {
+                DemandeChangeCotisationMensuel::create([
+                    'customer_id'                  => $customer->id,
+                    'created_by'                   => auth()->id(),
+                    'type_demande'                 => 'arret',
+                    'ancien_type_cotisation_id'    => $ancienTypeId,
+                    'ancien_montant_engagement'    => $ancienEngagement,
+                    'nouveau_type_cotisation_id'   => null,
+                    'nouveau_montant_engagement'   => null,
+                    'supprimer_cotisations_retard' => $this->supprimerRetardsChangement,
+                    'motif'                        => 'Arrêt direct par l\'administrateur',
+                    'statut'                       => 'validee',
+                    'validated_by'                 => auth()->id(),
+                    'validated_at'                 => now(),
+                ]);
+
+                if ($this->supprimerRetardsChangement && $ancienTypeId) {
+                    Cotisation::where('customer_id', $customer->id)
+                        ->where('type_cotisation_id', $ancienTypeId)
+                        ->where('statut', 'en_retard')
+                        ->delete();
+                }
+            }
+            
             $customer->update($data);
 
             /**
@@ -422,6 +493,150 @@ new class extends Component
         $this->resetErrorBag();
     }
 
+
+    /**Avance paiements */
+    public function openAvance(int $customerId): void
+    {
+        $customer = Customer::with('typeCotisationMensuel')->findOrFail($customerId);
+    
+        if (! $customer->type_cotisation_mensuel_id || ! $customer->montant_engagement) {
+            $this->send_event_at_sweet_alert_not_timer(
+                'Impossible',
+                "Ce fidèle n'a pas de type de cotisation mensuel ou de montant d'engagement défini.",
+                'warning'
+            );
+            return;
+        }
+    
+        $this->avanceCustomerId = $customerId;
+        $this->avanceNbMois     = 1;
+        $this->avanceMode       = '';
+        $this->avanceErrorMode  = '';
+        $this->_buildAvancePreview($customer);
+    
+        /* Fermer le modal détail et ouvrir le modal avance */
+        $this->closeModal_after_edit('modalDetailFidele');
+        $this->launch_modal('modalAvanceFidele');
+    }
+    
+    public function updatedAvanceNbMois(): void
+    {
+        if (! $this->avanceCustomerId) return;
+        $customer = Customer::find($this->avanceCustomerId);
+        if ($customer) $this->_buildAvancePreview($customer);
+    }
+    
+    public function selectAvanceMode(string $mode): void
+    {
+        $this->avanceMode      = $mode;
+        $this->avanceErrorMode = '';
+    }
+    
+    public function submitAvance(): void
+    {
+        $this->avanceErrorMode = '';
+    
+        if (! $this->avanceMode) {
+            $this->avanceErrorMode = 'Veuillez choisir un mode de paiement.';
+            return;
+        }
+    
+        if (empty($this->avancePreview)) {
+            $this->avanceErrorMode = 'Aucun mois à créer.';
+            return;
+        }
+    
+        $customer   = Customer::findOrFail($this->avanceCustomerId);
+        $engagement = $customer->montant_engagement;
+        $tcId       = $customer->type_cotisation_mensuel_id;
+        $total      = count($this->avancePreview) * $engagement;
+    
+        /* Créer un Paiement global en_attente */
+        $paiement = \App\Models\Paiement::create([
+            'customer_id'        => $customer->id,
+            'type_cotisation_id' => $tcId,
+            'cotisation_id'      => null,
+            'montant'            => $total,
+            'mode_paiement'      => $this->avanceMode,
+            'statut'             => 'en_attente',
+            'date_paiement'      => now(),
+        ]);
+    
+        $premiereCot = null;
+    
+        foreach ($this->avancePreview as $row) {
+            $exists = Cotisation::where('customer_id', $customer->id)
+                ->where('type_cotisation_id', $tcId)
+                ->where('mois',  $row['mois'])
+                ->where('annee', $row['annee'])
+                ->exists();
+    
+            if ($exists) continue;
+    
+            $cot = Cotisation::create([
+                'customer_id'        => $customer->id,
+                'type_cotisation_id' => $tcId,
+                'mois'               => $row['mois'],
+                'annee'              => $row['annee'],
+                'montant_du'         => $engagement,
+                'montant_paye'       => $engagement,
+                'montant_restant'    => 0,
+                'statut'             => 'en_retard', // validé par le BO après réception
+                'mode_paiement'      => $this->avanceMode,
+                'paiement_id'        => $paiement->id,
+                'validated_by'       => null,
+                'validated_at'       => null,
+            ]);
+    
+            HistoriqueCotisation::log($cot, 'creation', $engagement,
+                "Paiement en avance BO — {$row['label']}");
+    
+            if (! $premiereCot) {
+                $premiereCot = $cot;
+                $paiement->update(['cotisation_id' => $cot->id]);
+            }
+        }
+    
+        $this->closeModal_after_edit('modalAvanceFidele');
+        $this->avanceCustomerId = null;
+        $this->avancePreview    = [];
+    
+        $this->send_event_at_toast(
+            count($this->avancePreview) . ' cotisations créées en avance. Paiement en attente de validation.',
+            'success', 'top-end'
+        );
+    }
+    
+    /* ── Helper preview ── */
+    private function _buildAvancePreview(Customer $customer): void
+    {
+        $this->avancePreview = [];
+        $nb         = max(1, min((int) $this->avanceNbMois, 24));
+        $engagement = $customer->montant_engagement;
+        $tcId       = $customer->type_cotisation_mensuel_id;
+    
+        $derniere = Cotisation::where('customer_id', $customer->id)
+            ->where('type_cotisation_id', $tcId)
+            ->orderByDesc('annee')->orderByDesc('mois')
+            ->first();
+    
+        $prochain = $derniere
+            ? Carbon::create($derniere->annee, $derniere->mois)->addMonth()
+            : Carbon::now()->startOfMonth();
+    
+        $rows = [];
+        for ($i = 0; $i < $nb; $i++) {
+            $rows[] = [
+                'label'   => $prochain->copy()->translatedFormat('F Y'),
+                'montant' => $engagement,
+                'mois'    => $prochain->month,
+                'annee'   => $prochain->year,
+            ];
+            $prochain->addMonth();
+        }
+        $this->avancePreview = $rows;
+    }
+
     /* ── Données vue ────────────────────────────────────── */
     public function with(): array
     {
@@ -481,10 +696,15 @@ new class extends Component
 
         $coutEngagements = CoutEngagement::actif()->orderBy('montant')->get();
 
+        $avanceCustomer = $this->avanceCustomerId
+        ? Customer::with('typeCotisationMensuel')->find($this->avanceCustomerId)
+        : null;
+
         return compact(
             'customers', 'kpis', 'detailCustomer',
             'statut', 'totalDu',
-            'coutEngagements', 'typesMensuels'
+            'coutEngagements', 'typesMensuels',
+            'avanceCustomer'
         );
     }
 };

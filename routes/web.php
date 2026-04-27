@@ -80,6 +80,8 @@ Route::middleware('auth')->group(function () {
         Route::livewire('reclamations', 'admin::reclammation.index')->name('reclamations.index');
         Route::livewire('roles', 'admin::settingrole.index')->name('roles.index');
         Route::livewire('cout-engagement', 'admin::coutengagement.index')->name('cout-engagement.index');
+        Route::livewire('demande-remboursement', 'admin::demanderemboursement.index')->name('demande-remboursement.index');
+        Route::livewire('demande-change-cotisation', 'admin::demandechangecotisation.index')->name('demande-change-cotisation.index');
 
     });
 });

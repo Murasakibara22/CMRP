@@ -111,6 +111,7 @@ new #[Layout('layouts.app-frontend')] class extends Component
         /* 6. Créer la cotisation (en_retard — sera mise à jour après paiement) */
         $cotisation = Cotisation::create([
             'customer_id'        => $customerId,
+            'libelle'            => $tc->libelle.' du'. now()->format('d/m/Y') ?? null,
             'type_cotisation_id' => $this->typeCotisationId,
             'mois'               => $isMensuel ? $this->mois  : null,
             'annee'              => $isMensuel ? $this->annee : null,

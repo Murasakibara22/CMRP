@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('montant');
             $table->enum('mode_paiement', ['espece', 'mobile_money', 'virement']);
             $table->string('reference')->nullable();
-            $table->enum('statut', ['success', 'echec', 'en_attente'])->default('en_attente');
+            $table->enum('statut', ['success', 'echec', 'en_attente','annule'])->default('en_attente');
 
             // Métadonnées opérateur mobile, etc.
             $table->json('metadata')->nullable()->comment('ex: {operateur, reference, telephone, erreur}');

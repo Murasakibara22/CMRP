@@ -6,13 +6,17 @@ use App\Models\Reclammation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Cotisation extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'cotisation';
 
     protected $fillable = [
         'customer_id',
+        'libelle',
         'type_cotisation_id',
         'mois',
         'annee',

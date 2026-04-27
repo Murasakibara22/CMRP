@@ -188,7 +188,7 @@
                 <span style="width:26px;height:26px;border-radius:7px;background:{{ $typeMeta[1] }};color:{{ $typeMeta[0] }};display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0">
                   <i class="{{ $typeMeta[2] }}"></i>
                 </span>
-                <span style="font-size:12px;font-weight:600;color:var(--co-text)">{{ $cot->typeCotisation?->libelle ?? '—' }}</span>
+                <span style="font-size:12px;font-weight:600;color:var(--co-text)">{{  $cot->libelle ?? $cot->typeCotisation?->libelle }}</span>
               </div>
             </td>
 
@@ -270,12 +270,6 @@
                 </button>
                 @endif
 
-                {{-- Enregistrer un paiement si pas à jour --}}
-                @if($cot->statut !== 'a_jour')
-                <button class="btn btn-soft-warning waves-effect" wire:click="openCreate({{ $cot->customer_id }})" title="Enregistrer paiement">
-                  <i class="ri-money-cny-circle-line"></i>
-                </button>
-                @endif
 
                 {{-- Dropdown statut + supprimer --}}
                 <div class="dropdown">
@@ -291,11 +285,11 @@
 
                     {{-- Rétrogradation : bloquée si validée --}}
                     @if(! $cot->validated_at)
-                      @if($cot->statut !== 'partiel')
+                      {{-- @if($cot->statut !== 'partiel')
                       <li><a class="dropdown-item" href="#" wire:click.prevent="changerStatut({{ $cot->id }},'partiel')">
                         <i class="ri-error-warning-line me-2" style="color:#f7b84b"></i>Marquer Partiel
                       </a></li>
-                      @endif
+                      @endif --}}
                       @if($cot->statut !== 'en_retard')
                       <li><a class="dropdown-item" href="#" wire:click.prevent="changerStatut({{ $cot->id }},'en_retard')">
                         <i class="ri-time-line me-2" style="color:#f06548"></i>Marquer En retard
@@ -394,8 +388,8 @@
         /* Bouton valider dans le modal :
            uniquement si cotisation complète et non validée */
         $peutValiderDetail = ! $dc->validated_at
-            && $dc->montant_paye > 0
-            && ($dc->montant_du ? $dc->montant_paye >= $dc->montant_du : true);
+            && $dc->montant_restant > 0
+            && ($dc->montant_du ? $dc->montant_restant >= $dc->montant_du : true);
       @endphp
 
       {{-- Header --}}
@@ -576,14 +570,7 @@
             </button>
             @endif
 
-            {{-- Enregistrer un paiement si pas à jour --}}
-            @if($dc->statut !== 'a_jour')
-            <button class="btn btn-primary waves-effect"
-                    wire:click="openCreate({{ $dc->customer_id }})"
-                    data-bs-dismiss="modal">
-              <i class="ri-money-cny-circle-line me-1"></i>Enregistrer paiement
-            </button>
-            @endif
+
           </div>
 
         </div>

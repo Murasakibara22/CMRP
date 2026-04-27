@@ -15,6 +15,8 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'admin_cancel_code' => env('ADMIN_CANCEL_CODE'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

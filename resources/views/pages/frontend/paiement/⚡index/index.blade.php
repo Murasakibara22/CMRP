@@ -69,7 +69,7 @@
           'virement'     => 'Virement',
           default        => '—',
       };
-      $typeLabel   = $p->cotisation?->typeCotisation?->libelle ?? '—';
+      $typeLabel   = $p->cotisation?->libelle ?? $p->cotisation?->typeCotisation?->libelle;
       $periodeLabel = ($p->cotisation?->mois && $p->cotisation?->annee)
           ? \Carbon\Carbon::create($p->cotisation->annee, $p->cotisation->mois)->translatedFormat('F Y')
           : $p->date_paiement->translatedFormat('F Y');
@@ -175,7 +175,7 @@
           'virement'     => 'Virement',
           default        => '—',
       };
-      $typeLabel    = $dp->cotisation?->typeCotisation?->libelle ?? '—';
+      $typeLabel    = $dp->cotisation?->libelle ?? $dp->cotisation?->typeCotisation?->libelle ?? '—';
       $periodeLabel = ($dp->cotisation?->mois && $dp->cotisation?->annee)
           ? \Carbon\Carbon::create($dp->cotisation->annee, $dp->cotisation->mois)->translatedFormat('F Y')
           : '—';

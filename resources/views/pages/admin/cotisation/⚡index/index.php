@@ -152,6 +152,7 @@ new class extends Component
         if (! $isMensuel) {
             $cot = Cotisation::create([
                 'customer_id'        => $customer->id,
+                'libelle'            => $tc->libelle.' '. now()->format('Y-m-d') ?? null,
                 'type_cotisation_id' => $tc->id,
                 'mois'               => null, 'annee' => null,
                 'montant_du'         => $this->montantPaye,
@@ -195,6 +196,7 @@ new class extends Component
 
             $cot = Cotisation::create([
                 'customer_id'        => $customer->id,
+                'libelle'            => $tc->libelle.' '. $prochainMois->month.'/'.$prochainMois->year ?? null,
                 'type_cotisation_id' => $tc->id,
                 'mois'               => $prochainMois->month,
                 'annee'              => $prochainMois->year,
@@ -225,6 +227,7 @@ new class extends Component
 
         $cot->update([
             'type_cotisation_id' => $this->typeCotisationId,
+            'libelle'            => $tc->libelle.' '. $cot->mois.'/'.$cot->annee ?? null,
             'mois'               => $isMensuel ? $this->mois : null,
             'annee'              => $isMensuel ? $this->annee : null,
             'montant_du'         => $montantDu,
@@ -255,8 +258,8 @@ new class extends Component
     {
         $cot = Cotisation::with(['paiements', 'typeCotisation'])->findOrFail($id);
 
-        if ($cot->montant_du && $cot->montant_paye < $cot->montant_du) {
-            $this->send_event_at_sweet_alert_not_timer('Validation impossible', "Cotisation incomplète (" . number_format($cot->montant_paye, 0, ',', ' ') . " / " . number_format($cot->montant_du, 0, ',', ' ') . " FCFA). Modifiez-la d'abord.", 'warning');
+        if ($cot->montant_du && $cot->montant_paye > 0 && $cot->montant_paye < $cot->montant_du) {
+            $this->send_event_at_sweet_alert_not_timer('Validation impossible', "Cette cotisation est incomplète (" . number_format($cot->montant_paye, 0, ',', ' ') . " / " . number_format($cot->montant_du, 0, ',', ' ') . " FCFA). Modifiez-la d'abord.", 'warning');
             return;
         }
 
@@ -274,6 +277,37 @@ new class extends Component
             }
         }
 
+        $paiementId = $cot->paiement_id;
+        if ($paiementId) {
+            $paiement = \App\Models\Paiement::find($paiementId);
+
+            if ($paiement && $paiement->statut === 'success') {
+                /* Déjà validé → informer et bloquer */
+                $this->send_event_at_sweet_alert_not_timer(
+                    'Déjà validé',
+                    'Le paiement lié à cette cotisation est déjà validé.',
+                    'info'
+                );
+                return;
+            }
+
+            if ($paiement && $paiement->statut === 'en_attente') {
+                $nbCotisationsLiees = Cotisation::where('paiement_id', $paiementId)->count();
+                if ($nbCotisationsLiees > 1) {
+                    /* Paiement groupé en attente → rediriger vers module Paiements */
+                    $this->send_event_at_sweet_alert_not_timer(
+                        'Paiement groupé',
+                        "Ce paiement est lié à {$nbCotisationsLiees} cotisations. Validez-le depuis le module Paiements pour tout valider en une fois.",
+                        'info'
+                    );
+                    return;
+                }
+                /* Paiement en_attente sur 1 seule cotisation → laisser passer, validerPaiement gère */
+            }
+
+            /* Si paiement annulé → paiement_id ignoré, validerPaiement créera un nouveau paiement (CAS 2) */
+        }
+
         $this->sweetAlert_confirm_options_with_button($cot, 'Valider ce paiement ?', 'Vous confirmez la réception de ' . number_format($cot->montant_paye, 0, ',', ' ') . ' FCFA.', 'validerPaiement', 'question', 'Oui, valider', 'Annuler');
     }
 
@@ -281,22 +315,81 @@ new class extends Component
     public function validerPaiement(int $id): void
     {
         $cot = Cotisation::with(['paiements', 'typeCotisation'])->findOrFail($id);
-        $cot->update(['statut' => 'a_jour', 'montant_restant' => 0, 'validated_by' => auth()->id(), 'validated_at' => now()]);
-        HistoriqueCotisation::log($cot, 'validation', $cot->montant_paye, 'Validation admin');
 
-        $lastPaiement = $cot->paiements()->latest()->first();
-        if ($lastPaiement) {
-            $lastPaiement->update(['statut' => 'success', 'date_paiement' => now()]);
-            $txExists = \App\Models\Transaction::where('source', 'paiement')->where('source_id', $lastPaiement->id)->exists();
-            if (! $txExists) {
+        $libelle = "Cotisation \u2013 {$cot->typeCotisation->libelle}"
+            . ($cot->mois ? " \u2013 " . Carbon::create($cot->annee, $cot->mois)->translatedFormat('F Y') : '');
+
+        /*
+         * Paiement actif = en_attente ou success (pas annulé).
+         * CAS 1 : paiement actif trouvé → le valider + Transaction.
+         * CAS 2 : pas de paiement actif (0 ou tous annulés) → créer paiement success + Transaction.
+         */
+        $paiementActif = $cot->paiements()
+            ->whereIn('statut', ['en_attente', 'success'])
+            ->latest()
+            ->first();
+
+        \DB::transaction(function () use ($cot, $paiementActif, $libelle) {
+
+            $cot->update([
+                'statut'          => 'a_jour',
+                'montant_restant' => 0,
+                'validated_by'    => auth()->id(),
+                'validated_at'    => now(),
+            ]);
+            HistoriqueCotisation::log($cot, 'validation', $cot->montant_paye, 'Validation admin');
+
+            if ($paiementActif) {
+                /* CAS 1 : valider le paiement existant */
+                $paiementActif->update(['statut' => 'success', 'date_paiement' => now()]);
+
+                $txExists = \App\Models\Transaction::where('source', 'paiement')
+                    ->where('source_id', $paiementActif->id)
+                    ->where('status', 'success')
+                    ->exists();
+
+                if (! $txExists) {
+                    \App\Models\Transaction::create([
+                        'type'             => 'entree',
+                        'source'           => 'paiement',
+                        'source_id'        => $paiementActif->id,
+                        'status'           => 'success',
+                        'montant'          => $paiementActif->montant,
+                        'libelle'          => $libelle,
+                        'date_transaction' => now(),
+                    ]);
+                }
+            } else {
+                /* CAS 2 : aucun paiement actif → créer paiement + Transaction */
+                $montant = $cot->montant_du ?? $cot->montant_paye;
+
+                if ($cot->montant_paye == 0 && $montant > 0) {
+                    $cot->update(['montant_paye' => $montant, 'montant_restant' => 0]);
+                }
+
+                $paiement = \App\Models\Paiement::create([
+                    'customer_id'        => $cot->customer_id,
+                    'type_cotisation_id' => $cot->type_cotisation_id,
+                    'cotisation_id'      => $cot->id,
+                    'montant'            => $montant,
+                    'mode_paiement'      => $cot->mode_paiement ?? 'espece',
+                    'statut'             => 'success',
+                    'date_paiement'      => now(),
+                ]);
+
+                $cot->update(['paiement_id' => $paiement->id]);
+
                 \App\Models\Transaction::create([
-                    'type' => 'entree', 'source' => 'paiement', 'source_id' => $lastPaiement->id,
-                    'status' => 'success', 'montant' => $lastPaiement->montant,
-                    'libelle' => "Cotisation – {$cot->typeCotisation->libelle}" . ($cot->mois ? " – " . Carbon::create($cot->annee, $cot->mois)->translatedFormat('F Y') : ''),
+                    'type'             => 'entree',
+                    'source'           => 'paiement',
+                    'source_id'        => $paiement->id,
+                    'status'           => 'success',
+                    'montant'          => $montant,
+                    'libelle'          => $libelle,
                     'date_transaction' => now(),
                 ]);
             }
-        }
+        });
 
         $this->closeModal_after_edit('modalDetailCotisation');
         $this->detailId = null;

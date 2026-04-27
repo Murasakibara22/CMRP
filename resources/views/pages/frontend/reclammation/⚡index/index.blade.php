@@ -46,7 +46,7 @@
           default              => ['ri-flag-line',         'rgba(41,156,219,.12)', '#299cdb', 'pill-info',   'En cours'],
       };
       $cotLabel = $r->cotisation
-          ? ($r->cotisation->typeCotisation?->libelle ?? '—')
+          ? ($r->cotisation->libelle ?? $r->cotisation->typeCotisation?->libelle ?? '—')
             . ($r->cotisation->mois && $r->cotisation->annee
                 ? ' — ' . \Carbon\Carbon::create($r->cotisation->annee, $r->cotisation->mois)->translatedFormat('F Y')
                 : '')
@@ -194,7 +194,7 @@
           default              => ['pill-info',   'En cours'],
       };
       $cotLabel = $dr->cotisation
-          ? ($dr->cotisation->typeCotisation?->libelle ?? '—')
+          ? ( $dr->cotisation->libelle ?? $dr->cotisation->typeCotisation?->libelle ?? '—')
             . ($dr->cotisation->mois && $dr->cotisation->annee
                 ? ' — ' . \Carbon\Carbon::create($dr->cotisation->annee, $dr->cotisation->mois)->translatedFormat('F Y')
                 : '')

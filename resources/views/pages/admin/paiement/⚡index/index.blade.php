@@ -214,16 +214,16 @@
                         class="btn btn-soft-danger btn-sm waves-effect" title="Reçu PDF">
                     <i class="ri-file-pdf-line"></i>
                 </button>
-                @if($pay->statut === 'en_attente' && $pay->mode_paiement === 'espece')
+                @if($pay->statut === 'en_attente')
                 <button class="btn btn-soft-success waves-effect"
-                        wire:click="confirmerValidation({{ $pay->id }})" title="Valider">
+                        wire:click="ouvrirValidation({{ $pay->id }})" title="Valider">
                   <i class="ri-checkbox-circle-line"></i>
                 </button>
                 @endif
-                @if($pay->statut === 'success')
-                <button class="btn btn-soft-danger waves-effect"
-                        wire:click="rembourserPaiement({{ $pay->id }})" title="Rembourser">
-                  <i class="ri-refund-2-line"></i>
+                @if(! in_array($pay->statut, ['annule']))
+                <button class="btn btn-soft-warning waves-effect"
+                        wire:click="ouvrirAnnulation({{ $pay->id }})" title="Annuler">
+                  <i class="ri-close-circle-line"></i>
                 </button>
                 @endif
               </div>
@@ -401,18 +401,16 @@
 
           {{-- Actions --}}
           <div class="d-flex gap-2 mt-3 flex-wrap">
-            @if($dp->statut === 'en_attente' && $dp->mode_paiement === 'espece')
+            @if($dp->statut === 'en_attente')
             <button class="btn btn-success waves-effect"
-                    wire:click="confirmerValidation({{ $dp->id }})"
-                    data-bs-dismiss="modal">
+                    wire:click="ouvrirValidation({{ $dp->id }})">
               <i class="ri-shield-check-line me-1"></i>Valider ce paiement
             </button>
             @endif
-            @if($dp->statut === 'success')
-            <button class="btn btn-soft-danger waves-effect"
-                    wire:click="rembourserPaiement({{ $dp->id }})"
-                    data-bs-dismiss="modal">
-              <i class="ri-refund-2-line me-1"></i>Rembourser
+            @if(! in_array($dp->statut, ['annule']))
+            <button class="btn btn-soft-warning waves-effect"
+                    wire:click="ouvrirAnnulation({{ $dp->id }})">
+              <i class="ri-close-circle-line me-1"></i>Annuler
             </button>
             @endif
           </div>
@@ -431,6 +429,233 @@
   </div>
 </div>
 
+
+{{-- ══════════════════════════════════════════════════════════
+     MODAL VALIDATION MULTI-COTISATIONS
+     Affiché quand un paiement couvre plusieurs cotisations.
+══════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalValidationMulti" tabindex="-1" aria-hidden="true" wire:ignore.self>
+  <div class="modal-dialog" style="max-width:580px">
+    <div class="modal-content" style="border:none;border-radius:16px;overflow:hidden">
+
+      <div style="background:linear-gradient(135deg,#089383,#0ab39c);padding:20px 24px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff">
+            <i class="ri-shield-check-line"></i>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:800;color:#fff">Validation du paiement</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.75)">Ce paiement couvre plusieurs cotisations</div>
+          </div>
+        </div>
+      </div>
+
+      @if($validationPaiement)
+      <div style="padding:20px 24px">
+
+        {{-- Récap paiement --}}
+        <div style="background:rgba(10,179,156,.06);border:1px solid rgba(10,179,156,.2);border-radius:12px;padding:14px 16px;margin-bottom:18px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#212529">{{ $validationPaiement->customer?->prenom }} {{ $validationPaiement->customer?->nom }}</div>
+              <div style="font-size:11px;color:#878a99">{{ $validationPaiement->reference ?? 'PAY-' . str_pad($validationPaiement->id,5,'0',STR_PAD_LEFT) }}</div>
+            </div>
+            <div style="font-size:20px;font-weight:900;color:#0ab39c">{{ number_format($validationPaiement->montant, 0, ',', ' ') }} FCFA</div>
+          </div>
+        </div>
+
+        {{-- Liste des cotisations --}}
+        <div style="font-size:11px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">
+          {{ count($validationCotisations) }} cotisations qui seront validées
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;margin-bottom:18px">
+          @foreach($validationCotisations as $vc)
+          <div style="display:flex;align-items:center;justify-content:space-between;background:#f8f9fa;border-radius:10px;padding:10px 14px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:26px;height:26px;border-radius:7px;background:rgba(10,179,156,.12);color:#0ab39c;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">
+                <i class="ri-calendar-check-line"></i>
+              </div>
+              <div style="font-size:12px;font-weight:600;color:#212529">{{ $vc['label'] }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:12px;font-weight:700;color:#0ab39c">{{ $vc['montant'] }} FCFA</span>
+              <span style="font-size:10px;font-weight:700;color:{{ $vc['statut'] === 'a_jour' ? '#0ab39c' : '#f7b84b' }}">
+                {{ $vc['statut'] === 'a_jour' ? '✓ Déjà validée' : '→ À jour' }}
+              </span>
+            </div>
+          </div>
+          @endforeach
+        </div>
+
+        <div style="background:rgba(64,81,137,.05);border-radius:10px;padding:12px 14px;margin-bottom:18px">
+          <div style="font-size:12px;color:#495057;line-height:1.6">
+            <i class="ri-information-line me-1" style="color:#405189"></i>
+            En confirmant, toutes ces cotisations passeront au statut <strong>À jour</strong>
+            et une transaction d'entrée sera créée.
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn btn-light" style="border-radius:9px;font-weight:700"
+                  wire:click="$set('validationPaiementId', null)"
+                  data-bs-dismiss="modal">
+            <i class="ri-close-line me-1"></i>Annuler
+          </button>
+          <button wire:click="confirmerValidationMulti"
+                  wire:loading.attr="disabled"
+                  style="background:linear-gradient(135deg,#089383,#0ab39c);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;padding:10px 22px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+            <span wire:loading wire:target="confirmerValidationMulti" class="spinner-border spinner-border-sm"></span>
+            <i class="ri-shield-check-line" wire:loading.remove wire:target="confirmerValidationMulti"></i>
+            <span wire:loading.remove wire:target="confirmerValidationMulti">Confirmer la validation</span>
+            <span wire:loading wire:target="confirmerValidationMulti">Traitement…</span>
+          </button>
+        </div>
+
+      </div>
+      @endif
+
+    </div>
+  </div>
+</div>
+
+
+{{-- ══════════════════════════════════════════════════════════
+     MODAL ANNULATION PAIEMENT
+     Code administrateur requis + motif obligatoire.
+     Si paiement était success → crée DemandeRemboursement.
+══════════════════════════════════════════════════════════ --}}
+<div class="modal fade" id="modalAnnulation" tabindex="-1" aria-hidden="true" wire:ignore.self>
+  <div class="modal-dialog" style="max-width:520px">
+    <div class="modal-content" style="border:none;border-radius:16px;overflow:hidden">
+
+      <div style="background:linear-gradient(135deg,#c0341a,#f06548);padding:20px 24px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:42px;height:42px;border-radius:10px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff">
+            <i class="ri-close-circle-line"></i>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:800;color:#fff">Annuler ce paiement</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.75)">Action irréversible — code administrateur requis</div>
+          </div>
+        </div>
+      </div>
+
+      @if($annulationPaiement)
+      <div style="padding:20px 24px">
+
+        {{-- Récap paiement --}}
+        <div style="background:rgba(240,101,72,.06);border:1px solid rgba(240,101,72,.2);border-radius:12px;padding:14px 16px;margin-bottom:18px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#212529">{{ $annulationPaiement->customer?->prenom }} {{ $annulationPaiement->customer?->nom }}</div>
+              <div style="font-size:11px;color:#878a99">{{ $annulationPaiement->reference ?? 'PAY-' . str_pad($annulationPaiement->id,5,'0',STR_PAD_LEFT) }}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:20px;font-weight:900;color:#f06548">{{ number_format($annulationPaiement->montant, 0, ',', ' ') }} FCFA</div>
+              <div style="font-size:10px;color:#878a99">Statut actuel : {{ match($annulationPaiement->statut){ 'success'=>'Validé','en_attente'=>'En attente','echec'=>'Échoué',default=>$annulationPaiement->statut } }}</div>
+            </div>
+          </div>
+        </div>
+
+        @if($annulationPaiement->statut === 'success')
+        <div style="background:rgba(247,184,75,.08);border:1.5px solid #f7b84b;border-left:4px solid #f7b84b;border-radius:0 10px 10px 0;padding:12px 14px;margin-bottom:16px">
+          <div style="font-size:12px;font-weight:700;color:#c07a10;margin-bottom:3px">
+            <i class="ri-alert-line me-1"></i>Ce paiement a déjà été validé
+          </div>
+          <div style="font-size:11px;color:#495057;line-height:1.6">
+            L'annulation créera automatiquement une <strong>demande de remboursement</strong>
+            en attente de validation. Les cotisations liées repaseront en <strong>En retard</strong>.
+          </div>
+        </div>
+        @else
+        <div style="background:rgba(240,101,72,.05);border-radius:10px;padding:12px 14px;margin-bottom:16px">
+          <div style="font-size:11px;color:#c44a2e;line-height:1.6">
+            <i class="ri-information-line me-1"></i>
+            Les cotisations liées à ce paiement repasseront en <strong>En retard</strong>.
+          </div>
+        </div>
+        @endif
+
+        {{-- Motif --}}
+        <div style="margin-bottom:14px">
+          <label style="display:block;font-size:11px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+            Motif d'annulation <span style="color:#f06548">*</span>
+          </label>
+          <textarea wire:model="annulationMotif"
+                    rows="3"
+                    placeholder="Expliquez la raison de l'annulation…"
+                    style="width:100%;border:1.5px solid {{ $errorAnnulationMotif ? '#f06548' : '#e9ebec' }};border-radius:10px;padding:10px 12px;font-size:13px;resize:none;font-family:inherit;color:#212529"></textarea>
+          @if($errorAnnulationMotif)
+          <div style="font-size:12px;color:#f06548;margin-top:4px;font-weight:600">{{ $errorAnnulationMotif }}</div>
+          @endif
+        </div>
+
+        {{-- Code admin --}}
+        <div style="margin-bottom:18px">
+          <label style="display:block;font-size:11px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+            Code administrateur <span style="color:#f06548">*</span>
+          </label>
+          <div style="position:relative">
+            <i class="ri-lock-password-line" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#878a99;font-size:15px;pointer-events:none"></i>
+            <input type="password"
+                   wire:model="annulationCode"
+                   placeholder="••••••"
+                   autocomplete="off"
+                   style="width:100%;border:1.5px solid {{ $errorAnnulationCode ? '#f06548' : '#e9ebec' }};border-radius:10px;height:44px;padding:0 14px 0 38px;font-size:15px;letter-spacing:4px;font-family:inherit;color:#212529"/>
+          </div>
+          @if($errorAnnulationCode)
+          <div style="font-size:12px;color:#f06548;margin-top:4px;font-weight:600">
+            <i class="ri-error-warning-line me-1"></i>{{ $errorAnnulationCode }}
+          </div>
+          @endif
+          <div style="font-size:10px;color:#878a99;margin-top:4px">
+            Saisissez votre code PIN d'administrateur pour confirmer.
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn btn-light" style="border-radius:9px;font-weight:700"
+                  wire:click="fermerAnnulation">
+            <i class="ri-close-line me-1"></i>Annuler
+          </button>
+          <button wire:click="confirmerAnnulation"
+                  wire:loading.attr="disabled"
+                  style="background:linear-gradient(135deg,#c0341a,#f06548);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;padding:10px 22px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+            <span wire:loading wire:target="confirmerAnnulation" class="spinner-border spinner-border-sm"></span>
+            <i class="ri-close-circle-line" wire:loading.remove wire:target="confirmerAnnulation"></i>
+            <span wire:loading.remove wire:target="confirmerAnnulation">Confirmer l'annulation</span>
+            <span wire:loading wire:target="confirmerAnnulation">Traitement…</span>
+          </button>
+        </div>
+
+      </div>
+      @endif
+
+    </div>
+  </div>
+</div>
+
+
+{{-- ══ PATCH : NOTE COTISATION BO ══════════════════════════
+  Dans le composant cotisation BO (index.php), dans
+  confirmerValidation(), ajouter AVANT le SweetAlert :
+
+  // Vérifier si le paiement est partagé entre plusieurs cotisations
+  $paiementId = $cot->paiement_id;
+  if ($paiementId) {
+      $nbCotisationsLiees = Cotisation::where('paiement_id', $paiementId)->count();
+      if ($nbCotisationsLiees > 1) {
+          $this->send_event_at_sweet_alert_not_timer(
+              'Paiement groupé',
+              "Ce paiement est lié à {$nbCotisationsLiees} cotisations. "
+              . "Validez directement le paiement depuis le module Paiements pour valider toutes les cotisations en une seule action.",
+              'info'
+          );
+          return;
+      }
+  }
+══════════════════════════════════════════════════════════ --}}
 </div>
 
 

@@ -226,7 +226,7 @@
             <i class="{{ $headerIcon }}" style="color:#fff"></i>
           </div>
           <div>
-            <div class="cmh-type">{{ $tc?->libelle ?? '—' }}</div>
+            <div class="cmh-type">{{ $dc->libelle ?? $tc?->libelle }}</div>
             <div class="cmh-period">{{ $periodeLabel }}</div>
           </div>
         </div>

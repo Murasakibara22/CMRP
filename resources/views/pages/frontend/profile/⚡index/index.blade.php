@@ -89,6 +89,26 @@
             <div class="prof-info-value">{{ $customer->date_adhesion->translatedFormat('d F Y') }}</div>
           </div>
           @endif
+          @if($demandeEnAttente)
+          <div style="background:rgba(247,184,75,.08);border:1.5px solid #f7b84b;border-left:4px solid #f7b84b;border-radius:0 10px 10px 0;padding:12px 14px;margin-top:12px">
+            <div style="font-size:12px;font-weight:700;color:#c07a10;margin-bottom:3px">
+              <i class="ri-time-line me-1"></i>Demande en attente de validation
+            </div>
+            <div style="font-size:11px;color:#495057">
+              @if($demandeEnAttente->isChangement())
+                Changement vers « {{ $demandeEnAttente->nouveauType?->libelle }} »
+                @if($demandeEnAttente->nouveau_montant_engagement)
+                  — {{ number_format($demandeEnAttente->nouveau_montant_engagement, 0, ',', ' ') }} FCFA/mois
+                @endif
+              @else
+                Arrêt de la cotisation mensuelle
+              @endif
+              @if($demandeEnAttente->supprimer_cotisations_retard)
+                · Suppression des cotisations en retard demandée
+              @endif
+            </div>
+          </div>
+          @endif
         </div>
       </div>
 
@@ -154,6 +174,18 @@
             <div class="pmi-title">Modifier mes informations</div>
             <div class="pmi-sub">Nom, adresse, cotisation mensuelle</div>
           </div>
+          <i class="ri-arrow-right-s-line pmi-arrow"></i>
+        </button>
+
+        <button class="prof-menu-item" wire:click="openDemandeChange">
+          <div class="pmi-icon" style="background:rgba(247,184,75,.12);color:#f7b84b"><i class="ri-swap-line"></i></div>
+          <div class="pmi-body">
+            <div class="pmi-title">Changer ma cotisation mensuelle</div>
+            <div class="pmi-sub">Changer de type ou arrêter la cotisation</div>
+          </div>
+          @if($demandeEnAttente)
+          <span class="pmi-badge warn">En attente</span>
+          @endif
           <i class="ri-arrow-right-s-line pmi-arrow"></i>
         </button>
 
@@ -283,7 +315,7 @@
       </div>
 
       {{-- Cotisation mensuelle --}}
-      <div style="padding-top:20px;border-top:1px dashed rgba(64,81,137,.2);margin-top:4px">
+      {{-- <div style="padding-top:20px;border-top:1px dashed rgba(64,81,137,.2);margin-top:4px">
         <div style="font-size:13px;font-weight:800;color:#405189;margin-bottom:4px;display:flex;align-items:center;gap:6px">
           <i class="ri-calendar-check-line"></i> Type de cotisation mensuel
           <span style="font-size:10px;font-weight:500;color:#878a99">(optionnel)</span>
@@ -323,7 +355,7 @@
           </div>
         </div>
 
-        {{-- Confirmation changement de type --}}
+        
         @if($showConfirmChangementType)
         <div style="background:rgba(247,184,75,.07);border:1.5px solid #f7b84b;border-left:4px solid #f7b84b;border-radius:0 12px 12px 0;padding:14px 16px;margin-bottom:14px;">
           <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
@@ -357,7 +389,7 @@
         </div>
         @endif
 
-        {{-- Premier type --}}
+
         @php $ancienTypeId = auth('customer')->user()->type_cotisation_mensuel_id; $estPremierTypeForm = $typeCotisationMensuelId && ! $ancienTypeId; @endphp
         @if($estPremierTypeForm && ! $showConfirmChangementType)
         <div style="margin-top:4px">
@@ -388,7 +420,7 @@
         </div>
         @endif
 
-      </div>
+      </div> --}}
 
     </div>
 
@@ -579,7 +611,199 @@
   </div>
 </div>
 
+
+{{-- ══════════════════════════════════════════════════════════
+     MODAL DEMANDE CHANGEMENT COTISATION MENSUELLE
+══════════════════════════════════════════════════════════ --}}
+<div class="pwa-modal-overlay" id="demande-change-overlay" wire:ignore.self>
+  <div class="pwa-modal" wire:click.stop>
+
+    <div class="pwa-modal-header">
+      <div class="pwa-modal-drag"></div>
+      <div class="pwa-modal-title-row">
+        <div class="pwa-modal-title"><i class="ri-swap-line"></i> Changer ma cotisation mensuelle</div>
+        <button class="pwa-modal-close" wire:click="closeDemandeChange"><i class="ri-close-line"></i></button>
+      </div>
+    </div>
+
+    <div class="pwa-modal-body">
+
+      <div style="font-size:13px;color:#878a99;margin-bottom:20px;line-height:1.6">
+        Votre demande sera examinée par l'administration avant d'être appliquée.
+      </div>
+
+      {{-- Cotisation actuelle --}}
+      @if($customer->typeCotisationMensuel)
+      <div style="background:rgba(64,81,137,.06);border:1px solid rgba(64,81,137,.15);border-radius:12px;padding:12px 16px;margin-bottom:20px">
+        <div style="font-size:11px;color:#878a99;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Cotisation actuelle</div>
+        <div style="font-size:14px;font-weight:700;color:#405189">{{ $customer->typeCotisationMensuel->libelle }}</div>
+        @if($customer->montant_engagement)
+        <div style="font-size:12px;color:#878a99;margin-top:2px">{{ number_format($customer->montant_engagement, 0, ',', ' ') }} FCFA/mois</div>
+        @endif
+        @if($nbRetardAncienType > 0)
+        <div style="font-size:11px;color:#f06548;margin-top:4px;font-weight:600">
+          <i class="ri-time-line me-1"></i>{{ $nbRetardAncienType }} mois en retard
+        </div>
+        @endif
+      </div>
+      @endif
+
+      {{-- Type de demande --}}
+      <div style="margin-bottom:18px">
+        <div style="font-size:12px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">
+          Type de demande <span style="color:#f06548">*</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div wire:click="$set('typeDemande', 'changement')"
+               style="display:flex;align-items:center;gap:12px;border:1.5px solid {{ $typeDemande === 'changement' ? '#405189' : 'rgba(64,81,137,.15)' }};background:{{ $typeDemande === 'changement' ? 'rgba(64,81,137,.06)' : '#fff' }};border-radius:12px;padding:14px;cursor:pointer;transition:all .2s">
+            <div style="width:36px;height:36px;border-radius:9px;background:rgba(64,81,137,.1);color:#405189;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">
+              <i class="ri-swap-line"></i>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:{{ $typeDemande === 'changement' ? '#405189' : '#212529' }}">Changer de type</div>
+              <div style="font-size:11px;color:#878a99;margin-top:2px">Migrer vers un autre type de cotisation mensuelle</div>
+            </div>
+            <div style="margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid {{ $typeDemande === 'changement' ? '#405189' : '#e9ebec' }};background:{{ $typeDemande === 'changement' ? '#405189' : 'transparent' }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              @if($typeDemande === 'changement')<i class="ri-check-line" style="color:#fff;font-size:11px"></i>@endif
+            </div>
+          </div>
+
+          <div wire:click="$set('typeDemande', 'arret')"
+               style="display:flex;align-items:center;gap:12px;border:1.5px solid {{ $typeDemande === 'arret' ? '#f06548' : 'rgba(64,81,137,.15)' }};background:{{ $typeDemande === 'arret' ? 'rgba(240,101,72,.04)' : '#fff' }};border-radius:12px;padding:14px;cursor:pointer;transition:all .2s">
+            <div style="width:36px;height:36px;border-radius:9px;background:rgba(240,101,72,.1);color:#f06548;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">
+              <i class="ri-close-circle-line"></i>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:{{ $typeDemande === 'arret' ? '#f06548' : '#212529' }}">Arrêter la cotisation mensuelle</div>
+              <div style="font-size:11px;color:#878a99;margin-top:2px">Ne plus être soumis à une cotisation mensuelle</div>
+            </div>
+            <div style="margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid {{ $typeDemande === 'arret' ? '#f06548' : '#e9ebec' }};background:{{ $typeDemande === 'arret' ? '#f06548' : 'transparent' }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              @if($typeDemande === 'arret')<i class="ri-check-line" style="color:#fff;font-size:11px"></i>@endif
+            </div>
+          </div>
+        </div>
+
+        @if($errorTypeDemande)
+        <div style="font-size:12px;color:#f06548;margin-top:6px;font-weight:600"><i class="ri-error-warning-line me-1"></i>{{ $errorTypeDemande }}</div>
+        @endif
+      </div>
+
+      {{-- Nouveau type (si changement) --}}
+      @if($typeDemande === 'changement')
+      <div style="margin-bottom:18px;animation:fadeIn .2s ease">
+        <div style="font-size:12px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">
+          Nouveau type souhaité <span style="color:#f06548">*</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          @foreach($typesMensuels as $tm)
+          @php $sel = $demandeNouveauTypeId === $tm->id; @endphp
+          <div wire:click="selectDemandeNouveauType({{ $tm->id }})"
+               style="display:flex;align-items:center;justify-content:space-between;border:1.5px solid {{ $sel ? '#405189' : 'rgba(64,81,137,.15)' }};background:{{ $sel ? 'rgba(64,81,137,.06)' : '#fff' }};border-radius:12px;padding:12px 14px;cursor:pointer;transition:all .2s">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:30px;height:30px;border-radius:8px;background:{{ $sel ? 'rgba(64,81,137,.15)' : 'rgba(135,138,153,.08)' }};color:{{ $sel ? '#405189' : '#878a99' }};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">
+                <i class="ri-calendar-check-line"></i>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:{{ $sel ? '#405189' : '#212529' }}">{{ $tm->libelle }}</div>
+                @if($tm->montant_minimum)
+                <div style="font-size:11px;color:#878a99;margin-top:1px">Minimum {{ number_format($tm->montant_minimum, 0, ',', ' ') }} FCFA/mois</div>
+                @endif
+              </div>
+            </div>
+            <div style="width:20px;height:20px;border-radius:50%;border:2px solid {{ $sel ? '#405189' : '#e9ebec' }};background:{{ $sel ? '#405189' : 'transparent' }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              @if($sel)<i class="ri-check-line" style="color:#fff;font-size:11px"></i>@endif
+            </div>
+          </div>
+          @endforeach
+        </div>
+        @if($errorNouveauType)
+        <div style="font-size:12px;color:#f06548;margin-top:6px;font-weight:600"><i class="ri-error-warning-line me-1"></i>{{ $errorNouveauType }}</div>
+        @endif
+
+        {{-- Nouveau montant --}}
+        @if($demandeNouveauTypeId)
+        <div style="margin-top:14px">
+          <div style="font-size:12px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
+            Nouveau montant d'engagement <span style="color:#f06548">*</span>
+          </div>
+          @if($coutEngagements->count())
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+            @foreach($coutEngagements as $ce)
+            <div wire:click="selectDemandeNouvelEngagement({{ $ce->montant }})"
+                 style="padding:7px 12px;border-radius:20px;cursor:pointer;border:1.5px solid {{ $demandeNouvelEngagement === $ce->montant ? '#405189' : '#e9ebec' }};background:{{ $demandeNouvelEngagement === $ce->montant ? 'rgba(64,81,137,.08)' : '#fff' }};color:{{ $demandeNouvelEngagement === $ce->montant ? '#405189' : '#495057' }};font-size:12px;font-weight:700;transition:all .15s">
+              {{ number_format($ce->montant, 0, ',', ' ') }} FCFA
+            </div>
+            @endforeach
+          </div>
+          @endif
+          <div style="position:relative">
+            <i class="ri-money-cny-circle-line" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#878a99;font-size:14px;pointer-events:none"></i>
+            <input type="number" wire:model.live="demandeNouvelEngagement" min="1"
+                   placeholder="Ou saisir un montant…" inputmode="numeric"
+                   style="border:1.5px solid {{ $errorNouvelEngagement ? '#f06548' : '#e9ebec' }};border-radius:10px;height:42px;padding:0 12px 0 34px;font-size:13px;width:100%;background:#fff;color:#212529"/>
+          </div>
+          @if($errorNouvelEngagement)
+          <div style="font-size:12px;color:#f06548;margin-top:4px;font-weight:600"><i class="ri-error-warning-line me-1"></i>{{ $errorNouvelEngagement }}</div>
+          @endif
+        </div>
+        @endif
+      </div>
+      @endif
+
+      {{-- Supprimer les cotisations en retard --}}
+      @if($typeDemande && $nbRetardAncienType > 0)
+      <div style="background:rgba(240,101,72,.05);border:1.5px solid rgba(240,101,72,.2);border-radius:12px;padding:14px 16px;margin-bottom:18px">
+        <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer">
+          <input type="checkbox" wire:model="demandeSupprimerRetard"
+                 style="width:18px;height:18px;accent-color:#f06548;margin-top:1px;flex-shrink:0"/>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#f06548">Supprimer mes {{ $nbRetardAncienType }} cotisation(s) en retard</div>
+            <div style="font-size:11px;color:#878a99;margin-top:3px;line-height:1.5">
+              Si coché, toutes vos cotisations en retard de l'ancien type seront supprimées lors de la validation de la demande.
+            </div>
+          </div>
+        </label>
+      </div>
+      @endif
+
+      {{-- Motif (optionnel) --}}
+      @if($typeDemande)
+      <div style="margin-bottom:4px">
+        <label style="display:block;font-size:12px;font-weight:700;color:#495057;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">
+          Motif <span style="font-size:10px;font-weight:400;text-transform:none">(optionnel)</span>
+        </label>
+        <textarea wire:model="demandeMotif" rows="2"
+                  placeholder="Expliquez la raison de votre demande…"
+                  style="width:100%;border:1.5px solid #e9ebec;border-radius:10px;padding:10px 12px;font-size:13px;resize:none;font-family:inherit;color:#212529"></textarea>
+      </div>
+      @endif
+
+    </div>
+
+    <div class="pwa-modal-footer">
+      <button class="btn-outline" style="height:46px;font-size:14px" wire:click="closeDemandeChange">
+        <i class="ri-close-line"></i> Annuler
+      </button>
+      <button class="btn-main" style="height:46px;font-size:14px"
+              wire:click="submitDemandeChange"
+              wire:loading.attr="disabled"
+              wire:target="submitDemandeChange">
+        <span wire:loading wire:target="submitDemandeChange"><div class="spinner"></div></span>
+        <span wire:loading.remove wire:target="submitDemandeChange">
+          <i class="ri-send-plane-line"></i> Envoyer la demande
+        </span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
 </div>{{-- /root Livewire --}}
+
+
+
+
 
 
 @push('scripts')
@@ -593,6 +817,8 @@ window.addEventListener('closeEditModal',  () => closeOverlay('edit-overlay'));
 window.addEventListener('OpenPhotoModal',  () => openOverlay('photo-overlay'));
 window.addEventListener('closePhotoModal', () => closeOverlay('photo-overlay'));
 window.addEventListener('OpenBilanModal',  () => openOverlay('bilan-overlay'));
+window.addEventListener('OpenDemandeChangeModal',  () => openOverlay('demande-change-overlay'));
+window.addEventListener('closeDemandeChangeModal', () => closeOverlay('demande-change-overlay'));
 window.addEventListener('closeBilanModal', () => closeOverlay('bilan-overlay'));
 
 /* ── Photo : sélection ── */

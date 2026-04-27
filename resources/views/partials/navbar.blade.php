@@ -197,6 +197,18 @@
                     </a>
                 </li>
 
+                <li class="nav-item">
+                    <a class="nav-link menu-link {{ request()->routeIs('admin.demande-remboursement.index') ? 'active' : '' }}" href="{{ route('admin.demande-remboursement.index') }}">
+                        <i class=" ri-question-answer-fill"></i> <span data-key="t-widgets">Demandes de Remboursement</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link menu-link {{ request()->routeIs('admin.demande-change-cotisation.index') ? 'active' : '' }}" href="{{ route('admin.demande-change-cotisation.index') }}">
+                        <i class=" ri-question-answer-fill"></i> <span data-key="t-widgets">Demandes de Changement de Cotisation</span>
+                    </a>
+                </li>
+
 
 
 

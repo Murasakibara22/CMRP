@@ -9,6 +9,7 @@ use App\Models\Paiement;
 use App\Models\TypeCotisation;
 use App\Models\CoutEngagement;
 use App\Models\HistoriqueCotisation;
+use App\Models\DemandeChangeCotisationMensuel;
 use App\Traits\UtilsSweetAlert;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -37,7 +38,18 @@ new #[Layout('layouts.app-frontend')] class extends Component
     public ?int   $nouvelEngagement          = null;
     public string $errorEngagement           = '';
 
-    /* ── Bilan PDF ──────────────────────────────────────── */
+    /* ── Demande changement cotisation mensuel ─────────── */
+    public bool   $showDemandeChange        = false;
+    public string $typeDemande              = '';
+    public ?int   $demandeNouveauTypeId     = null;
+    public ?int   $demandeNouvelEngagement  = null;
+    public bool   $demandeSupprimerRetard   = false;
+    public string $demandeMotif             = '';
+    public string $errorTypeDemande         = '';
+    public string $errorNouveauType         = '';
+    public string $errorNouvelEngagement    = '';
+
+        /* ── Bilan PDF ──────────────────────────────────────── */
     public bool   $showBilan   = false;
     public string $bilanDebut  = '';
     public string $bilanFin    = '';
@@ -80,6 +92,106 @@ new #[Layout('layouts.app-frontend')] class extends Component
         $this->showConfirmChangementType = false;
         $this->errorEngagement           = '';
         $this->dispatch('closeEditModal');
+    }
+
+    public function openDemandeChange(): void
+    {
+        $c = auth('customer')->user();
+
+        $dejaEnAttente = DemandeChangeCotisationMensuel::where('customer_id', $c->id)
+            ->where('statut', 'en_attente')->exists();
+
+        if ($dejaEnAttente) {
+            $this->send_event_at_sweet_alert_not_timer(
+                'Demande en cours',
+                "Vous avez déjà une demande en attente de validation. Veuillez patienter.",
+                'info'
+            );
+            return;
+        }
+
+        $this->typeDemande             = '';
+        $this->demandeNouveauTypeId    = null;
+        $this->demandeNouvelEngagement = null;
+        $this->demandeSupprimerRetard  = false;
+        $this->demandeMotif            = '';
+        $this->errorTypeDemande        = '';
+        $this->errorNouveauType        = '';
+        $this->errorNouvelEngagement   = '';
+        $this->showDemandeChange       = true;
+        $this->dispatch('OpenDemandeChangeModal');
+    }
+
+    public function closeDemandeChange(): void
+    {
+        $this->showDemandeChange = false;
+        $this->dispatch('closeDemandeChangeModal');
+    }
+
+    public function selectDemandeNouveauType(?int $id): void
+    {
+        $this->demandeNouveauTypeId    = $id;
+        $this->demandeNouvelEngagement = null;
+        $this->errorNouveauType        = '';
+        $this->errorNouvelEngagement   = '';
+    }
+
+    public function selectDemandeNouvelEngagement(?int $montant): void
+    {
+        $this->demandeNouvelEngagement = $montant;
+        $this->errorNouvelEngagement   = '';
+    }
+
+    public function submitDemandeChange(): void
+    {
+        $this->errorTypeDemande      = '';
+        $this->errorNouveauType      = '';
+        $this->errorNouvelEngagement = '';
+
+        $customer = Customer::find(auth('customer')->user()->id);
+
+        if (! $this->typeDemande) {
+            $this->errorTypeDemande = 'Veuillez choisir un type de demande.';
+            return;
+        }
+
+        if ($this->typeDemande === 'changement') {
+            if (! $this->demandeNouveauTypeId) {
+                $this->errorNouveauType = 'Veuillez sélectionner le nouveau type de cotisation.';
+                return;
+            }
+            if ($this->demandeNouveauTypeId === $customer->type_cotisation_mensuel_id) {
+                $this->errorNouveauType = 'Vous avez sélectionné le même type que votre type actuel. Veuillez en choisir un autre.';
+                return;
+            }
+            $tcNouveau = TypeCotisation::find($this->demandeNouveauTypeId);
+            if (! $this->demandeNouvelEngagement || $this->demandeNouvelEngagement < 1) {
+                $this->errorNouvelEngagement = "Veuillez renseigner votre nouveau montant d'engagement.";
+                return;
+            }
+            if ($tcNouveau?->montant_minimum && $this->demandeNouvelEngagement < $tcNouveau->montant_minimum) {
+                $this->errorNouvelEngagement = "Le minimum pour « {$tcNouveau->libelle} » est " .
+                    number_format($tcNouveau->montant_minimum, 0, ',', ' ') . " FCFA/mois.";
+                return;
+            }
+        }
+
+        DemandeChangeCotisationMensuel::create([
+            'customer_id'                  => $customer->id,
+            'created_by'                   => null,
+            'type_demande'                 => $this->typeDemande,
+            'ancien_type_cotisation_id'    => $customer->type_cotisation_mensuel_id,
+            'ancien_montant_engagement'    => $customer->montant_engagement,
+            'nouveau_type_cotisation_id'   => $this->typeDemande === 'changement' ? $this->demandeNouveauTypeId   : null,
+            'nouveau_montant_engagement'   => $this->typeDemande === 'changement' ? $this->demandeNouvelEngagement : null,
+            'supprimer_cotisations_retard' => $this->demandeSupprimerRetard,
+            'motif'                        => trim($this->demandeMotif) ?: null,
+            'statut'                       => 'en_attente',
+        ]);
+
+        $this->showDemandeChange = false;
+        $this->dispatch('closeDemandeChangeModal');
+        $this->send_event_at_toast('Demande envoyée ! Elle sera traitée par l\'administration.', 'success', 'top-end');
     }
 
     public function openPhoto(): void
@@ -400,12 +512,25 @@ new #[Layout('layouts.app-frontend')] class extends Component
             ? Storage::disk('public')->url($customer->photo_path)
             : null;
 
+        $demandeEnAttente = DemandeChangeCotisationMensuel::where('customer_id', $customer->id)
+            ->where('statut', 'en_attente')
+            ->with(['ancienType', 'nouveauType'])
+            ->latest()->first();
+
+        $nbRetardAncienType = $customer->type_cotisation_mensuel_id
+            ? Cotisation::where('customer_id', $customer->id)
+                ->where('type_cotisation_id', $customer->type_cotisation_mensuel_id)
+                ->where('statut', 'en_retard')
+                ->count()
+            : 0;
+
         return compact(
             'customer', 'totalCotise', 'totalDu',
             'nbPaiements', 'moisRetard', 'nbDocuments',
             'nbReclammationsEnCours', 'initiales',
             'typesMensuels', 'coutEngagements',
-            'photoUrl'
+            'photoUrl',
+            'demandeEnAttente', 'nbRetardAncienType'
         );
     }
 }

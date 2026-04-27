@@ -133,7 +133,7 @@
         <i class="{{ $displayIcon }}"></i>
       </div>
       <div class="cot-body">
-        <div class="cot-name">{{ $tc?->libelle ?? '—' }}</div>
+        <div class="cot-name">{{ $cot->libelle ?? $tc?->libelle }}</div>
         <div class="cot-sub">
           {{ $subLine }}
           @if($paiementEnAttente)
@@ -246,7 +246,7 @@
             <i class="{{ $headerIcon }}" style="color:#fff"></i>
           </div>
           <div>
-            <div class="cmh-type">{{ $tc?->libelle ?? '—' }}</div>
+            <div class="cmh-type">{{ $dc->libelle ?? $tc?->libelle }}</div>
             <div class="cmh-period">{{ $periodeDet }}</div>
           </div>
         </div>
