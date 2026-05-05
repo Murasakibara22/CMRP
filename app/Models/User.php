@@ -26,6 +26,10 @@ class User extends Authenticatable
         'otp_verified_at',
         'otp_expired_at',
         'photo_url',
+
+
+        'is_first_connexion',
+        'first_connexion_modal_dismissed_at',
     ];
 
     protected $hidden = [
@@ -37,6 +41,8 @@ class User extends Authenticatable
     protected $casts = [
         'otp_verified_at' => 'datetime',
         'otp_expired_at'  => 'datetime',
+        'is_first_connexion'                   => 'boolean',
+        'first_connexion_modal_dismissed_at'   => 'datetime',
     ];
 
     // ─── Relations ───────────────────────────────────────────

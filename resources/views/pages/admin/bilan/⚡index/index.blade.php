@@ -14,13 +14,15 @@
       </nav>
     </div>
     <div class="d-flex gap-2">
-      <button wire:click="exportBilanPdf"
+        @if(auth()->user()?->hasPermission('BILAN_EXPORT'))
+        <button wire:click="exportBilanPdf"
                 class="btn btn-soft-danger btn-sm waves-effect"
                 wire:loading.attr="disabled">
             <span wire:loading wire:target="exportBilanPdf" class="spinner-border spinner-border-sm me-1"></span>
             <i class="ri-file-pdf-line me-1" wire:loading.remove wire:target="exportBilanPdf"></i>
             Exporter PDF
         </button>
+        @endif
     </div>
   </div>
 
@@ -220,6 +222,7 @@
   <div class="bl-main-grid fu fu-6">
 
     {{-- Transactions récentes --}}
+    @if(auth()->user()?->hasPermission('TRANSACTION_SHOW'))
     <div class="bl-card">
       <div class="bl-card-header">
         <div>
@@ -231,7 +234,7 @@
       @if($transactions->count())
       <div class="bl-tx-list">
         @foreach($transactions as $tx)
-        <div class="bl-tx-item" wire:click="openDetailTx({{ $tx->id }})">
+        <div class="bl-tx-item" @if(auth()->user()?->hasPermission('TRANSACTION_SHOW_ONE')) wire:click="openDetailTx({{ $tx->id }})" @endif>
           <div class="bl-tx-icon {{ $tx->type === 'entree' ? 'ti-entree' : 'ti-sortie' }}">
             <i class="{{ $tx->type === 'entree' ? 'ri-arrow-down-line' : 'ri-arrow-up-line' }}"></i>
           </div>
@@ -252,8 +255,10 @@
       <div class="bl-empty"><i class="ri-exchange-line"></i><p>Aucune transaction sur la période</p></div>
       @endif
     </div>
+    @endif
 
     {{-- Dépenses récentes --}}
+    @if(auth()->user()?->hasPermission('DEPENSE_SHOW'))
     <div class="bl-card">
       <div class="bl-card-header">
         <div>
@@ -265,7 +270,7 @@
       @if($depensesRecentes->count())
       <div class="bl-tx-list">
         @foreach($depensesRecentes as $dep)
-        <div class="bl-tx-item" wire:click="openDetailDep({{ $dep->id }})">
+        <div class="bl-tx-item" @if(auth()->user()?->hasPermission('DEPENSE_SHOW_ONE')) wire:click="openDetailDep({{ $dep->id }})" @endif>
           <div class="bl-tx-icon ti-sortie">
             <i class="ri-shopping-cart-line"></i>
           </div>
@@ -284,10 +289,12 @@
       <div class="bl-empty"><i class="ri-shopping-cart-line"></i><p>Aucune dépense sur la période</p></div>
       @endif
     </div>
+    @endif
 
   </div>
 
   {{-- ══ TABLEAU DÉPENSES PAR CATÉGORIE ══════════════════════ --}}
+  @if(auth()->user()?->hasPermission('DEPENSE_SHOW'))
   @if($depensesParType->count())
   <div class="bl-card fu fu-6" style="margin-bottom:24px">
     <div class="bl-card-header">
@@ -331,6 +338,7 @@
     </div>
   </div>
   @endif
+    @endif
 
 </div>
 </div>

@@ -10,9 +10,11 @@
         {{ $stats['total'] }} rôles disponibles sur la plateforme
       </p>
     </div>
+    @if(auth()->user()?->hasPermission('ROLE_CREATE'))
     <button class="btn-rp-primary" wire:click="openAdd">
       <i class="ri-add-line"></i> Nouveau rôle
     </button>
+    @endif
   </div>
 
   {{-- ══ STATS STRIP ════════════════════════════════════════ --}}
@@ -50,16 +52,6 @@
     </div>
   </div>
 
-  {{-- ══ SECTION TITRE ══════════════════════════════════════ --}}
-  <div class="rp-section-header fu fu-2">
-    <div>
-      <div style="font-size:16px;font-weight:800;color:#212529">Rôles et Permissions</div>
-      <div style="font-size:13px;color:var(--rp-muted)">{{ $stats['total'] }} rôles disponibles sur la plateforme</div>
-    </div>
-    <button class="btn-rp-primary" wire:click="openAdd">
-      <i class="ri-add-line"></i> Nouveau rôle
-    </button>
-  </div>
 
   {{-- ══ GRILLE RÔLES ════════════════════════════════════════ --}}
   <div class="rp-roles-grid fu fu-3">
@@ -110,12 +102,16 @@
       @endif
 
       <div class="rrc-actions">
+        @if(auth()->user()?->hasPermission('ROLE_EDIT'))
         <button class="rrc-btn-modifier" wire:click="openEdit({{ $role->id }})">
           Modifier
         </button>
+        @endif
+        @if(auth()->user()?->hasPermission('ROLE_DELETE'))
         <button class="rrc-btn-supprimer" wire:click="confirmDelete({{ $role->id }})">
           <i class="ri-delete-bin-line"></i> Supprimer
         </button>
+        @endif
       </div>
     </div>
 
@@ -200,6 +196,7 @@
         </div>
 
         {{-- Section permissions --}}
+        @if(auth()->user()?->hasPermission('PERMISSION_ATTRIBUATE'))
         <div class="rp-form-section">
           <div class="d-flex align-items-center justify-content-between mb-3">
             <div class="rp-form-section-title" style="margin-bottom:0">Permissions du rôle</div>
@@ -240,12 +237,14 @@
           @endforeach
 
         </div>{{-- /permissions --}}
+        @endif
 
       </div>{{-- /modal-body --}}
 
       {{-- Footer --}}
       <div class="modal-footer" style="border:none;padding:16px 32px 24px;background:#fff;justify-content:space-between">
         <button class="rp-btn-cancel" data-bs-dismiss="modal">Annuler</button>
+        @if(auth()->user()?->hasPermission($editId ? 'ROLE_EDIT' : 'ROLE_CREATE'))
         <button class="rp-btn-save" wire:click="save" wire:loading.attr="disabled">
           <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
           <i class="ri-shield-check-line" wire:loading.remove wire:target="save"></i>
@@ -254,6 +253,7 @@
           </span>
           <span wire:loading wire:target="save">Enregistrement…</span>
         </button>
+        @endif
       </div>
 
     </div>

@@ -14,12 +14,16 @@
       </nav>
     </div>
     <div class="d-flex gap-2">
+      @if(auth()->user()?->hasPermission('DEPENSE_CREATE'))
       <button class="btn-dep-primary" wire:click="openAdd()">
         <i class="ri-add-circle-line"></i> Nouvelle dépense
       </button>
+      @endif
+      @if(auth()->user()?->hasPermission('DEPENSE_EXPORT'))s
       <button class="btn btn-soft-success btn-sm waves-effect">
         <i class="ri-file-excel-2-line me-1"></i> Exporter
       </button>
+      @endif
     </div>
   </div>
 
@@ -106,7 +110,7 @@
         </thead>
         <tbody>
           @forelse($depenses as $dep)
-          <tr wire:click="openDetail({{ $dep->id }})">
+          <tr @if(auth()->user()?->hasPermission('DEPENSE_SHOW_ONE')) wire:click="openDetail({{ $dep->id }})" @endif>
             <td>
               <div style="display:flex;align-items:center;gap:8px">
                 <div style="width:32px;height:32px;border-radius:9px;background:rgba(240,101,72,.10);color:#f06548;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">
@@ -129,15 +133,21 @@
             </td>
             <td wire:click.stop="">
               <div class="dep-actions">
-                <button class="btn btn-soft-primary waves-effect" wire:click="openDetail({{ $dep->id }})" title="Détails">
-                  <i class="ri-eye-line"></i>
-                </button>
-                <button class="btn btn-soft-info waves-effect" wire:click="openEdit({{ $dep->id }})" title="Modifier">
-                  <i class="ri-edit-line"></i>
-                </button>
-                <button class="btn btn-soft-danger waves-effect" wire:click="confirmDelete({{ $dep->id }})" title="Supprimer">
-                  <i class="ri-delete-bin-line"></i>
-                </button>
+                @if(auth()->user()?->hasPermission('DEPENSE_SHOW_ONE'))
+                  <button class="btn btn-soft-primary waves-effect" wire:click="openDetail({{ $dep->id }})" title="Détails">
+                    <i class="ri-eye-line"></i>
+                  </button>
+                @endif
+                @if(auth()->user()?->hasPermission('DEPENSE_EDIT'))
+                  <button class="btn btn-soft-info waves-effect" wire:click="openEdit({{ $dep->id }})" title="Modifier">
+                    <i class="ri-edit-line"></i>
+                  </button>
+                @endif
+                @if(auth()->user()?->hasPermission('DEPENSE_DELETE'))
+                  <button class="btn btn-soft-danger waves-effect" wire:click="confirmDelete({{ $dep->id }})" title="Supprimer">
+                    <i class="ri-delete-bin-line"></i>
+                  </button>
+                @endif
               </div>
             </td>
           </tr>
@@ -236,14 +246,18 @@
           </div>
 
           <div class="d-flex gap-2">
-            <button class="btn btn-soft-info waves-effect btn-sm"
-                    wire:click="openEdit({{ $dep->id }})" data-bs-dismiss="modal">
-              <i class="ri-edit-line me-1"></i>Modifier
-            </button>
-            <button class="btn btn-soft-danger waves-effect btn-sm"
-                    wire:click="confirmDelete({{ $dep->id }})" data-bs-dismiss="modal">
-              <i class="ri-delete-bin-line me-1"></i>Supprimer
-            </button>
+            @if(auth()->user()?->hasPermission('DEPENSE_EDIT'))
+              <button class="btn btn-soft-info waves-effect btn-sm"
+                      wire:click="openEdit({{ $dep->id }})" data-bs-dismiss="modal">
+                <i class="ri-edit-line me-1"></i>Modifier
+              </button>
+            @endif
+            @if(auth()->user()?->hasPermission('DEPENSE_DELETE'))
+              <button class="btn btn-soft-danger waves-effect btn-sm"
+                      wire:click="confirmDelete({{ $dep->id }})" data-bs-dismiss="modal">
+                <i class="ri-delete-bin-line me-1"></i>Supprimer
+              </button>
+            @endif
           </div>
 
         </div>
@@ -348,12 +362,14 @@
 
       <div class="dep-modal-footer">
         <button class="btn-dep-secondary" data-bs-dismiss="modal"><i class="ri-close-line me-1"></i> Annuler</button>
+        @if(auth()->user()?->hasPermission('DEPENSE_CREATE') || auth()->user()?->hasPermission('DEPENSE_EDIT'))
         <button class="btn-dep-primary" wire:click="save" wire:loading.attr="disabled">
           <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
           <i class="ri-save-line" wire:loading.remove wire:target="save"></i>
           <span wire:loading.remove wire:target="save"> {{ $editId ? 'Enregistrer' : 'Créer la dépense' }}</span>
           <span wire:loading wire:target="save">Enregistrement…</span>
         </button>
+        @endif
       </div>
 
     </div>

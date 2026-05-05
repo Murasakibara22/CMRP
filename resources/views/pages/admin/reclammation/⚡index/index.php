@@ -29,6 +29,8 @@ new class extends Component
     /* ── Ouvrir modal détail ────────────────────────────── */
     public function openDetail(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('RECLAMATION_SHOW_ONE'), 403);
+
         $this->detailId     = $id;
         $this->reponse      = '';
         $this->newStatut    = '';
@@ -45,6 +47,8 @@ new class extends Component
     /* ── Envoyer une réponse + changer statut ───────────── */
     public function repondre(): void
     {
+        abort_unless(auth()->user()?->hasPermission('RECLAMATION_EDIT'), 403);
+
         $this->errorReponse = '';
 
         if (! trim($this->reponse)) {
@@ -82,6 +86,8 @@ new class extends Component
     /* ── Changer statut rapide depuis la table ──────────── */
     public function changerStatut(int $id, string $statut): void
     {
+        abort_unless(auth()->user()?->hasPermission('RECLAMATION_EDIT'), 403);
+
         $recla = Reclammation::find($id);
         if (! $recla) return;
 
@@ -96,6 +102,8 @@ new class extends Component
     /* ── Supprimer ──────────────────────────────────────── */
     public function confirmDelete(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('RECLAMATION_DELETE'), 403);
+
         $recla = Reclammation::find($id);
         if ($recla) {
             $this->sweetAlert_confirm_options_with_button(

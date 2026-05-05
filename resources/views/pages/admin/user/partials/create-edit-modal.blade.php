@@ -203,6 +203,7 @@
                             style="border-radius: 10px; padding: 10px 25px;">
                         <i class="ri-close-line me-1"></i>Annuler
                     </button>
+                    @if(auth()->user()?->hasPermission($isEditMode ? 'ADMIN_EDIT' : 'ADMIN_CREATE'))
                     <button type="submit"
                             class="btn text-white"
                             wire:loading.attr="disabled"
@@ -215,6 +216,7 @@
                             Enregistrement...
                         </span>
                     </button>
+                    @endif
                 </div>
             </form>
         </div>

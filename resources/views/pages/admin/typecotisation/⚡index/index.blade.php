@@ -14,9 +14,11 @@
         </ol>
       </nav>
     </div>
+    @if(auth()->user()?->hasPermission('TYPE_COTISATION_CREATE'))
     <button class="btn-tc-primary" wire:click="openAdd">
       <i class="ri-add-circle-line"></i> Nouveau type
     </button>
+    @endif
   </div>
 
   {{-- ══ KPI STRIP ════════════════════════════════════════ --}}
@@ -154,7 +156,7 @@
         $periodeExpiree = $tc->end_at && $tc->end_at->isPast() && !$periodeEnCours;
       @endphp
 
-      <div class="tc-card fu" style="animation-delay:{{ $loop->index * 0.06 }}s" wire:click="openDetail({{ $tc->id }})">
+      <div class="tc-card fu" style="animation-delay:{{ $loop->index * 0.06 }}s" @if(auth()->user()?->hasPermission('TYPE_COTISATION_SHOW_ONE')) wire:click="openDetail({{ $tc->id }})" @endif>
         <div class="tc-card-header" style="border-top-color:{{ $tcColor }}">
           <div class="tc-type-icon" style="background:{{ $tcBg }};color:{{ $tcColor }}">
             <i class="{{ $tcIcon }}"></i>
@@ -240,12 +242,24 @@
           </div>
           <div class="divider"></div>
           <div class="tc-actions">
-            <button class="btn btn-soft-primary waves-effect" wire:click="openDetail({{ $tc->id }})" title="Voir détails"><i class="ri-eye-line"></i></button>
-            <button class="btn btn-soft-warning waves-effect" wire:click="openEdit({{ $tc->id }})" title="Modifier"><i class="ri-edit-line"></i></button>
+            @if(auth()->user()?->hasPermission('TYPE_COTISATION_SHOW_ONE'))
+             <button class="btn btn-soft-primary waves-effect" wire:click="openDetail({{ $tc->id }})" title="Voir détails"><i class="ri-eye-line"></i></button>
+            @endif
+
+            @if(auth()->user()?->hasPermission('TYPE_COTISATION_EDIT'))
+             <button class="btn btn-soft-warning waves-effect" wire:click="openEdit({{ $tc->id }})" title="Modifier"><i class="ri-edit-line"></i></button>
+            @endif
+
+            @if(auth()->user()?->hasPermission('TYPE_COTISATION_ACTIVATE'))
             <button class="btn btn-soft-{{ $tc->status === 'actif' ? 'secondary' : 'success' }} waves-effect" wire:click="toggleStatus({{ $tc->id }})" title="{{ $tc->status === 'actif' ? 'Désactiver' : 'Activer' }}">
               <i class="ri-{{ $tc->status === 'actif' ? 'pause' : 'play' }}-circle-line"></i>
             </button>
+            @endif
+
+            @if(auth()->user()?->hasPermission('TYPE_COTISATION_DELETE'))
             <button class="btn btn-soft-danger waves-effect" wire:click="confirmDelete({{ $tc->id }})" title="Supprimer"><i class="ri-delete-bin-line"></i></button>
+            @endif
+
           </div>
         </div>
       </div>
@@ -290,7 +304,7 @@
               $periodeEnCours = $tc->isEnCours();
               $periodeExpiree = $tc->end_at && $tc->end_at->isPast() && !$periodeEnCours;
             @endphp
-            <tr wire:click="openDetail({{ $tc->id }})" style="cursor:pointer">
+            <tr @if(auth()->user()?->hasPermission('TYPE_COTISATION_SHOW_ONE')) wire:click="openDetail({{ $tc->id }})" @endif style="cursor:pointer">
               <td>
                 <div style="display:flex;align-items:center;gap:10px">
                   <div class="type-icon-sm" style="background:{{ $tcBg }};color:{{ $tcColor }}">
@@ -344,9 +358,15 @@
               </td>
               <td wire:click.stop="">
                 <div style="display:flex;gap:5px">
-                  <button class="btn btn-soft-primary waves-effect" style="width:30px;height:30px;padding:0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px" wire:click="openDetail({{ $tc->id }})"><i class="ri-eye-line"></i></button>
-                  <button class="btn btn-soft-warning waves-effect" style="width:30px;height:30px;padding:0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px" wire:click="openEdit({{ $tc->id }})"><i class="ri-edit-line"></i></button>
-                  <button class="btn btn-soft-danger waves-effect" style="width:30px;height:30px;padding:0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px" wire:click="confirmDelete({{ $tc->id }})"><i class="ri-delete-bin-line"></i></button>
+                  @if(auth()->user()?->hasPermission('TYPE_COTISATION_SHOW_ONE'))
+                    <button class="btn btn-soft-primary waves-effect" style="width:30px;height:30px;padding:0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px" wire:click="openDetail({{ $tc->id }})"><i class="ri-eye-line"></i></button>
+                  @endif
+                  @if(auth()->user()?->hasPermission('TYPE_COTISATION_EDIT'))
+                    <button class="btn btn-soft-warning waves-effect" style="width:30px;height:30px;padding:0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px" wire:click="openEdit({{ $tc->id }})"><i class="ri-edit-line"></i></button>
+                  @endif
+                  @if(auth()->user()?->hasPermission('TYPE_COTISATION_DELETE'))
+                    <button class="btn btn-soft-danger waves-effect" style="width:30px;height:30px;padding:0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px" wire:click="confirmDelete({{ $tc->id }})"><i class="ri-delete-bin-line"></i></button>
+                  @endif
                 </div>
               </td>
             </tr>
@@ -498,9 +518,11 @@
         </div>
 
         <div class="d-flex gap-2 mt-4 flex-wrap">
+            @if(auth()->user()?->hasPermission('TYPE_COTISATION_EDIT'))
           <button class="btn btn-primary waves-effect" wire:click="openEdit({{ $dtc->id }})" data-bs-dismiss="modal">
             <i class="ri-edit-line me-1"></i> Modifier la configuration
           </button>
+          @endif
           <a href="#" class="btn btn-soft-success waves-effect">
             <i class="ri-list-check me-1"></i> Voir les cotisations liées
           </a>
@@ -687,12 +709,14 @@
         <button class="btn-tc-secondary" data-bs-dismiss="modal">
           <i class="ri-close-line me-1"></i> Annuler
         </button>
+        @if(auth()->user()?->hasPermission('TYPE_COTISATION_CREATE'))
         <button class="btn-tc-primary" wire:click="save" wire:loading.attr="disabled">
           <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
           <i class="ri-save-line" wire:loading.remove wire:target="save"></i>
           <span wire:loading.remove wire:target="save"> Enregistrer</span>
           <span wire:loading wire:target="save">Enregistrement…</span>
         </button>
+        @endif
       </div>
 
     </div>{{-- /modal-content --}}

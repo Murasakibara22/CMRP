@@ -35,7 +35,9 @@ new  class extends Component
 
     /* ── Ouvrir détail ──────────────────────────────────── */
     public function openDetail(int $id): void
-    {
+    { 
+        abort_unless(auth()->user()?->hasPermission('DEPENSE_SHOW_ONE'), 403);
+
         $this->detailId = $id;
         $this->launch_modal('modalDetailDepense');
     }
@@ -43,6 +45,9 @@ new  class extends Component
     /* ── Ouvrir ajout ───────────────────────────────────── */
     public function openAdd(): void
     {
+        abort_unless(auth()->user()?->hasPermission('DEPENSE_CREATE'), 403);
+
+
         $this->resetForm();
         $this->dateDepense = now()->format('Y-m-d');
         $this->launch_modal('modalFormDepense');
@@ -51,6 +56,8 @@ new  class extends Component
     /* ── Ouvrir modification ────────────────────────────── */
     public function openEdit(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('DEPENSE_EDIT'), 403);
+
         $dep = Depense::findOrFail($id);
         $this->resetForm();
         $this->editId        = $id;
@@ -71,6 +78,8 @@ new  class extends Component
             'montant'       => 'required|integer|min:1',
             'dateDepense'   => 'required|date',
         ]);
+
+        abort_unless(auth()->user()?->hasPermission('DEPENSE_CREATE'), 403) && abort_unless(auth()->user()?->hasPermission('DEPENSE_EDIT'), 403);
 
         $data = [
             'type_depense_id' => $this->typeDepenseId,
@@ -123,6 +132,8 @@ new  class extends Component
     /* ── Supprimer ──────────────────────────────────────── */
     public function confirmDelete(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('DEPENSE_DELETE'), 403);
+
         $dep = Depense::findOrFail($id);
         $this->sweetAlert_confirm_options_with_button(
             $dep,

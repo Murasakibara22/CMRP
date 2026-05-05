@@ -118,6 +118,7 @@
 
     {{-- ══ ROW 2 ═══════════════════════════════════════════════ --}}
     <div class="row g-3 mb-4">
+      @if(auth()->user()?->hasPermission('PAIEMENT_SHOW'))
       <div class="col-xl-8 fade-up fade-up-5">
         <div class="chart-card h-100">
           <div class="cc-header">
@@ -133,6 +134,9 @@
           <div id="chart-flux"></div>
         </div>
       </div>
+      @endif
+
+      @if(auth()->user()?->hasPermission('FIDELE_SHOW'))
       <div class="col-xl-4 fade-up fade-up-6">
         <div class="statut-card h-100">
           <div class="sc-title">Statut des fidèles</div>
@@ -146,10 +150,12 @@
           </div>
         </div>
       </div>
+      @endif
     </div>
 
     {{-- ══ ROW 3 ═══════════════════════════════════════════════ --}}
     <div class="row g-3 mb-4">
+      @if(auth()->user()?->hasPermission('TYPE_COTISATION_SHOW') )
       <div class="col-xl-5 fade-up fade-up-5">
         <div class="type-cot-card h-100">
           <div class="section-title mb-3">
@@ -159,6 +165,7 @@
           <div id="types-cot-list"></div>
         </div>
       </div>
+      @endif
       <div class="col-xl-4 fade-up fade-up-6">
         <div class="chart-card h-100">
           <div class="section-title mb-3"><span class="st-label">Collectes en cours</span></div>
@@ -184,6 +191,7 @@
 
     {{-- ══ ROW 4 ═══════════════════════════════════════════════ --}}
     <div class="row g-3 mb-4">
+      @if(auth()->user()?->hasPermission('PAIEMENT_SHOW') )
       <div class="col-xl-7 fade-up fade-up-6">
         <div class="transactions-card h-100">
           <div class="section-title mb-3">
@@ -193,6 +201,9 @@
           <ul class="tx-list" id="tx-list"></ul>
         </div>
       </div>
+      @endif
+
+      @if(auth()->user()?->hasPermission('DEPENSE_SHOW') )
       <div class="col-xl-5 fade-up fade-up-7">
         <div class="chart-card h-100">
           <div class="section-title mb-3">
@@ -206,9 +217,11 @@
           </div>
         </div>
       </div>
+      @endif
     </div>
 
     {{-- ══ ROW 5 ═══════════════════════════════════════════════ --}}
+    @if(auth()->user()?->hasPermission('FIDELE_SHOW'))
     <div class="fade-up fade-up-8 mb-4">
       <div class="retard-card">
         <div class="section-title mb-3">
@@ -234,6 +247,7 @@
         </div>
       </div>
     </div>
+    @endif
 
   </div>
 </div>

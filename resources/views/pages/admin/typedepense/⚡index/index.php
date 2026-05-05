@@ -24,6 +24,8 @@ new  class extends Component
     /* ── Ouvrir modal ajout ─────────────────────────────── */
     public function openAdd(): void
     {
+        abort_unless(auth()->user()?->hasPermission('TYPE_DEPENSE_CREATE'), 403);
+
         $this->resetForm();
         $this->launch_modal('modalTypeDepense');
     }
@@ -31,6 +33,8 @@ new  class extends Component
     /* ── Ouvrir modal modification ──────────────────────── */
     public function openEdit(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('TYPE_DEPENSE_EDIT'), 403);
+
         $td = TypeDepense::findOrFail($id);
         $this->resetForm();
         $this->editId      = $id;
@@ -43,6 +47,8 @@ new  class extends Component
     /* ── Save ───────────────────────────────────────────── */
     public function save(): void
     {
+        abort_unless(auth()->user()?->hasPermission('TYPE_DEPENSE_CREATE') || auth()->user()?->hasPermission('TYPE_DEPENSE_EDIT'), 403);
+
         $this->validate([
             'libelle' => 'required|string|max:120',
             'status'  => 'required|in:actif,inactif',
@@ -72,6 +78,8 @@ new  class extends Component
     /* ── Toggle statut rapide ───────────────────────────── */
     public function toggleStatus(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('TYPE_DEPENSE_ACTIVATE'), 403);
+
         $td = TypeDepense::findOrFail($id);
         $td->update(['status' => $td->status === 'actif' ? 'inactif' : 'actif']);
         $this->send_event_at_toast('Statut mis à jour', 'success', 'top-end');
@@ -80,6 +88,8 @@ new  class extends Component
     /* ── Supprimer ──────────────────────────────────────── */
     public function confirmDelete(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('TYPE_DEPENSE_DELETE'), 403);
+
         $td = TypeDepense::findOrFail($id);
         $this->sweetAlert_confirm_options_with_button(
             $td,

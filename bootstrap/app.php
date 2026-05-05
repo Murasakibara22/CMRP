@@ -16,7 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // 'jwt.verify' => JWTVerify::class,
             // 'admin.verify' => \App\Http\Middleware\VerifyAdmin::class,
             'customer.verify' => \App\Http\Middleware\CheckIfCustomerExist::class,
-            'check.customer.login' => \App\Http\Middleware\checkIfCustomerLogin::class
+            'check.customer.login' => \App\Http\Middleware\checkIfCustomerLogin::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
         ]);
         $middleware->validateCsrfTokens(except: [
             'api/webhook/paiement',

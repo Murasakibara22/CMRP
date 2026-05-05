@@ -184,29 +184,39 @@
 
                         {{-- Actions --}}
                         <div class="d-flex gap-2 mb-2">
+                            @if(auth()->user()?->hasPermission('ADMIN_EDIT'))
                             <button wire:click="openEditModal({{ $user->id }})" class="btn btn-sm flex-fill text-white"
                                     style="background:linear-gradient(135deg,#20379b,#764ba2);border:none;border-radius:10px;padding:7px">
                                 <i class="ri-pencil-line me-1"></i>Modifier
                             </button>
+                            @endif
+
+                            @if(auth()->user()?->hasPermission('ADMIN_ACTIVATE'))
                             <button wire:click="confirmToggleStatus({{ $user->id }})" class="btn btn-sm"
                                     style="background:{{ $user->status==='actif'?'#ffc107':'#28a745' }};color:white;border:none;border-radius:10px;padding:7px 10px"
                                     title="{{ $user->status==='actif'?'Désactiver':'Activer' }}">
                                 <i class="ri-{{ $user->status==='actif'?'close':'check' }}-line"></i>
                             </button>
+                            @endif
+
+                            @if(auth()->user()?->hasPermission('ADMIN_DELETE'))
                             @if($user->id !== auth()->id())
                             <button wire:click="confirmDelete({{ $user->id }})" class="btn btn-sm"
                                     style="background:#dc3545;color:white;border:none;border-radius:10px;padding:7px 10px">
                                 <i class="ri-delete-bin-line"></i>
                             </button>
                             @endif
+                            @endif
                         </div>
 
                         {{-- Bouton permissions individuelles --}}
+                        @if(auth()->user()?->hasPermission('ADMIN_MANAGE_PERMISSION'))
                         <button wire:click="openPermissions({{ $user->id }})"
                                 class="btn btn-sm w-100"
                                 style="border:1.5px solid #405189;color:#405189;border-radius:10px;padding:7px;font-size:12px;font-weight:700;background:rgba(64,81,137,.05)">
                             <i class="ri-key-2-line me-1"></i>Gérer ses permissions
                         </button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -216,10 +226,12 @@
                     <div class="card-body text-center py-5">
                         <div class="mb-4" style="font-size:80px">👥</div>
                         <h3 class="mb-3">Aucun utilisateur trouvé</h3>
+                        @if(auth()->user()?->hasPermission('ADMIN_CREATE'))
                         <button wire:click="openCreateModal" class="btn text-white"
                                 style="background:linear-gradient(135deg,#20379b,#764ba2);border:none;border-radius:12px;padding:12px 30px">
                             <i class="ri-add-line me-1"></i>Créer un Utilisateur
                         </button>
+                        @endif
                     </div>
                 </div>
             </div>

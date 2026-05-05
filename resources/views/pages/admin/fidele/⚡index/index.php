@@ -154,6 +154,8 @@ new class extends Component
     ═══════════════════════════════════════════════════════ */
     public function save(): void
     {
+        abort_unless(auth()->user()?->hasPermission('FIDELE_CREATE'), 403);
+
         $this->validateStep1();
 
         $customer = $this->customerId ? Customer::findOrFail($this->customerId) : null;
@@ -393,6 +395,8 @@ new class extends Component
     /* ── Suppression ────────────────────────────────────── */
     public function confirmDelete(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('FIDELE_DELETE'), 403);
+
         $customer = Customer::findOrFail($id);
         $this->sweetAlert_confirm_options_with_button(
             $customer,
@@ -665,7 +669,7 @@ new class extends Component
             };
         })
         ->latest()
-        ->paginate(15);
+        ->paginate(18);
 
         /* KPIs */
         $total          = Customer::count();

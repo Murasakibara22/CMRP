@@ -1,0 +1,311 @@
+/* ════════════════════════════════════════════════════════════
+   admin-profile.css — Profile administrateur BO CMRP
+════════════════════════════════════════════════════════════ */
+
+:root {
+  --ap-primary   : #405189;
+  --ap-primary-d : #2d3a63;
+  --ap-success   : #0ab39c;
+  --ap-danger    : #f06548;
+  --ap-warning   : #f7b84b;
+  --ap-text      : #212529;
+  --ap-muted     : #878a99;
+  --ap-border    : #e9ebec;
+  --ap-bg        : #f3f6f9;
+  --ap-card      : #fff;
+  --ap-shadow    : 0 2px 12px rgba(64,81,137,.08);
+  --ap-shadow-md : 0 4px 24px rgba(64,81,137,.13);
+  --ap-radius    : 14px;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.ap-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 10px;
+}
+.ap-header h4 { font-size: 18px; font-weight: 800; color: var(--ap-text); margin: 0 0 2px; }
+
+/* ── Layout ───────────────────────────────────────────────── */
+.ap-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .ap-layout { grid-template-columns: 1fr; }
+}
+
+/* ── Colonne gauche — Avatar card ────────────────────────── */
+.ap-avatar-card {
+  background: var(--ap-card);
+  border-radius: var(--ap-radius);
+  box-shadow: var(--ap-shadow);
+  padding: 28px 20px;
+  text-align: center;
+}
+
+.ap-avatar-wrap {
+  position: relative;
+  width: 96px; height: 96px;
+  margin: 0 auto 14px;
+}
+
+.ap-avatar {
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ap-primary-d), var(--ap-primary));
+  color: #fff; font-size: 32px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+
+.ap-avatar-badge {
+  position: absolute; bottom: 2px; right: 2px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--ap-primary);
+  color: #fff; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2.5px solid var(--ap-card);
+  cursor: pointer;
+}
+
+.ap-avatar-name  { font-size: 15px; font-weight: 800; color: var(--ap-text); margin-bottom: 4px; }
+.ap-avatar-role  { font-size: 12px; color: var(--ap-muted); font-weight: 600; margin-bottom: 10px; }
+
+.ap-avatar-status {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700;
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 20px;
+}
+.status-actif    { background: rgba(10,179,156,.1); color: #089383; }
+.status-suspendu { background: rgba(240,101,72,.1); color: #c0341a; }
+
+.ap-avatar-btns {
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.ap-btn-photo {
+  width: 100%; padding: 9px 14px;
+  border: 1.5px solid var(--ap-border);
+  border-radius: 10px; background: var(--ap-card);
+  color: var(--ap-text); font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: all .2s;
+}
+.ap-btn-photo:hover { border-color: var(--ap-primary); color: var(--ap-primary); background: rgba(64,81,137,.04); }
+.ap-btn-photo.ap-btn-primary { background: var(--ap-primary); border-color: var(--ap-primary); color: #fff; }
+.ap-btn-photo.ap-btn-primary:hover { background: var(--ap-primary-d); }
+.ap-btn-photo.ap-btn-danger  { border-color: rgba(240,101,72,.3); color: var(--ap-danger); }
+.ap-btn-photo.ap-btn-danger:hover { background: rgba(240,101,72,.06); border-color: var(--ap-danger); }
+
+/* ── Info card ────────────────────────────────────────────── */
+.ap-info-card {
+  background: var(--ap-card);
+  border-radius: var(--ap-radius);
+  box-shadow: var(--ap-shadow);
+  padding: 16px 18px;
+  margin-top: 14px;
+}
+.ap-info-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--ap-border);
+  font-size: 12px; color: var(--ap-text); font-weight: 600;
+}
+.ap-info-row:last-child { border-bottom: none; }
+.ap-info-row i { font-size: 16px; color: var(--ap-muted); flex-shrink: 0; }
+
+/* ── Colonne droite ───────────────────────────────────────── */
+.ap-success-banner {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(10,179,156,.08);
+  border: 1.5px solid rgba(10,179,156,.25);
+  border-left: 4px solid var(--ap-success);
+  border-radius: 0 10px 10px 0;
+  padding: 11px 14px;
+  font-size: 13px; font-weight: 700; color: #089383;
+  margin-bottom: 16px;
+}
+
+/* ── Tabs ─────────────────────────────────────────────────── */
+.ap-tabs {
+  display: flex; gap: 4px;
+  background: var(--ap-card);
+  border-radius: var(--ap-radius);
+  padding: 6px; box-shadow: var(--ap-shadow);
+  margin-bottom: 18px;
+}
+.ap-tab {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 10px 16px; border-radius: 10px; border: none;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  background: transparent; color: var(--ap-muted);
+  transition: all .2s; font-family: inherit;
+}
+.ap-tab:hover  { background: var(--ap-bg); color: var(--ap-text); }
+.ap-tab.active { background: linear-gradient(135deg, var(--ap-primary-d), var(--ap-primary)); color: #fff; }
+
+/* ── Form card ────────────────────────────────────────────── */
+.ap-form-card {
+  background: var(--ap-card);
+  border-radius: var(--ap-radius);
+  box-shadow: var(--ap-shadow);
+  padding: 28px;
+}
+.ap-form-title {
+  font-size: 15px; font-weight: 800; color: var(--ap-text);
+  margin-bottom: 4px; display: flex; align-items: center;
+}
+.ap-form-sub {
+  font-size: 12px; color: var(--ap-muted); margin-bottom: 22px;
+}
+
+/* ── Champs ───────────────────────────────────────────────── */
+.ap-label {
+  display: block; font-size: 12px; font-weight: 700;
+  color: #495057; text-transform: uppercase;
+  letter-spacing: .4px; margin-bottom: 6px;
+}
+.ap-req { color: var(--ap-danger); margin-left: 2px; }
+
+.ap-input-wrap {
+  position: relative; display: flex; align-items: center;
+}
+.ap-input-icon {
+  position: absolute; left: 12px; font-size: 15px;
+  color: var(--ap-muted); pointer-events: none; z-index: 1;
+}
+.ap-input {
+  width: 100%; height: 44px;
+  border: 1.5px solid var(--ap-border); border-radius: 10px;
+  padding: 0 14px 0 36px;
+  font-size: 13px; font-weight: 500; color: var(--ap-text);
+  background: #fff; outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  font-family: inherit;
+}
+.ap-input:focus         { border-color: var(--ap-primary); box-shadow: 0 0 0 3px rgba(64,81,137,.1); }
+.ap-input.ap-input-err  { border-color: var(--ap-danger); background: rgba(240,101,72,.02); }
+select.ap-input         { padding-left: 14px; cursor: pointer; }
+
+.ap-err {
+  font-size: 12px; color: var(--ap-danger); font-weight: 600;
+  margin-top: 4px; display: flex; align-items: center; gap: 4px;
+}
+
+.ap-field-group { margin-bottom: 18px; }
+
+/* ── Password wrap ────────────────────────────────────────── */
+.ap-pw-wrap .ap-input { padding-right: 44px; }
+.ap-pw-toggle {
+  position: absolute; right: 12px;
+  background: none; border: none; cursor: pointer;
+  color: var(--ap-muted); font-size: 16px;
+  display: flex; align-items: center; transition: color .2s;
+}
+.ap-pw-toggle:hover { color: var(--ap-primary); }
+
+/* ── Indicateur force mdp ─────────────────────────────────── */
+.ap-pw-strength {
+  height: 4px; background: var(--ap-border);
+  border-radius: 4px; overflow: hidden; margin-top: 8px;
+}
+.ap-pw-bar {
+  height: 100%; width: 0; border-radius: 4px;
+  transition: width .3s, background .3s;
+}
+.ap-pw-strength-label {
+  font-size: 11px; font-weight: 700; margin-top: 4px;
+  min-height: 16px;
+}
+
+/* ── Stepper mdp ──────────────────────────────────────────── */
+.ap-mdp-steps {
+  display: flex; align-items: center; margin-bottom: 24px; gap: 0;
+}
+.ap-mdp-step {
+  display: flex; align-items: center; gap: 7px;
+}
+.ap-mdp-step-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--ap-border); color: var(--ap-muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; flex-shrink: 0;
+  transition: all .3s;
+}
+.ap-mdp-step.active .ap-mdp-step-num { background: var(--ap-primary); color: #fff; }
+.ap-mdp-step.done   .ap-mdp-step-num { background: var(--ap-success); color: #fff; }
+.ap-mdp-step span { font-size: 12px; font-weight: 700; color: var(--ap-muted); }
+.ap-mdp-step.active span { color: var(--ap-primary); }
+.ap-mdp-step.done span   { color: var(--ap-success); }
+.ap-mdp-step-line {
+  flex: 1; height: 2px; background: var(--ap-border);
+  margin: 0 8px; transition: background .3s;
+}
+.ap-mdp-step-line.done { background: var(--ap-success); }
+
+/* ── OTP Grid ─────────────────────────────────────────────── */
+.ap-otp-grid {
+  display: flex; justify-content: center; gap: 10px;
+  margin: 20px 0;
+}
+.ap-otp-box {
+  width: 52px; height: 60px;
+  border: 2px solid var(--ap-border); border-radius: 12px;
+  font-size: 24px; font-weight: 900; text-align: center;
+  color: var(--ap-text); background: var(--ap-bg);
+  outline: none; transition: all .2s; font-family: monospace;
+}
+.ap-otp-box:focus  { border-color: var(--ap-primary); background: #fff; box-shadow: 0 0 0 3px rgba(64,81,137,.12); }
+.ap-otp-box.filled { border-color: var(--ap-success); background: rgba(10,179,156,.04); color: var(--ap-success); }
+@media (max-width: 480px) { .ap-otp-box { width: 40px; height: 50px; font-size: 20px; } }
+
+/* ── Form footer ──────────────────────────────────────────── */
+.ap-form-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  margin-top: 24px; padding-top: 20px;
+  border-top: 1px solid var(--ap-border);
+}
+
+.ap-btn-primary {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 11px 24px; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, var(--ap-primary-d), var(--ap-primary));
+  color: #fff; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  transition: opacity .2s; box-shadow: 0 2px 10px rgba(64,81,137,.25);
+}
+.ap-btn-primary:hover    { opacity: .9; }
+.ap-btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+
+.ap-btn-secondary {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 11px 20px; border: 1.5px solid var(--ap-border);
+  border-radius: 10px; background: #fff;
+  color: var(--ap-muted); font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: all .2s;
+}
+.ap-btn-secondary:hover { border-color: var(--ap-primary); color: var(--ap-primary); }
+
+/* ── Spinner inline ───────────────────────────────────────── */
+.ap-spinner {
+  width: 16px; height: 16px;
+  border: 2.5px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: apSpin .7s linear infinite;
+  display: inline-block;
+}
+@keyframes apSpin { to { transform: rotate(360deg); } }
+
+/* ── Animations ───────────────────────────────────────────── */
+.fade-up { animation: apFadeUp .35s ease both; }
+.fu-1 { animation-delay: .05s; }
+.fu-2 { animation-delay: .10s; }
+.fu-3 { animation-delay: .15s; }
+@keyframes apFadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

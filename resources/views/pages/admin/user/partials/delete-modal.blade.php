@@ -79,6 +79,7 @@
                             style="border-radius: 10px; padding: 10px 25px;">
                         <i class="ri-close-line me-1"></i>Annuler
                     </button>
+                    @if(auth()->user()?->hasPermission('ADMIN_DELETE'))
                     <button type="submit"
                             class="btn btn-danger"
                             wire:loading.attr="disabled"
@@ -91,6 +92,7 @@
                             Suppression...
                         </span>
                     </button>
+                    @endif
                 </div>
             </form>
             @endif

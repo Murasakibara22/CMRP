@@ -43,6 +43,8 @@ new class extends Component
     /* ── Ouvrir détail ──────────────────────────────────── */
     public function openDetail(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('PAIEMENT_SHOW_ONE'), 403);
+
         $this->detailId = $id;
         $this->launch_modal('modalDetailPaiement');
     }
@@ -60,6 +62,8 @@ new class extends Component
     ═══════════════════════════════════════════════════════ */
     public function ouvrirValidation(int $paiementId): void
     {
+        abort_unless(auth()->user()?->hasPermission('PAIEMENT_VALIDATE'), 403);
+
         $pay = Paiement::findOrFail($paiementId);
 
         if ($pay->statut === 'success') {
@@ -120,6 +124,9 @@ new class extends Component
     #[On('validerPaiementSeul')]
     public function validerPaiementSeul(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('PAIEMENT_VALIDATE'), 403);
+
+
         $pay = Paiement::findOrFail($id);
         $pay->update([
             'statut'       => 'success',
@@ -230,6 +237,8 @@ new class extends Component
     ═══════════════════════════════════════════════════════ */
     public function ouvrirAnnulation(int $paiementId): void
     {
+        abort_unless(auth()->user()?->hasPermission('PAIEMENT_ANNULER'), 403);
+ 
         $pay = Paiement::findOrFail($paiementId);
 
         if (in_array($pay->statut, ['annule'])) {
@@ -355,6 +364,9 @@ new class extends Component
     ═══════════════════════════════════════════════════════ */
     public function exportRecu(int $id): \Symfony\Component\HttpFoundation\Response
     {
+
+        abort_unless(auth()->user()?->hasPermission('PAIEMENT_EXPORT_PDF'), 403);
+
         $paiement = Paiement::with(['customer', 'cotisation.typeCotisation'])->findOrFail($id);
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.recu-paiement', compact('paiement'))
             ->setPaper([0, 0, 420, 595]);

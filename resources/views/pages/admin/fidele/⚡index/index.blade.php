@@ -13,9 +13,11 @@
         </ol>
       </nav>
     </div>
+    @if(auth()->user()?->hasPermission('FIDELE_CREATE') )
     <button class="btn-msq-primary" wire:click="openAdd">
       <i class="ri-user-add-line"></i> Nouveau fidèle
     </button>
+    @endif
   </div>
 
   {{-- ══ KPI BAR ══════════════════════════════════════════ --}}
@@ -140,7 +142,7 @@
               $avatarColors   = ['#405189','#0ab39c','#f06548','#f7b84b','#299cdb','#d4a843','#3577f1','#6559cc','#ea4c4c','#2dce89'];
               $avatarColor    = $avatarColors[($customer->id - 1) % count($avatarColors)];
             @endphp
-            <tr wire:click="openDetail({{ $customer->id }})" title="Voir le profil">
+            <tr @if(auth()->user()?->hasPermission('FIDELE_SHOW_ONE') ) wire:click="openDetail({{ $customer->id }})" @endif title="Voir le profil">
               <td>
                 <div style="display:flex;align-items:center;gap:10px;">
                   <div class="cust-avatar" style="background:{{ $avatarColor }}">{{ $initiales }}</div>
@@ -188,15 +190,21 @@
               </td>
               <td wire:click.stop="">
                 <div class="tbl-actions">
-                  <button class="btn btn-soft-primary waves-effect" wire:click="openDetail({{ $customer->id }})" title="Voir détails">
-                    <i class="ri-eye-line"></i>
-                  </button>
+                  @if(auth()->user()?->hasPermission('FIDELE_SHOW_ONE') )
+                    <button class="btn btn-soft-primary waves-effect" wire:click="openDetail({{ $customer->id }})" title="Voir détails">
+                      <i class="ri-eye-line"></i>
+                    </button>
+                  @endif
+                  @if(auth()->user()?->hasPermission('FIDELE_EDIT') )
                   <button class="btn btn-soft-warning waves-effect" wire:click="openEdit({{ $customer->id }})" title="Modifier">
                     <i class="ri-edit-line"></i>
                   </button>
+                  @endif
+                  @if(auth()->user()?->hasPermission('FIDELE_DELETE') )
                   <button class="btn btn-soft-danger waves-effect" wire:click="confirmDelete({{ $customer->id }})" title="Supprimer">
                     <i class="ri-delete-bin-line"></i>
                   </button>
+                  @endif
                 </div>
               </td>
             </tr>
@@ -244,7 +252,7 @@
             ? ($statusColors[$statut] ?? '#878a99')
             : '#878a99';
       @endphp
-      <div class="cust-card" style="border-top-color:{{ $borderColor }}" wire:click="openDetail({{ $customer->id }})">
+      <div class="cust-card" style="border-top-color:{{ $borderColor }}" @if(auth()->user()?->hasPermission('FIDELE_SHOW_ONE')) wire:click="openDetail({{ $customer->id }})" @endif>
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
           <div class="card-avatar" style="background:{{ $avatarColor }}">{{ $initiales }}</div>
@@ -279,12 +287,18 @@
         </div>
 
         <div class="card-actions" wire:click.stop="">
+            @if(auth()->user()?->hasPermission('FIDELE_SHOW_ONE') )
           <button class="btn btn-soft-primary waves-effect" wire:click="openDetail({{ $customer->id }})">
             <i class="ri-eye-line me-1"></i>Détails
           </button>
+            @endif
+
+        @if(auth()->user()?->hasPermission('FIDELE_EDIT') )
           <button class="btn btn-soft-warning waves-effect" wire:click="openEdit({{ $customer->id }})">
             <i class="ri-edit-line me-1"></i>Modifier
           </button>
+        @endif
+
         </div>
 
       </div>
@@ -441,37 +455,47 @@
           @endif
 
           <div class="d-flex gap-2 mt-4 flex-wrap">
+            @if(auth()->user()?->hasPermission('FIDELE_EDIT') )
             <button class="btn btn-primary waves-effect"
                     wire:click="openEdit({{ $dc->id }})"
                     data-bs-dismiss="modal">
             <i class="ri-edit-line me-1"></i> Modifier
             </button>
+            @endif
+            @if(auth()->user()?->hasPermission('FIDELE_DELETE') )
             <button class="btn btn-soft-danger waves-effect"
                     wire:click="confirmDelete({{ $dc->id }})"
                     data-bs-dismiss="modal">
             <i class="ri-delete-bin-line me-1"></i> Supprimer
             </button>
+            @endif
+
+            @if(auth()->user()?->hasPermission('FIDELE_EXPORT') )
             <button wire:click="openExportFidele"
                     class="btn btn-sm btn-soft-success waves-effect">
                 <i class="ri-file-pdf-line me-1"></i> Bilan PDF
             </button>
+            @endif
             {{-- Bouton payer en avance : grisé si pas de type mensuel --}}
-            @if($dc->type_cotisation_mensuel_id && $dc->montant_engagement)
-            <button wire:click="openAvance({{ $dc->id }})"
-                    class="btn btn-sm waves-effect"
-                    style="background:linear-gradient(135deg,#0a5a50,#0ab39c);color:#fff;border:none">
-                <i class="ri-calendar-check-2-line me-1"></i> Payer en avance
-            </button>
-            @else
-            <button class="btn btn-sm btn-soft-secondary waves-effect" disabled
-                    title="Ce fidèle n'a pas de cotisation mensuelle définie">
-                <i class="ri-calendar-check-2-line me-1"></i> Payer en avance
-            </button>
+            @if(auth()->user()?->hasPermission('FIDELE_AVANCE_PAIEMENT') )
+                @if($dc->type_cotisation_mensuel_id && $dc->montant_engagement)
+                <button wire:click="openAvance({{ $dc->id }})"
+                        class="btn btn-sm waves-effect"
+                        style="background:linear-gradient(135deg,#0a5a50,#0ab39c);color:#fff;border:none">
+                    <i class="ri-calendar-check-2-line me-1"></i> Payer en avance
+                </button>
+                @else
+                <button class="btn btn-sm btn-soft-secondary waves-effect" disabled
+                        title="Ce fidèle n'a pas de cotisation mensuelle définie">
+                    <i class="ri-calendar-check-2-line me-1"></i> Payer en avance
+                </button>
+                @endif
             @endif
         </div>
         </div>
 
         {{-- Panel Cotisations --}}
+        @if(auth()->user()?->hasPermission('FIDELE_SHOW_COTISATIONS') )
         <div class="fidele-tab-panel" id="tab-cotisations">
           <div style="overflow-x:auto">
             <table class="hist-table">
@@ -512,8 +536,10 @@
             </table>
           </div>
         </div>
+        @endif
 
         {{-- Panel Documents --}}
+        @if(auth()->user()?->hasPermission('FIDELE_SHOW_DOCUMENTS') )
         <div class="fidele-tab-panel" id="tab-documents">
           <div class="doc-list">
             @forelse($dc->documents as $doc)
@@ -542,6 +568,7 @@
             </button>
           </div>
         </div>
+        @endif
 
       </div>{{-- /modal-fidele-body --}}
       @endif
@@ -868,7 +895,7 @@
           @endif
 
           @if($formStep === 2)
-          <button class="btn-msq-primary" wire:click="save" wire:loading.attr="disabled">
+          <button @if(!auth()->user()?->hasPermission('FIDELE_CREATE')) disabled @endif class="btn-msq-primary" wire:click="save" wire:loading.attr="disabled">
             <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
             <span wire:loading.remove wire:target="save">
               <i class="ri-save-line me-1"></i> Enregistrer

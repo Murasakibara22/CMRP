@@ -33,21 +33,27 @@
             </div>
             <ul class="navbar-nav" id="navbar-nav">
                 <li class="menu-title"><span data-key="t-menu">Menu</span></li>
+                @if(auth()->user()?->hasPermission('DASHBOARD_SHOW'))
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="/admin/dashboard">
                         <i class="ri-dashboard-2-line"></i> <span data-key="t-dashboards">Dashboards</span>
                     </a>
                 </li> <!-- end Dashboard Menu -->
+                @endif
+                @if(auth()->user()?->hasPermission('FIDELE_SHOW'))
                  <li class="nav-item">
                         <a class="nav-link menu-link {{ request()->routeIs('admin.membres.index') ? 'active' : ''}}" href="{{ route('admin.membres.index') }}">
                             <i class="ri-team-fill"></i> <span data-key="t-widgets">Fidèles</span>
                         </a>
                     </li>
+                @endif
+                @if(auth()->user()?->hasPermission('COTISATION_SHOW'))
                  <li class="nav-item">
                         <a class="nav-link menu-link   {{ request()->routeIs('admin.cotisations.index') ? 'active' : ''}}" href="{{ route('admin.cotisations.index') }}">
                             <i class="ri-timer-fill"></i> <span data-key="t-widgets">Cotisations</span>
                         </a>
                     </li>
+                @endif
 
 
                     {{-- <li class="nav-item">
@@ -60,11 +66,14 @@
                 <li class="menu-title"><i class="ri-more-fill"></i> <span data-key="t-pages">Services</span></li>
 
 
+                @if(auth()->user()?->hasPermission('DEPENSE_SHOW'))
                     <li class="nav-item">
                         <a class="nav-link menu-link {{ request()->routeIs('admin.depenses.index') ? 'active' : '' }}" href="{{ route('admin.depenses.index') }}">
                             <i class="ri-table-fill"></i> <span data-key="t-widgets">Dépenses</span>
                         </a>
                     </li>
+                @endif
+
 
 
 
@@ -76,44 +85,55 @@
 
 
 
+                @if(auth()->user()?->hasPermission('PAIEMENT_SHOW'))
                 <li class="nav-item">
                     <a class="nav-link menu-link {{ request()->routeIs('admin.paiements.index') ? 'active' : ''}}" href="{{ route('admin.paiements.index') }}">
                         <i class=" ri-user-settings-fill"></i> <span data-key="t-widgets">Paiements</span>
                     </a>
                 </li>
+                @endif
 
 
 
 
+                @if(auth()->user()?->hasPermission('TYPE_DEPENSE_SHOW'))
                     <li class="nav-item">
                         <a class="nav-link menu-link {{ request()->routeIs('admin.type-depenses.index') ? 'active' : '' }}" href="{{ route('admin.type-depenses.index') }}">
                             <i class="r ri-menu-add-fill"></i> <span data-key="t-widgets"> Type de dépenses</span>
                         </a>
                     </li>
+                @endif
 
 
 
 
+
+                @if(auth()->user()?->hasPermission('TYPE_COTISATION_SHOW'))
                     <li class="nav-item">
                         <a class="nav-link menu-link {{ request()->routeIs('admin.type-cotisations.index') ? 'active' : ''}}" href="{{ route('admin.type-cotisations.index') }}">
                             <i class="ri-timer-fill"></i> <span data-key="t-widgets">Types de Cotisations</span>
                         </a>
                     </li>
+                @endif
 
 
+                @if(auth()->user()?->hasPermission('COUT_ENGAGEMENT_SHOW'))
                     <li class="nav-item">
                         <a class="nav-link menu-link {{ request()->routeIs('admin.cout-engagement.index') ? 'active' : ''}}" href="{{ route('admin.cout-engagement.index') }}">
                             <i class="ri-timer-fill"></i> <span data-key="t-widgets">Coût d'engagement</span>
                         </a>
                     </li>
+                @endif
 
 
+
+                @if(auth()->user()?->hasPermission('BILAN_SHOW'))
                     <li class="nav-item">
                         <a class="nav-link menu-link {{ request()->routeIs('admin.bilan.index') ? 'active' : '' }}" href="{{ route('admin.bilan.index') }}">
                             <i class="ri-timer-fill"></i> <span data-key="t-widgets">Bilan</span>
                         </a>
                     </li>
-
+                @endif
 
 
 
@@ -173,61 +193,77 @@
 
 
 
+                @if(auth()->user()?->hasPermission('ADMIN_SHOW'))
                 <li class="nav-item">
                     <a class="nav-link menu-link {{ request()->routeIs('admin.users.index') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
                         <i class=" ri-shield-user-fill"></i> <span data-key="t-widgets">Administrateurs</span>
                     </a>
                 </li>
+                @endif
 
+                @if(auth()->user()?->hasPermission('ROLE_SHOW') || auth()->user()?->hasPermission('ROLE_CREATE'))
                 <li class="nav-item">
                     <a class="nav-link menu-link {{ request()->routeIs('admin.roles.index') ? 'active' : '' }}" href="{{ route('admin.roles.index') }}">
                         <i class=" ri-shield-user-fill"></i> <span data-key="t-widgets">Roles et permissions</span>
                     </a>
                 </li>
+                @endif
 
+                @if(auth()->user()?->hasPermission('RECLAMATION_SHOW') || auth()->user()?->hasPermission('RECLAMATION_CLOSE') )
                 <li class="nav-item">
                     <a class="nav-link menu-link {{ request()->routeIs('admin.reclamations.index') ? 'active' : '' }}" href="{{ route('admin.reclamations.index') }}">
                         <i class=" ri-question-answer-fill"></i> <span data-key="t-widgets">Réclammations</span>
                     </a>
                 </li>
+                @endif
 
+                @if(auth()->user()?->hasPermission('MESSAGE_GROUPER_SHOW') )
                 <li class="nav-item">
                     <a class="nav-link menu-link {{ request()->routeIs('admin.messages.index') ? 'active' : '' }}" href="{{ route('admin.messages.index') }}">
                         <i class=" ri-question-answer-fill"></i> <span data-key="t-widgets">Messages Grouper</span>
                     </a>
                 </li>
+                @endif
 
+                @if(auth()->user()?->hasPermission('REMBOURSEMENT_SHOW') )
                 <li class="nav-item">
                     <a class="nav-link menu-link {{ request()->routeIs('admin.demande-remboursement.index') ? 'active' : '' }}" href="{{ route('admin.demande-remboursement.index') }}">
                         <i class=" ri-question-answer-fill"></i> <span data-key="t-widgets">Demandes de Remboursement</span>
                     </a>
                 </li>
+                @endif
 
+                @if(auth()->user()?->hasPermission('DEMANDE_CHANGE_COTISATION_SHOW') )
                 <li class="nav-item">
                     <a class="nav-link menu-link {{ request()->routeIs('admin.demande-change-cotisation.index') ? 'active' : '' }}" href="{{ route('admin.demande-change-cotisation.index') }}">
                         <i class=" ri-question-answer-fill"></i> <span data-key="t-widgets">Demandes de Changement de Cotisation</span>
                     </a>
                 </li>
+                @endif
 
 
 
 
 
 
+                @if(auth()->user()?->hasPermission('AUDIT_SHOW') )
                 <li class="nav-item">
                     <a class="nav-link menu-link " href="#">
                         <i class="ri-slideshow-4-fill"></i> <span data-key="t-widgets">Audit et Logs</span>
                     </a>
                 </li>
+                @endif
 
 
 
+
+                @if(auth()->user()?->hasPermission('NOTIFICATION_SHOW') )
                 <li class="nav-item">
                     <a class="nav-link menu-link " href="#">
                         <i class="ri-notification-4-fill"></i> <span data-key="t-widgets">Notifications</span>
                     </a>
                 </li>
-
+                @endif
 
 
 

@@ -33,6 +33,8 @@ new class extends Component
     /* ── Ouvrir modal ajout ─────────────────────────────── */
     public function openAdd(): void
     {
+        abort_unless(auth()->user()?->hasPermission('ROLE_CREATE'), 403);
+
         $this->editId        = null;
         $this->libelle       = '';
         $this->code          = '';
@@ -46,6 +48,8 @@ new class extends Component
     /* ── Ouvrir modal édition ───────────────────────────── */
     public function openEdit(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('ROLE_EDIT'), 403);
+        
         $role = Role::with('permissions')->findOrFail($id);
         $this->editId        = $role->id;
         $this->libelle       = $role->libelle;
@@ -89,6 +93,12 @@ new class extends Component
     /* ── Sauvegarder rôle ───────────────────────────────── */
     public function save(): void
     {
+        abort_unless(
+            auth()->user()?->hasPermission('ROLE_CREATE') ||
+            auth()->user()?->hasPermission('ROLE_EDIT'),
+            403
+        );
+
         $this->errorLibelle = '';
         $this->errorCode    = '';
 
@@ -130,6 +140,8 @@ new class extends Component
     /* ── Supprimer rôle ─────────────────────────────────── */
     public function confirmDelete(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('ROLE_DELETE'), 403);
+
         $role = Role::find($id);
         if (! $role) return;
         $this->sweetAlert_confirm_options_with_button(

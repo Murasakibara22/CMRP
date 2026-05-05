@@ -232,7 +232,7 @@
                             <span class="text-start ms-xl-2">
                                 <span class="d-none d-xl-inline-block ms-1 fw-medium user-name-text">{{ auth()->user()->nom}}</span>
                                 <span
-                                    class="d-none d-xl-block ms-1 fs-12 text-muted user-name-sub-text">Administrateur</span>
+                                    class="d-none d-xl-block ms-1 fs-12 text-muted user-name-sub-text">{{ auth()->user()->role->libelle }}</span>
                             </span>
                         </span>
                     </button>
@@ -241,7 +241,7 @@
                         @auth
                             <h6 class="dropdown-header">{{ auth()->user()->nom }}  !</h6>
                         @endauth
-                        <a class="dropdown-item" href="#"><i
+                        <a class="dropdown-item" href="{{ route('admin.profile.index') }}"><i
                                 class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span
                                 class="align-middle">Profile</span></a>
                         <div class="dropdown-divider"></div>
@@ -250,7 +250,7 @@
                                 class="align-middle">Lock screen</span></a> -->
                         <a class="dropdown-item" href="/deconnexion"><i
                                 class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span
-                                class="align-middle" data-key="t-logout">Logout</span></a>
+                                class="align-middle" data-key="t-logout">Déconnexion</span></a>
                     </div>
                 </div>
             </div>

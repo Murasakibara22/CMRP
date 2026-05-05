@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PaiementCallbackController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -67,8 +68,8 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('admin')->as('admin.')->group(function () {
 
-        Route::livewire('dashboard', 'admin::dashboard.index')->name('home');
-        Route::livewire('fideles', 'admin::fidele.index')->name('membres.index');
+        Route::livewire('dashboard', 'admin::dashboard.index')->name('home')->middleware('permission:DASHBOARD_SHOW');
+        Route::livewire('fideles', 'admin::fidele.index')->name('membres.index')->middleware('permission:FIDELE_SHOW,FIDELE_CREATE,FIDELE_EDIT,FIDELE_DELETE');
         Route::livewire('type-cotisations', 'admin::typecotisation.index')->name('type-cotisations.index');
         Route::livewire('cotisations', 'admin::cotisation.index')->name('cotisations.index');
         Route::livewire('paiements', 'admin::paiement.index')->name('paiements.index');
@@ -82,6 +83,7 @@ Route::middleware('auth')->group(function () {
         Route::livewire('cout-engagement', 'admin::coutengagement.index')->name('cout-engagement.index');
         Route::livewire('demande-remboursement', 'admin::demanderemboursement.index')->name('demande-remboursement.index');
         Route::livewire('demande-change-cotisation', 'admin::demandechangecotisation.index')->name('demande-change-cotisation.index');
+        Route::livewire('profile', 'admin::profile.index')->name('profile.index');
 
     });
 });
@@ -93,7 +95,7 @@ Route::get('/deconnexion', function () {
         // ActivityLog("Deconnexion", "Admin");
 
         auth()->logout();
-        return redirect('/');
+        return redirect('/auth/connexion');
     }
 
     if(auth()->guard('customer')->check()){

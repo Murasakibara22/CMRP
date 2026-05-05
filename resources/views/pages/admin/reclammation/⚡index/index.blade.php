@@ -140,20 +140,28 @@
             </td>
             <td>
               <div class="rc-actions">
+                @if(auth()->user()?->hasPermission('RECLAMATION_SHOW_ONE'))
                 <button class="btn btn-soft-primary waves-effect"
                         wire:click="openDetail({{ $r->id }})" title="Voir / Répondre">
                   <i class="ri-eye-line"></i>
                 </button>
+                @endif
+
+                @if(in_array($r->status, ['ouverte', 'en_cours']) && auth()->user()?->hasPermission('RECLAMATION_CLOSE'))
                 @if(in_array($r->status, ['ouverte', 'en_cours']))
                 <button class="btn btn-soft-success waves-effect"
                         wire:click="changerStatut({{ $r->id }}, 'en_cours')" title="Marquer En cours">
                   <i class="ri-time-line"></i>
                 </button>
                 @endif
+                @endif
+
+                @if(auth()->user()?->hasPermission('RECLAMATION_DELETE'))
                 <button class="btn btn-soft-danger waves-effect"
                         wire:click="confirmDelete({{ $r->id }})" title="Supprimer">
                   <i class="ri-delete-bin-line"></i>
                 </button>
+                @endif
               </div>
             </td>
           </tr>
@@ -318,12 +326,15 @@
         <button class="btn-rc-secondary" data-bs-dismiss="modal">
           <i class="ri-close-line me-1"></i> Fermer
         </button>
+
+        @if(auth()->user()?->hasPermission('RECLAMATION_EDIT'))
         <button class="btn-rc-primary" wire:click="repondre" wire:loading.attr="disabled">
           <span wire:loading wire:target="repondre" class="spinner-border spinner-border-sm me-1"></span>
           <i class="ri-send-plane-line" wire:loading.remove wire:target="repondre"></i>
           <span wire:loading.remove wire:target="repondre"> Envoyer la réponse</span>
           <span wire:loading wire:target="repondre">Envoi…</span>
         </button>
+        @endif
       </div>
 
     </div>

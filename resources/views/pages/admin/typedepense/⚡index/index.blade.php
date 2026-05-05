@@ -13,9 +13,11 @@
         </ol>
       </nav>
     </div>
+    @if(auth()->user()?->hasPermission('TYPE_DEPENSE_CREATE'))
     <button class="btn-td-primary" wire:click="openAdd()">
       <i class="ri-add-circle-line"></i> Nouveau type
     </button>
+    @endif
   </div>
 
   {{-- ══ KPI STRIP ══════════════════════════════════════════ --}}
@@ -106,17 +108,23 @@
             </td>
             <td>
               <div class="td-actions">
-                <button class="btn btn-soft-primary waves-effect" wire:click="openEdit({{ $td->id }})" title="Modifier">
-                  <i class="ri-edit-line"></i>
-                </button>
-                <button class="btn {{ $td->status === 'actif' ? 'btn-soft-warning' : 'btn-soft-success' }} waves-effect"
-                        wire:click="toggleStatus({{ $td->id }})"
-                        title="{{ $td->status === 'actif' ? 'Désactiver' : 'Activer' }}">
-                  <i class="{{ $td->status === 'actif' ? 'ri-eye-off-line' : 'ri-eye-line' }}"></i>
-                </button>
+                @if(auth()->user()?->hasPermission('TYPE_DEPENSE_EDIT'))
+                  <button class="btn btn-soft-primary waves-effect" wire:click="openEdit({{ $td->id }})" title="Modifier">
+                    <i class="ri-edit-line"></i>
+                  </button>
+                @endif
+                @if(auth()->user()?->hasPermission('TYPE_DEPENSE_ACTIVATE'))
+                  <button class="btn {{ $td->status === 'actif' ? 'btn-soft-warning' : 'btn-soft-success' }} waves-effect"
+                          wire:click="toggleStatus({{ $td->id }})"
+                          title="{{ $td->status === 'actif' ? 'Désactiver' : 'Activer' }}">
+                    <i class="{{ $td->status === 'actif' ? 'ri-eye-off-line' : 'ri-eye-line' }}"></i>
+                  </button>
+                @endif
+                @if(auth()->user()?->hasPermission('TYPE_DEPENSE_DELETE'))
                 <button class="btn btn-soft-danger waves-effect" wire:click="confirmDelete({{ $td->id }})" title="Supprimer">
                   <i class="ri-delete-bin-line"></i>
                 </button>
+                @endif
               </div>
             </td>
           </tr>
@@ -220,12 +228,14 @@
         <button class="btn-td-secondary" data-bs-dismiss="modal">
           <i class="ri-close-line me-1"></i> Annuler
         </button>
+        @if(auth()->user()?->hasPermission($editId ? 'TYPE_DEPENSE_EDIT' : 'TYPE_DEPENSE_CREATE'))
         <button class="btn-td-primary" wire:click="save" wire:loading.attr="disabled">
           <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
           <i class="ri-save-line" wire:loading.remove wire:target="save"></i>
           <span wire:loading.remove wire:target="save">{{ $editId ? 'Enregistrer' : 'Créer' }}</span>
           <span wire:loading wire:target="save">Enregistrement…</span>
         </button>
+        @endif
       </div>
 
     </div>

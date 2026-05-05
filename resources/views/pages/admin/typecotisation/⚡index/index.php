@@ -40,6 +40,8 @@ new  class extends Component
     // ─── Ouvrir modal ajout ───────────────────────────────
     public function openAdd(): void
     {
+        abort_unless(auth()->user()?->hasPermission('TYPE_COTISATION_CREATE'), 403);
+
         $this->resetForm();
         $this->launch_modal('modalTypeCotisation');
     }
@@ -47,6 +49,8 @@ new  class extends Component
     // ─── Ouvrir modal édition ─────────────────────────────
     public function openEdit(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('TYPE_COTISATION_EDIT'), 403);
+
         $tc = TypeCotisation::findOrFail($id);
 
         $this->editId          = $tc->id;
@@ -134,6 +138,8 @@ new  class extends Component
     {
         $tc = TypeCotisation::findOrFail($id);
 
+        abort_unless(auth()->user()?->hasPermission('TYPE_COTISATION_ACTIVATE'), 403);
+
         if ($tc->type === 'mensuel' && $tc->is_required && $tc->status === 'actif') {
             $this->send_event_at_sweet_alert_not_timer(
                 'Action impossible',
@@ -153,6 +159,8 @@ new  class extends Component
     public function confirmDelete(int $id): void
     {
         $tc = TypeCotisation::findOrFail($id);
+
+        abort_unless(auth()->user()?->hasPermission('TYPE_COTISATION_DELETE'), 403);
 
         if ($tc->cotisations()->exists()) {
             $this->send_event_at_sweet_alert_not_timer(

@@ -13,9 +13,11 @@
         </ol>
       </nav>
     </div>
+    @if(auth()->user()?->hasPermission('MESSAGE_GROUPE_CREATE'))
     <button class="btn-mg-primary" wire:click="openAdd">
       <i class="ri-send-plane-line"></i> Nouveau message
     </button>
+    @endif
   </div>
 
   {{-- ══ KPI STRIP ══════════════════════════════════════════ --}}
@@ -147,14 +149,19 @@
             </td>
             <td>
               <div class="mg-actions">
+                @if(auth()->user()?->hasPermission('MESSAGE_GROUPE_SHOW_ONE'))
                 <button class="btn btn-soft-primary waves-effect"
                         wire:click="openDetail({{ $m->id }})" title="Détails">
                   <i class="ri-eye-line"></i>
                 </button>
+                @endif
+
+                @if(auth()->user()?->hasPermission('MESSAGE_GROUPE_DELETE'))
                 <button class="btn btn-soft-danger waves-effect"
                         wire:click="confirmDelete({{ $m->id }})" title="Supprimer">
                   <i class="ri-delete-bin-line"></i>
                 </button>
+                @endif
               </div>
             </td>
           </tr>

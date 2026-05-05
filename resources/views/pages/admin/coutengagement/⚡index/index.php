@@ -26,6 +26,9 @@ new class extends Component
     /* ── Ouvrir modal ajout ─────────────────────────────── */
     public function openAdd(): void
     {
+        abort_unless(auth()->user()?->hasPermission('COUT_ENGAGEMENT_CREATE'), 403);
+        
+
         $this->editId   = null;
         $this->montant  = '';
         $this->libelle  = '';
@@ -38,6 +41,8 @@ new class extends Component
     /* ── Ouvrir modal édition ───────────────────────────── */
     public function openEdit(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('COUT_ENGAGEMENT_EDIT'), 403);
+
         $ce = CoutEngagement::findOrFail($id);
         $this->editId  = $ce->id;
         $this->montant = (string) $ce->montant;
@@ -56,6 +61,12 @@ new class extends Component
     /* ── Sauvegarder ────────────────────────────────────── */
     public function save(): void
     {
+        abort_unless(
+            auth()->user()?->hasPermission('COUT_ENGAGEMENT_CREATE') ||
+            auth()->user()?->hasPermission('COUT_ENGAGEMENT_EDIT'),
+            403
+        );
+
         $this->errorMontant = '';
         $this->errorLibelle = '';
 
@@ -95,6 +106,8 @@ new class extends Component
     /* ── Supprimer ──────────────────────────────────────── */
     public function confirmDelete(int $id): void
     {
+        abort_unless(auth()->user()?->hasPermission('COUT_ENGAGEMENT_DELETE'), 403);
+
         $ce = CoutEngagement::find($id);
         if (! $ce) return;
         $this->sweetAlert_confirm_options_with_button(

@@ -14,15 +14,21 @@
       </nav>
     </div>
     <div class="d-flex gap-2 flex-wrap">
+     @if(auth()->user()?->hasPermission('COTISATION_CREATE') )
       <button class="btn-co-primary" wire:click="openCreate()">
         <i class="ri-money-cny-circle-line"></i> Enregistrer paiement
       </button>
+      @endif
+      @if(auth()->user()?->hasPermission('COTISATION_IMPORT'))
       <button class="btn btn-soft-info btn-sm waves-effect" wire:click="openImport">
         <i class="ri-file-excel-2-line me-1"></i> Importer Excel
       </button>
+      @endif
+      @if(auth()->user()?->hasPermission('COTISATION_EXPORT'))
       <button class="btn btn-soft-success btn-sm waves-effect">
         <i class="ri-download-2-line me-1"></i> Exporter
       </button>
+      @endif
     </div>
   </div>
 
@@ -169,7 +175,7 @@
           @endphp
 
           <tr class="{{ match($cot->statut) { 'a_jour' => 'row-ajour', 'partiel' => 'row-partiel', default => 'row-retard' } }}"
-              wire:click="openDetail({{ $cot->id }})">
+             @if(auth()->user()?->hasPermission('COTISATION_SHOW_ONE')) wire:click="openDetail({{ $cot->id }})" @endif>
 
             {{-- Fidèle --}}
             <td>
@@ -247,15 +253,20 @@
               <div class="td-actions">
 
                 {{-- Voir détail --}}
-                <button class="btn btn-soft-primary waves-effect" wire:click="openDetail({{ $cot->id }})" title="Détails">
+                @if(auth()->user()?->hasPermission('COTISATION_SHOW_ONE'))
+                <button class="btn btn-soft-primary waves-effect"  wire:click="openDetail({{ $cot->id }})"  title="Détails">
                   <i class="ri-eye-line"></i>
                 </button>
+                @endif
+
 
                 {{-- Modifier : uniquement si non validée --}}
                 @if(! $cot->validated_at)
-                <button class="btn btn-soft-info waves-effect" wire:click="openEdit({{ $cot->id }})" title="Modifier">
+                @if(auth()->user()?->hasPermission('COTISATION_EDIT'))
+                <button class="btn btn-soft-info waves-effect"  wire:click="openEdit({{ $cot->id }})"  title="Modifier">
                   <i class="ri-edit-line"></i>
                 </button>
+                @endif
                 @endif
 
                 {{--
@@ -265,9 +276,11 @@
                   Une cotisation partielle doit être modifiée d'abord.
                 --}}
                 @if($peutValider)
-                <button class="btn btn-soft-success waves-effect" wire:click="confirmerValidation({{ $cot->id }})" title="Valider le paiement">
+                @if(auth()->user()?->hasPermission('COTISATION_VALIDATE'))
+                <button class="btn btn-soft-success waves-effect"  wire:click="confirmerValidation({{ $cot->id }})"  title="Valider le paiement">
                   <i class="ri-shield-check-line"></i>
                 </button>
+                @endif
                 @endif
 
 
@@ -298,9 +311,11 @@
                     @endif
 
                     <li><hr class="dropdown-divider"></li>
+                    @if(auth()->user()?->hasPermission('COTISATION_DELETE'))
                     <li><a class="dropdown-item text-danger" href="#" wire:click.prevent="confirmDelete({{ $cot->id }})">
                       <i class="ri-delete-bin-line me-2"></i>Supprimer
                     </a></li>
+                    @endif
                   </ul>
                 </div>
 
@@ -563,11 +578,17 @@
 
             {{-- Valider : uniquement si cotisation complète (montant_paye >= montant_du) --}}
             @if($peutValiderDetail)
+            @if(auth()->user()?->hasPermission('COTISATION_VALIDATE'))
             <button class="btn btn-success waves-effect"
                     wire:click="confirmerValidation({{ $dc->id }})"
                     data-bs-dismiss="modal">
               <i class="ri-shield-check-line me-1"></i>Valider ce paiement
             </button>
+            @else
+            <button class="btn btn-success waves-effect" disabled title="Vous n'avez pas la permission de valider les cotisations">
+              <i class="ri-shield-check-line me-1"></i>Valider ce paiement
+            </button> 
+            @endif
             @endif
 
 
@@ -859,6 +880,7 @@
         <button class="btn-co-secondary" data-bs-dismiss="modal">
           <i class="ri-close-line me-1"></i> Annuler
         </button>
+        @if(auth()->user()?->hasPermission('COTISATION_CREATE') || ($editId && auth()->user()?->hasPermission('COTISATION_EDIT')))
         <button class="btn-co-primary" wire:click="save" wire:loading.attr="disabled">
           <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
           <i class="ri-save-line" wire:loading.remove wire:target="save"></i>
@@ -867,6 +889,7 @@
           </span>
           <span wire:loading wire:target="save">Traitement…</span>
         </button>
+        @endif
       </div>
 
     </div>
@@ -1125,6 +1148,8 @@
             <span wire:loading wire:target="parseImport">Analyse…</span>
           </button>
           @endif
+
+          @if(auth()->user()?->hasPermission('COTISATION_IMPORT'))
           @if($importStep === 'preview')
           <button wire:click="confirmerImport" wire:loading.attr="disabled"
                   onclick="startImportPolling()"
@@ -1139,6 +1164,7 @@
           <button wire:click="$set('importStep','upload')" style="background:#405189;border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;padding:9px 22px;cursor:pointer">
             <i class="ri-refresh-line me-1"></i>Réessayer
           </button>
+          @endif
           @endif
         </div>
       </div>

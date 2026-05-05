@@ -14,9 +14,11 @@
       </nav>
     </div>
     <div class="d-flex gap-2">
+    @if(auth()->user()?->hasPermission('PAIEMENT_EXPORT_PDF'))
       <button class="btn btn-soft-success btn-sm waves-effect">
         <i class="ri-file-excel-2-line me-1"></i> Exporter
       </button>
+      @endif
     </div>
   </div>
 
@@ -149,7 +151,7 @@
                 : null;
           @endphp
 
-          <tr class="{{ $rowCls }}" wire:click="openDetail({{ $pay->id }})">
+          <tr class="{{ $rowCls }}" @if(auth()->user()?->hasPermission('PAIEMENT_SHOW_ONE')) wire:click="openDetail({{ $pay->id }})" @endif>
 
             {{-- Fidèle --}}
             <td>
@@ -206,25 +208,36 @@
             {{-- Actions --}}
             <td wire:click.stop="">
               <div class="pay-actions">
+                @if(auth()->user()?->hasPermission('PAIEMENT_SHOW_ONE')) 
                 <button class="btn btn-soft-primary waves-effect"
-                        wire:click="openDetail({{ $pay->id }})" title="Voir détails">
+                        wire:click="openDetail({{ $pay->id }})" @endif title="Voir détails">
                   <i class="ri-eye-line"></i>
                 </button>
+                @endif
+
+                @if(auth()->user()?->hasPermission('PAIEMENT_EXPORT_PDF'))
                 <button wire:click="exportRecu({{ $pay->id }})"
                         class="btn btn-soft-danger btn-sm waves-effect" title="Reçu PDF">
                     <i class="ri-file-pdf-line"></i>
                 </button>
+                @endif
+
+                @if(auth()->user()?->hasPermission('PAIEMENT_VALIDATE'))
                 @if($pay->statut === 'en_attente')
                 <button class="btn btn-soft-success waves-effect"
                         wire:click="ouvrirValidation({{ $pay->id }})" title="Valider">
                   <i class="ri-checkbox-circle-line"></i>
                 </button>
                 @endif
+                @endif
+
+                @if(auth()->user()?->hasPermission('PAIEMENT_ANNULER'))
                 @if(! in_array($pay->statut, ['annule']))
                 <button class="btn btn-soft-warning waves-effect"
                         wire:click="ouvrirAnnulation({{ $pay->id }})" title="Annuler">
                   <i class="ri-close-circle-line"></i>
                 </button>
+                @endif
                 @endif
               </div>
             </td>
@@ -401,17 +414,22 @@
 
           {{-- Actions --}}
           <div class="d-flex gap-2 mt-3 flex-wrap">
+            @if(auth()->user()?->hasPermission('PAIEMENT_VALIDATE'))
             @if($dp->statut === 'en_attente')
             <button class="btn btn-success waves-effect"
                     wire:click="ouvrirValidation({{ $dp->id }})">
               <i class="ri-shield-check-line me-1"></i>Valider ce paiement
             </button>
             @endif
+            @endif
+
+            @if(auth()->user()?->hasPermission('PAIEMENT_ANNULER'))
             @if(! in_array($dp->statut, ['annule']))
             <button class="btn btn-soft-warning waves-effect"
                     wire:click="ouvrirAnnulation({{ $dp->id }})">
               <i class="ri-close-circle-line me-1"></i>Annuler
             </button>
+            @endif
             @endif
           </div>
 
@@ -502,6 +520,7 @@
                   data-bs-dismiss="modal">
             <i class="ri-close-line me-1"></i>Annuler
           </button>
+          @if(auth()->user()?->hasPermission('PAIEMENT_VALIDATE'))
           <button wire:click="confirmerValidationMulti"
                   wire:loading.attr="disabled"
                   style="background:linear-gradient(135deg,#089383,#0ab39c);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;padding:10px 22px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
@@ -510,6 +529,7 @@
             <span wire:loading.remove wire:target="confirmerValidationMulti">Confirmer la validation</span>
             <span wire:loading wire:target="confirmerValidationMulti">Traitement…</span>
           </button>
+            @endif
         </div>
 
       </div>
@@ -619,6 +639,7 @@
                   wire:click="fermerAnnulation">
             <i class="ri-close-line me-1"></i>Annuler
           </button>
+          @if(auth()->user()?->hasPermission('PAIEMENT_ANNULER'))
           <button wire:click="confirmerAnnulation"
                   wire:loading.attr="disabled"
                   style="background:linear-gradient(135deg,#c0341a,#f06548);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:700;padding:10px 22px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
@@ -627,6 +648,7 @@
             <span wire:loading.remove wire:target="confirmerAnnulation">Confirmer l'annulation</span>
             <span wire:loading wire:target="confirmerAnnulation">Traitement…</span>
           </button>
+          @endif
         </div>
 
       </div>
